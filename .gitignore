@@ -1,0 +1,17 @@
+node_modules/
+dist/
+**/node_modules/
+**/dist/
+docs/.vitepress/cache/
+docs/.vitepress/dist/
+*.log
+.DS_Store
+**/.DS_Store
+.idea/
+.vscode/
+*.tsbuildinfo
+coverage/
+.env
+.env.local
+*.map
+ChatGPT Image*.png

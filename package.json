@@ -1,0 +1,103 @@
+{
+  "name": "pixu",
+  "version": "1.0.0",
+  "description": "Next-generation JavaScript image compression library",
+  "type": "module",
+  "main": "./dist/pixu.cjs",
+  "module": "./dist/pixu.esm.js",
+  "browser": "./dist/pixu.umd.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/pixu.esm.js",
+      "require": "./dist/pixu.cjs"
+    },
+    "./worker": {
+      "types": "./dist/worker.d.ts",
+      "import": "./dist/pixu.worker.esm.js"
+    },
+    "./worker/client": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/pixu.esm.js"
+    },
+    "./components/vue/PixuCompressor.vue": "./components/vue/PixuCompressor.vue",
+    "./components/react/PixuCompressor": {
+      "types": "./components/react/PixuCompressor.tsx",
+      "import": "./components/react/PixuCompressor.tsx"
+    },
+    "./components/react/PixuCompressor.css": "./components/react/PixuCompressor.css",
+    "./components/svelte/PixuCompressor.svelte": "./components/svelte/PixuCompressor.svelte",
+    "./components/angular/pixu-compressor.component": "./components/angular/pixu-compressor.component.ts",
+    "./components/jacare/PixuCompressor.jcr": "./components/jacare/PixuCompressor.jcr"
+  },
+  "files": [
+    "dist",
+    "components",
+    "README.md",
+    "LICENSE"
+  ],
+  "peerDependencies": {
+    "@angular/common": ">=17.0.0",
+    "@angular/core": ">=17.0.0",
+    "@jacare/core": ">=0.1.0"
+  },
+  "peerDependenciesMeta": {
+    "@jacare/core": {
+      "optional": true
+    },
+    "@angular/core": {
+      "optional": true
+    },
+    "@angular/common": {
+      "optional": true
+    }
+  },
+  "scripts": {
+    "build": "npm run clean && npm run build:lib && npm run build:worker && npm run build:types",
+    "build:lib": "vite build",
+    "build:worker": "vite build --config vite.worker.config.ts",
+    "build:types": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "dev": "vitepress dev docs",
+    "docs:build": "npm run build && cp dist/pixu.esm.js docs/public/ && cp examples/shared/assets/* docs/public/ && vitepress build docs",
+    "docs:assets": "cp examples/shared/assets/* docs/public/",
+    "predev": "npm run build && npm run docs:assets",
+    "docs:preview": "vitepress preview docs",
+    "lint": "eslint src --ext .ts"
+  },
+  "keywords": [
+    "image",
+    "compression",
+    "optimization",
+    "resize",
+    "webp",
+    "jpeg",
+    "png",
+    "avif",
+    "typescript"
+  ],
+  "author": "Heber Almeida",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/heberalmeida/pixu.git"
+  },
+  "bugs": {
+    "url": "https://github.com/heberalmeida/pixu/issues"
+  },
+  "homepage": "https://github.com/heberalmeida/pixu#readme",
+  "devDependencies": {
+    "@angular/common": "^17.3.12",
+    "@angular/core": "^17.3.12",
+    "@jacare/core": "^0.1.17",
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.1",
+    "@typescript-eslint/parser": "^6.13.1",
+    "eslint": "^8.54.0",
+    "tslib": "^2.8.1",
+    "typescript": "^5.3.2",
+    "vite": "^5.4.21",
+    "vitepress": "^1.0.0"
+  }
+}
