@@ -1,0 +1,517 @@
+import { pulse, derive } from '@jacare/core'
+import { compress, PIXU_EXTENSION } from 'pixu'
+
+export <contract>
+  props: {
+    options: { type: 'object', default: {} }
+    samples: { type: 'any', default: [] }
+    autoCompress: { type: 'boolean', default: true }
+  }
+  emits: ['compress', 'error', 'progress']
+</contract>
+
+const file = pulse(null)
+const loading = pulse(false)
+const progress = pulse(0)
+const error = pulse(null)
+const result = pulse(null)
+const originalUrl = pulse(null)
+const compressedUrl = pulse(null)
+
+const progressPct = derive(() => `${Math.round(progress() * 100)}%`)
+const progressLabel = derive(() => `Compressing... ${Math.round(progress() * 100)}%`)
+const ratioLabel = derive(() => {
+  const r = result()
+  return r ? `${(r.compressionRatio * 100).toFixed(1)}%` : '—'
+})
+const savedLabel = derive(() => {
+  const r = result()
+  const f = file()
+  if (!r || !f) return '—'
+  return formatBytes(f.size - r.compressedSize)
+})
+const formatLabel = derive(() => {
+  const r = result()
+  return r ? r.format : '—'
+})
+const qualityLabel = derive(() => {
+  const r = result()
+  const q = r?.metadata?.quality
+  return q != null ? `${Math.round(q * 100)}%` : '—'
+})
+const originalSizeLabel = derive(() => {
+  const f = file()
+  return f ? formatBytes(f.size) : '—'
+})
+const compressedSizeLabel = derive(() => {
+  const r = result()
+  return r ? formatBytes(r.compressedSize) : '—'
+})
+const compressedDims = derive(() => {
+  const r = result()
+  return r ? `${r.width}×${r.height}` : ''
+})
+const hasSamples = derive(() => Array.isArray(samples) && samples.length > 0)
+
+function formatBytes(bytes) {
+  if (!bytes) return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return `${Math.round((bytes / Math.pow(k, i)) * 100) / 100} ${sizes[i]}`
+}
+
+function revokeUrls() {
+  const prevOriginal = originalUrl()
+  const prevCompressed = compressedUrl()
+  if (prevOriginal) URL.revokeObjectURL(prevOriginal)
+  if (prevCompressed) URL.revokeObjectURL(prevCompressed)
+  originalUrl.set(null)
+  compressedUrl.set(null)
+}
+
+function openFilePicker() {
+  document.getElementById('pixu-jacare-file')?.click()
+}
+
+function onUploadClick(e) {
+  if (e.target.closest?.('.sample-gallery')) return
+  openFilePicker()
+}
+
+async function onFileChange(e) {
+  const selected = e.target.files?.[0]
+  if (!selected) return
+  await processFile(selected)
+  e.target.value = ''
+}
+
+async function onDrop(e) {
+  e.preventDefault()
+  const dropped = e.dataTransfer?.files?.[0]
+  if (dropped && dropped.type.startsWith('image/')) {
+    await processFile(dropped)
+  }
+}
+
+function onDragOver(e) {
+  e.preventDefault()
+}
+
+async function loadSample(e, sample) {
+  e.stopPropagation()
+  const res = await fetch(sample.url)
+  if (!res.ok) {
+    const err = new Error(`Failed to load ${sample.label}`)
+    error.set(err.message)
+    emit('error', err)
+    return
+  }
+  const blob = await res.blob()
+  const selected = new File([blob], sample.file, { type: blob.type || 'image/jpeg' })
+  await processFile(selected)
+}
+
+async function processFile(selected) {
+  file.set(selected)
+  loading.set(true)
+  error.set(null)
+  progress.set(0)
+  result.set(null)
+  revokeUrls()
+  originalUrl.set(URL.createObjectURL(selected))
+
+  if (autoCompress === false) {
+    loading.set(false)
+    return
+  }
+
+  try {
+    const compressionResult = await compress(selected, {
+      ...(options || {}),
+      onProgress: (p) => {
+        progress.set(p)
+        emit('progress', p)
+      },
+    })
+    result.set(compressionResult)
+    compressedUrl.set(URL.createObjectURL(compressionResult.file))
+    emit('compress', compressionResult)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Compression failed'
+    error.set(message)
+    emit('error', err instanceof Error ? err : new Error(message))
+  } finally {
+    loading.set(false)
+  }
+}
+
+function downloadFile() {
+  const r = result()
+  const url = compressedUrl()
+  const f = file()
+  if (!r || !url) return
+  const ext = r.format === 'image/pixu' ? PIXU_EXTENSION : `.${String(r.format).split('/')[1] || 'jpg'}`
+  const base = (f?.name || 'image').replace(/\.[^.]+$/, '')
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `compressed-${base}${ext}`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+}
+
+function reset() {
+  file.set(null)
+  result.set(null)
+  error.set(null)
+  progress.set(0)
+  revokeUrls()
+}
+
+export <view>
+  <div class="pixu-compressor">
+    #if !file()
+      <div class="upload-area" on-click=${onUploadClick} on-dragover=${onDragOver} on-drop=${onDrop}>
+        <input id="pixu-jacare-file" class="file-input" type="file" accept="image/*" on-change=${onFileChange} />
+        <div class="upload-content">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          <p class="upload-text">Click or drag image here to compress</p>
+          <p class="upload-hint">Supports JPEG, PNG, WEBP, AVIF, PIXU</p>
+        </div>
+        #if hasSamples()
+          <div class="sample-gallery">
+            <p class="sample-label">Or try a real sample</p>
+            <div class="sample-grid">
+            #for samples as sample (sample.id)
+              <button type="button" class="sample-card" on-click=${(e) => loadSample(e, sample)}>
+                <img src=${sample.url} alt=${sample.label} />
+                <span>${sample.label}</span>
+              </button>
+            #end
+            </div>
+          </div>
+        #end
+      </div>
+    #else
+      <div class="compression-container">
+        <div class="image-preview-section">
+          <div class="image-preview">
+            <h4>Original</h4>
+            <img src=${originalUrl} alt="Original" />
+            <div class="image-info">
+              <span>${originalSizeLabel}</span>
+            </div>
+          </div>
+          #if result()
+            <div class="image-preview">
+              <h4>Compressed</h4>
+              <img src=${compressedUrl} alt="Compressed" />
+              <div class="image-info">
+                <span>${compressedSizeLabel}</span>
+                <span>${compressedDims}</span>
+              </div>
+            </div>
+          #end
+        </div>
+
+        #if loading()
+          <div class="progress-section">
+            <div class="progress-track">
+              <div class="progress-bar" style---pct=${progressPct}></div>
+            </div>
+            <p class="progress-text">${progressLabel}</p>
+          </div>
+        #end
+
+        #if result()
+          <div class="result-section">
+            <div class="stats-grid">
+              <div class="stat-item">
+                <span class="stat-label">Compression Ratio</span>
+                <span class="stat-value">${ratioLabel}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Size Reduction</span>
+                <span class="stat-value">${savedLabel}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Format</span>
+                <span class="stat-value">${formatLabel}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Quality</span>
+                <span class="stat-value">${qualityLabel}</span>
+              </div>
+            </div>
+            <div class="actions">
+              <button type="button" class="btn btn-primary" on-click=${downloadFile}>Download Compressed</button>
+              <button type="button" class="btn btn-secondary" on-click=${reset}>Compress Another</button>
+            </div>
+          </div>
+        #end
+
+        #if error()
+          <div class="error-section">
+            <p class="error-message">${error}</p>
+            <button type="button" class="btn btn-secondary" on-click=${reset}>Try Again</button>
+          </div>
+        #end
+      </div>
+    #end
+  </div>
+</view>
+
+export <style>
+.pixu-compressor {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.upload-area {
+  border: 2px dashed var(--vp-c-divider, var(--pixu-border, #e2e2e3));
+  border-radius: 8px;
+  padding: 3rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  background: var(--vp-c-bg-soft, var(--pixu-bg-soft, #f6f6f7));
+}
+
+.upload-area:hover {
+  border-color: var(--vp-c-brand-1, var(--pixu-purple, #7b3fef));
+  background: var(--vp-c-bg, var(--pixu-surface, #fff));
+}
+
+.file-input {
+  display: none;
+}
+
+.upload-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.upload-content svg {
+  color: var(--vp-c-text-2, var(--pixu-muted, #67676c));
+}
+
+.upload-text {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--vp-c-text-1, var(--pixu-text, #213547));
+  margin: 0;
+}
+
+.upload-hint {
+  font-size: 0.9rem;
+  color: var(--vp-c-text-2, var(--pixu-muted, #67676c));
+  margin: 0;
+}
+
+.sample-gallery {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--vp-c-divider, var(--pixu-border, #e2e2e3));
+}
+
+.sample-label {
+  margin: 0 0 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vp-c-text-2, var(--pixu-muted, #67676c));
+}
+
+.sample-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 0.65rem;
+}
+
+.sample-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.35rem;
+  border: 1px solid var(--vp-c-divider, var(--pixu-border, #e2e2e3));
+  border-radius: 10px;
+  background: var(--vp-c-bg, var(--pixu-surface, #fff));
+  cursor: pointer;
+  font: inherit;
+  color: var(--vp-c-text-1, var(--pixu-text, #213547));
+}
+
+.sample-card:hover {
+  border-color: var(--vp-c-brand-1, var(--pixu-purple, #7b3fef));
+}
+
+.sample-card img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.sample-card span {
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.compression-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.image-preview-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.image-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.image-preview h4 {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--vp-c-text-1, var(--pixu-text, #213547));
+}
+
+.image-preview img {
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--vp-c-divider, var(--pixu-border, #e2e2e3));
+  border-radius: 6px;
+  max-height: 400px;
+  object-fit: contain;
+  background: var(--vp-c-bg-soft, var(--pixu-bg-soft, #f6f6f7));
+}
+
+.image-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--vp-c-text-2, var(--pixu-muted, #67676c));
+}
+
+.progress-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.progress-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--vp-c-bg-soft, var(--pixu-bg-soft, #f6f6f7));
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  width: var(--pct);
+  background: var(--vp-c-brand-1, var(--pixu-purple, #7b3fef));
+  border-radius: 4px;
+  transition: width 0.15s ease;
+}
+
+.progress-text {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--vp-c-text-2, var(--pixu-muted, #67676c));
+  margin: 0;
+}
+
+.result-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--vp-c-bg-soft, var(--pixu-bg-soft, #f6f6f7));
+  border-radius: 6px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: var(--vp-c-text-2, var(--pixu-muted, #67676c));
+}
+
+.stat-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--vp-c-brand-1, var(--pixu-purple, #7b3fef));
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--vp-c-brand-1, var(--pixu-purple, #7b3fef));
+  color: #fff;
+}
+
+.btn-secondary {
+  background: var(--vp-c-bg-soft, var(--pixu-bg-soft, #f6f6f7));
+  color: var(--vp-c-text-1, var(--pixu-text, #213547));
+  border: 1px solid var(--vp-c-divider, var(--pixu-border, #e2e2e3));
+}
+
+.error-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.error-message {
+  margin: 0;
+  color: #e24b4b;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .image-preview-section {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
