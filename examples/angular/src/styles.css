@@ -1,0 +1,5 @@
+@import '../../shared/theme.css';
+
+app-root {
+  display: block;
+}
