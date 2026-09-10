@@ -1,0 +1,75 @@
+import { pulse } from '@jacare/core'
+import PixuCompressor from '../../../components/jacare/PixuCompressor.jcr'
+
+const options = {
+  format: 'image/pixu',
+  enableSmartQuality: true,
+  stripMetadata: true,
+  quality: 0.85,
+}
+
+const lastResult = pulse(null)
+const lastError = pulse(null)
+
+const samples = [
+  { id: 'landscape', label: 'Mountains', url: '/photo-landscape.jpg', file: 'photo-landscape.jpg' },
+  { id: 'portrait', label: 'Portrait', url: '/photo-portrait.jpg', file: 'photo-portrait.jpg' },
+  { id: 'city', label: 'City', url: '/photo-city.jpg', file: 'photo-city.jpg' },
+  { id: 'nature', label: 'Forest', url: '/photo-nature.jpg', file: 'photo-nature.jpg' },
+  { id: 'food', label: 'Food', url: '/photo-food.jpg', file: 'photo-food.jpg' },
+  { id: 'graphic', label: 'PNG Graphic', url: '/graphic-transparent.png', file: 'graphic-transparent.png' },
+]
+
+function onCompress(result) {
+  lastResult.set(result)
+  lastError.set(null)
+}
+
+function onError(err) {
+  lastError.set(err instanceof Error ? err.message : String(err))
+}
+
+function onProgress(_p) {}
+
+export <view>
+  <main class="page">
+    <header class="pixu-header">
+      <img class="pixu-logo" src="/logo.png" alt="Pixu" />
+      <div class="pixu-brand">
+        <h1>Pixu × Jacaré</h1>
+        <p>Documentation-style examples — PixuCompressor.jcr component</p>
+      </div>
+    </header>
+
+    <section class="card">
+      <h2>PixuCompressor</h2>
+      <p class="description">Reusable Jacaré component — samples, upload, PIXU output, download</p>
+      <PixuCompressor
+        :options=${options}
+        :samples=${samples}
+        on-compress=${onCompress}
+        on-error=${onError}
+        on-progress=${onProgress}
+      />
+    </section>
+
+    #if lastError()
+      <p class="error">${lastError}</p>
+    #end
+
+    #if lastResult()
+      <section class="card">
+        <h2>Last result</h2>
+        <p class="description">${() => lastResult()?.format} · ${() => `${((lastResult()?.compressionRatio ?? 0) * 100).toFixed(1)}%`} reduction</p>
+      </section>
+    #end
+  </main>
+</view>
+
+export <style>
+.description {
+  margin: 0.75rem 0 1.25rem;
+  color: var(--pixu-muted);
+  font-size: 0.95rem;
+}
+</style>
