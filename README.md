@@ -1,88 +1,62 @@
 # Pixu
 
-<div align="center">
-
-![Pixu Logo](https://img.shields.io/badge/Pixu-Next%20Gen%20Image%20Compression-blue?style=for-the-badge)
-
-**The best perceptual image compression for JavaScript — powered by Contextual Reconstructive Entropy**
+**Perceptual image compression for JavaScript**, grounded in Contextual Reconstructive Entropy (TECR).
 
 [![npm version](https://img.shields.io/npm/v/pixu.svg)](https://www.npmjs.com/package/pixu)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/pixu)](https://bundlephobia.com/package/pixu)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/heberalmeida/pixu)
 
-[Features](#-features) • [Installation](#-installation) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [Examples](#-examples)
-
-</div>
+[Features](#features) · [Installation](#installation) · [Quick Start](#quick-start) · [API](#api-reference) · [Examples](#examples) · [Docs](#documentation)
 
 ---
 
-## 🚀 Overview
+## Overview
 
-**Pixu** is a zero-dependency TypeScript library for **best perceptual image compression** on the web. It is built on **Contextual Reconstructive Entropy (TECR)**: minimize what you ship given a shared reconstructive model \(M\), content context \(C\), and an allowed perceptual error \(\varepsilon\).
+Pixu is a zero-dependency TypeScript library for **best perceptual compression** on the web. It minimizes shipped bytes given a shared reconstructive model \(M\), content context \(C\), and an allowed perceptual error \(\varepsilon\):
 
 \[
 L(x \mid M, C, \varepsilon)
 \]
 
-This does **not** claim to break Shannon’s lossless bound. It solves a better problem for images: smaller \(C_{\text{file}}\) at the same visual budget — via the **PIXU** format (`.pixu`).
+This does **not** claim to break Shannon’s lossless bound. It targets a better problem for images: smaller \(C_{\text{file}}\) at the same visual budget — via the **PIXU** format (`.pixu`).
 
 ### Why Pixu?
 
-- 📐 **TECR-native** — Optimizes \(L(x\mid M,C,\varepsilon)\); see [theory docs](https://heberalmeida.github.io/pixu/guide/theory/contextual-reconstructive-entropy)
-- ⚡ **Lightning Fast** — Optimized algorithms and Web Worker support
-- 🎯 **Contextual** — Smart Quality builds \(C\) from photo / graphic / text priors
-- 🔧 **Flexible** — Modular architecture with plugin system
-- 📦 **Lightweight** — Zero dependencies (~15KB gzipped)
-- 🛡️ **Type-Safe** — Full TypeScript definitions
-- 🌐 **PIXU format** — Reconstructive `image/pixu` — typically 30–60% vs JPEG, 20–40% vs WebP
-- 🎨 **Adaptive encode** — Dual-pass, noise-aware, perceptual stages
+- **TECR-native** — Optimizes \(L(x\mid M,C,\varepsilon)\); see the [theory guide](https://heberalmeida.github.io/pixu/guide/theory/contextual-reconstructive-entropy)
+- **Fast** — Optimized pipelines and Web Worker support
+- **Contextual** — Smart Quality builds \(C\) from photo / graphic / text priors
+- **Flexible** — Plugins, presets, filters, batch and stream APIs
+- **Lightweight** — Zero runtime dependencies (~15KB gzipped)
+- **Typed** — Full TypeScript definitions
+- **PIXU format** — Reconstructive `image/pixu` — typically 30–60% smaller than JPEG, 20–40% vs WebP at the same visual budget
 
 ---
 
-## ✨ Features
+## Features
 
-### Core Capabilities
+### Core
 
-- **Multi-Format Support** - JPEG, PNG, WEBP, AVIF, and **PIXU** (`image/pixu`, `.pixu`) — best \(C_{\text{file}}\) under TECR (typically 30–60% vs JPEG, 20–40% vs WebP)
-- **Contextual Reconstructive Entropy** - Shared model \(M\) + content context \(C\) + perceptual \(\varepsilon\)
-- **Advanced Resizing** - Multiple resize modes (contain, cover, fit, fill)
-- **Quality & Size Modes** - Compress by quality or target file size
-- **Metadata Management** - EXIF stripping and orientation correction
-- **Batch Processing** - Compress multiple images with concurrency control
-- **Streaming API** - Process images asynchronously with generators
-- **Web Worker Support** - Offload compression to background threads
+- JPEG, PNG, WebP, AVIF, and **PIXU** (`image/pixu`, `.pixu`)
+- Resize modes: `contain`, `cover`, `fit`, `fill`
+- Quality, target-size, and adaptive modes
+- EXIF stripping and orientation correction
+- Batch compression with concurrency control
+- Streaming API and Web Workers
 
-### Innovative Features
+### Advanced
 
-- **Adaptive Smart Compression** - Automatically chooses optimal quality settings
-- **Smart Quality Selection** - Builds context \(C\) (photo / graphic / text) for PIXU by default
-- **Dual-Pass Optimization** - First-pass color reduction, second-pass quality tuning
-- **Progressive Output Engine** - Streams compressed data as it's generated
-- **Noise-Aware Encoder** - Intelligently reduces noise while preserving detail
-- **HDR-to-SDR Conversion** - Automatic tone mapping for HDR images
-- **Color Channel Weighting** - Optimizes compression based on luminance
-- **Auto Orientation Fixer** - Corrects image orientation automatically
-- **Compression Presets** - Pre-configured settings for social media, print, web, thumbnails, and email
-- **Image Filters** - Native filters (grayscale, sepia, vintage, brightness, contrast, saturation, blur, sharpen)
-- **Image Validation** - Validates images before compression
-- **Format Conversion** - Smart PNG to JPEG conversion with background handling
-- **PNG Optimization** - Color reduction, transparency optimization, palette analysis
-- **Smart Cropping** - Intelligent crop based on content analysis and focus points
-- **Watermark** - Automatic watermark with intelligent positioning
-- **Image Analysis** - Deep content analysis (photo vs graphic, complexity, quality detection)
-- **Optimization Hints** - Automatic suggestions for best compression settings
-- **Progressive JPEG** - Support for progressive JPEG detection
-- **Lazy Loading Helper** - Generate responsive image sets and srcset
-- **Color Space** - sRGB normalization and wide gamut support detection
-- **Advanced Batch** - Retry, pause/resume, priority queuing
-- **Memory Management** - Streaming, chunk processing, auto-cleanup
-- **Performance Monitoring** - Detailed metrics and throughput tracking
+- Smart Quality (content context \(C\)) — on by default for PIXU
+- Dual-pass and noise-aware encoding
+- Compression presets (web, print, social, thumbnail, email)
+- Image filters, smart crop, watermark
+- PNG optimization and format conversion
+- Image analysis and optimization hints
+- Memory management and performance monitoring
 
 ---
 
-## 📦 Installation
+## Installation
 
 ```bash
 npm install pixu
@@ -106,9 +80,26 @@ pnpm add pixu
 
 ---
 
-## 🎯 Quick Start
+## Quick Start
 
-### Basic Usage
+### Best compression (recommended)
+
+```typescript
+import { compress, PIXU_EXTENSION } from 'pixu';
+
+const result = await compress(file, {
+  format: 'image/pixu',
+  enableSmartQuality: true,
+  stripMetadata: true,
+  maxWidth: 1920,
+  maxHeight: 1080,
+});
+
+console.log(result.compressionRatio);
+console.log(PIXU_EXTENSION); // ".pixu"
+```
+
+### Basic usage
 
 ```typescript
 import { compress } from 'pixu';
@@ -119,179 +110,119 @@ fileInput.addEventListener('change', async (e) => {
   const file = e.target.files[0];
   if (!file) return;
 
-  try {
-    const result = await compress(file, {
-      format: 'image/pixu',
-      enableSmartQuality: true,
-      maxWidth: 1920,
-      maxHeight: 1080,
-      stripMetadata: true,
-    });
+  const result = await compress(file, {
+    format: 'image/pixu',
+    enableSmartQuality: true,
+    maxWidth: 1920,
+    maxHeight: 1080,
+    stripMetadata: true,
+  });
 
-    console.log(`Compressed from ${result.originalSize} to ${result.compressedSize} bytes`);
-    console.log(`Compression ratio: ${(result.compressionRatio * 100).toFixed(1)}%`);
-
-    // Upload or use the compressed file
-    const formData = new FormData();
-    formData.append('image', result.file);
-  } catch (error) {
-    console.error('Compression failed:', error);
-  }
+  console.log(`${result.originalSize} → ${result.compressedSize} bytes`);
+  console.log(`${(result.compressionRatio * 100).toFixed(1)}% reduction`);
 });
 ```
 
-### Advanced Usage with Options
+### Advanced options
 
 ```typescript
 import { compress } from 'pixu';
 
 const result = await compress(file, {
-  // Resize options
   maxWidth: 1920,
   maxHeight: 1080,
-  resize: 'contain', // 'none' | 'contain' | 'cover' | 'fit' | 'fill'
-
-  // Format options
-  format: 'image/webp', // 'auto' | 'image/jpeg' | 'image/png' | 'image/webp' | 'image/avif'
-
-  // Compression mode
-  mode: 'adaptive', // 'quality' | 'size' | 'adaptive'
+  resize: 'contain',
+  format: 'image/pixu',
+  mode: 'adaptive',
   quality: 0.8,
-  targetSize: 500 * 1024, // 500KB (for size mode)
-
-  // Advanced features
   enableDualPass: true,
   enableNoiseAware: true,
-  enableColorWeighting: true,
   stripMetadata: true,
   fixOrientation: true,
-
-  // Progress tracking
   onProgress: (progress) => {
-    console.log(`Progress: ${(progress * 100).toFixed(0)}%`);
-  },
-
-  // Canvas hooks
-  beforeProcess: (ctx, canvas) => {
-    // Custom processing before compression
-  },
-  afterProcess: (ctx, canvas) => {
-    // Custom processing after compression
+    console.log(`${Math.round(progress * 100)}%`);
   },
 });
 ```
 
-### Web Worker Usage
+### Web Worker
 
 ```typescript
 import { WorkerCompressor } from 'pixu/worker';
 
 const worker = new WorkerCompressor('/path/to/pixu.worker.esm.js');
-
-const result = await worker.compress(file, {
-  quality: 0.8,
-  maxWidth: 1920,
-});
-
-worker.terminate(); // Clean up when done
+const result = await worker.compress(file, { quality: 0.8, maxWidth: 1920 });
+worker.terminate();
 ```
 
-### Batch Compression
+### Batch
 
 ```typescript
 import { compressBatch } from 'pixu';
 
-const files = Array.from(fileInput.files);
-
 const results = await compressBatch(files, {
-  quality: 0.8,
-  maxWidth: 1920,
-  concurrency: 3, // Process 3 images at a time
+  format: 'image/pixu',
+  enableSmartQuality: true,
+  concurrency: 3,
   onItemComplete: (result, index) => {
-    console.log(`Image ${index + 1} compressed`);
-  },
-  onItemError: (error, index) => {
-    console.error(`Image ${index + 1} failed:`, error);
+    console.log(`Image ${index + 1} done`);
   },
 });
 ```
 
-### Streaming API
+### Stream
 
 ```typescript
 import { compressStream } from 'pixu';
 
-async function processImageStream(files: File[]) {
-  for await (const result of compressStream(files, {
-    quality: 0.8,
-  })) {
-    console.log('Compressed:', result.file.name);
-    // Process each result as it arrives
-  }
+for await (const result of compressStream(files, { quality: 0.8 })) {
+  console.log('Compressed:', result.file.name);
 }
 ```
 
 ---
 
-## 📚 API Reference
+## Framework components
+
+| Framework | Import |
+|-----------|--------|
+| Vue | `pixu/components/vue/PixuCompressor.vue` |
+| React | `pixu/components/react/PixuCompressor` |
+| Angular | `pixu/components/angular/pixu-compressor.component` |
+| Svelte | `pixu/components/svelte/PixuCompressor.svelte` |
+| Jacaré | `pixu/components/jacare/PixuCompressor.jcr` |
+
+Runnable apps live in `examples/` (Vue `:3000`, React `:3001`, Svelte `:3002`, Jacaré `:3003`, Angular `:4200`). Build the library first: `npm run build`.
+
+---
+
+## API Reference
 
 ### `compress(file, options?)`
 
-Compresses a single image file.
+- **file:** `File | Blob`
+- **options:** `CompressionOptions` (optional)
+- **returns:** `Promise<CompressionResult>`
 
-**Parameters:**
-- `file: File | Blob` - The image file to compress
-- `options?: CompressionOptions` - Compression options (see below)
-
-**Returns:** `Promise<CompressionResult>`
-
-### `CompressionOptions`
+### `CompressionOptions` (summary)
 
 ```typescript
 interface CompressionOptions {
-  // Resize options
   maxWidth?: number;
   maxHeight?: number;
-  minWidth?: number;
-  minHeight?: number;
-  width?: number;
-  height?: number;
   resize?: 'none' | 'contain' | 'cover' | 'fit' | 'fill';
-
-  // Format options
-  format?: 'auto' | 'image/jpeg' | 'image/png' | 'image/webp' | 'image/avif';
+  format?: 'auto' | 'image/jpeg' | 'image/png' | 'image/webp' | 'image/avif' | 'image/pixu';
   stripMetadata?: boolean;
   fixOrientation?: boolean;
-
-  // Compression options
   mode?: 'quality' | 'size' | 'adaptive';
-  quality?: number; // 0.1 - 1.0
-  targetSize?: number; // bytes (for size mode)
-  strategy?: 'aggressive' | 'balanced' | 'conservative' | 'smart';
-
-  // Advanced features
+  quality?: number;
+  targetSize?: number;
+  enableSmartQuality?: boolean;
   enableDualPass?: boolean;
   enableProgressive?: boolean;
   enableNoiseAware?: boolean;
-  enableHdrToSdr?: boolean;
-  enableColorWeighting?: boolean;
-
-  // Worker options
-  useWorker?: boolean;
-  workerOptions?: WorkerOptions;
-
-  // Hooks
-  beforeProcess?: (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => void;
-  afterProcess?: (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => void;
-  onProgress?: (progress: number) => void;
-  
-  // New features
   preset?: 'social-media' | 'print' | 'web' | 'thumbnail' | 'email';
-  filters?: Array<'grayscale' | 'sepia' | 'vintage' | 'brightness' | 'contrast' | 'saturation' | 'blur' | 'sharpen' | { type: string; value?: number }>;
-  enableSmartQuality?: boolean;
-  convertToJPEG?: boolean;
-  validateImage?: boolean;
-
+  onProgress?: (progress: number) => void;
 }
 ```
 
@@ -302,131 +233,44 @@ interface CompressionResult {
   file: File | Blob;
   originalSize: number;
   compressedSize: number;
-  compressionRatio: number; // 0-1
+  compressionRatio: number;
   format: string;
   width: number;
   height: number;
   metadata?: {
     hasExif: boolean;
     orientation?: number;
+    quality?: number;
   };
 }
 ```
 
+Full API: [documentation](https://heberalmeida.github.io/pixu/api/compress).
+
 ---
 
-## 🎨 Examples
+## Examples
 
-### Example 1: Simple Compression
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Pixu - Simple Example</title>
-</head>
-<body>
-  <input type="file" id="fileInput" accept="image/*">
-  <div id="result"></div>
-
-  <script type="module">
-    import { compress } from './node_modules/pixu/dist/pixu.esm.js';
-
-    document.getElementById('fileInput').addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      try {
-        const result = await compress(file, {
-          quality: 0.8,
-          maxWidth: 1920,
-        });
-
-        const img = document.createElement('img');
-        img.src = URL.createObjectURL(result.file);
-        document.getElementById('result').appendChild(img);
-      } catch (error) {
-        console.error('Error:', error);
-      }
-    });
-  </script>
-</body>
-</html>
-```
-
-### Example 2: Format Conversion
+### Format conversion
 
 ```typescript
-import { compress } from 'pixu';
-
-// Convert PNG to WebP
 const result = await compress(pngFile, {
   format: 'image/webp',
   quality: 0.85,
 });
-
-// Convert to AVIF (if supported)
-const avifResult = await compress(jpegFile, {
-  format: 'image/avif',
-  quality: 0.8,
-});
 ```
 
-### Example 3: Size-Based Compression
+### Target size
 
 ```typescript
-import { compress } from 'pixu';
-
-// Compress to target size (500KB)
 const result = await compress(largeFile, {
   mode: 'size',
-  targetSize: 500 * 1024, // 500KB
+  targetSize: 500 * 1024,
   enableDualPass: true,
 });
 ```
 
-### Example 4: Batch Processing with Progress
-
-```typescript
-import { compressBatch } from 'pixu';
-
-const results = await compressBatch(files, {
-  quality: 0.8,
-  maxWidth: 1920,
-  concurrency: 3,
-  onItemComplete: (result, index) => {
-    const ratio = (result.compressionRatio * 100).toFixed(1);
-    console.log(`✓ ${result.file.name}: ${ratio}% reduction`);
-  },
-});
-```
-
-### Example 5: Custom Processing Hook
-
-```typescript
-import { compress } from 'pixu';
-
-const result = await compress(file, {
-  quality: 0.8,
-  beforeProcess: (ctx, canvas) => {
-    // Apply grayscale filter
-    ctx.filter = 'grayscale(100%)';
-  },
-  afterProcess: (ctx, canvas) => {
-    // Add watermark
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-    ctx.font = '24px Arial';
-    ctx.fillText('Watermark', 20, canvas.height - 20);
-  },
-});
-```
-
-
----
-
-## 🔌 Plugin System
-
-Pixu features a powerful plugin system for extending functionality:
+### Plugin
 
 ```typescript
 import { PixuCompressor, type Plugin } from 'pixu';
@@ -434,124 +278,101 @@ import { PixuCompressor, type Plugin } from 'pixu';
 const watermarkPlugin: Plugin = {
   name: 'watermark',
   version: '1.0.0',
-  transform: async (canvas, options) => {
+  transform: async (canvas) => {
     const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-      ctx.font = '24px Arial';
-      ctx.fillText('Watermark', 20, canvas.height - 20);
-    }
+    if (!ctx) return;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+    ctx.font = '24px sans-serif';
+    ctx.fillText('Watermark', 20, canvas.height - 20);
   },
 };
 
 const compressor = new PixuCompressor();
 compressor.registerPlugin(watermarkPlugin);
-
 const result = await compressor.compress(file, { quality: 0.8 });
 ```
 
 ---
 
-## ⚡ Performance
+## Performance
 
-Pixu is optimized for performance:
+- Typical compress time: 50–200ms per image (size-dependent)
+- Streaming-friendly memory use
+- Web Workers for non-blocking work
+- Configurable batch concurrency
 
-- **Average compression time:** 50-200ms per image (depending on size)
-- **Memory efficient:** Streams processing to minimize memory footprint
-- **Web Worker ready:** Non-blocking compression in background threads
-- **Batch optimized:** Concurrent processing with configurable limits
-
-### Benchmarks
-
-| Image Size | Format | Original | Compressed | Ratio | Time |
-|------------|--------|----------|-------------|-------|------|
+| Image size | Format | Original | Compressed | Ratio | Time |
+|------------|--------|----------|------------|-------|------|
 | 5.2 MB | JPEG | 5.2 MB | 450 KB | 91.3% | 120ms |
 | 3.8 MB | PNG | 3.8 MB | 320 KB | 91.6% | 95ms |
 | 2.1 MB | WebP | 2.1 MB | 180 KB | 91.4% | 80ms |
 
-*Benchmarks performed on Chrome 120, MacBook Pro M1*
+*Indicative numbers; Chrome 120, MacBook Pro M1.*
 
 ---
 
-## 🛠️ Browser Support
+## Browser support
 
 - Chrome 90+
 - Firefox 88+
 - Safari 14+
 - Edge 90+
-- Opera 76+
 
-**Note:** AVIF support requires Chrome 85+, Firefox 93+, or Safari 17+
-
----
-
-## 📖 Best Practices
-
-1. **Use Web Workers for large images** - Prevents UI blocking
-2. **Enable dual-pass for size targets** - Better compression ratios
-3. **Strip metadata when not needed** - Reduces file size
-4. **Use adaptive mode** - Let Pixu choose optimal settings
-5. **Batch process with concurrency limits** - Balance speed and memory
-6. **Monitor progress** - Provide user feedback for long operations
+AVIF needs Chrome 85+, Firefox 93+, or Safari 17+.
 
 ---
 
-## 🐛 Troubleshooting
+## Best practices
 
-### Issue: Compression fails silently
-
-**Solution:** Check browser console for errors. Ensure the file is a valid image format.
-
-### Issue: Large memory usage
-
-**Solution:** Use Web Workers and process images in smaller batches.
-
-### Issue: AVIF not working
-
-**Solution:** Check browser support. AVIF requires modern browsers. Fallback to WebP or JPEG.
-
-### Issue: Worker not loading
-
-**Solution:** Ensure worker file path is correct and CORS is properly configured.
+1. Prefer `format: 'image/pixu'` with `enableSmartQuality: true` for web delivery under TECR.
+2. Use Web Workers for large images.
+3. Strip metadata when EXIF is not required.
+4. Cap dimensions with `maxWidth` / `maxHeight` before encoding.
+5. Limit batch concurrency to balance speed and memory.
+6. Surface `onProgress` for long-running jobs.
 
 ---
 
-## 🗺️ Roadmap
+## Troubleshooting
 
-- [ ] TECR level 3 — semantic / generative shared model \(M\) with explicit \(C_{\text{model}}\) accounting
-- [ ] Support for animated formats (GIF, WebP)
-- [ ] Lookahead compression for animations
-- [ ] Server-side rendering support
-- [ ] React/Vue/Angular hooks
-- [ ] CLI tool
+**Compression fails** — Check the console; confirm the input is a supported image type.
 
----
+**High memory use** — Use Workers and smaller batches.
 
-## 📄 License
+**AVIF unavailable** — Fall back to PIXU, WebP, or JPEG.
 
-MIT License - see [LICENSE](LICENSE) file for details.
+**Worker fails to load** — Verify the worker URL and CORS.
 
 ---
 
-## 🤝 Contributing
+## Roadmap
 
-Contributions are welcome! Please read our contributing guidelines and code of conduct.
-
----
-
-## 📞 Support
-
-- **Documentation:** [VitePress docs](https://heberalmeida.github.io/pixu/) · [TECR theory](https://heberalmeida.github.io/pixu/guide/theory/contextual-reconstructive-entropy)
-- **Issues:** [GitHub Issues](https://github.com/heberalmeida/pixu/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/heberalmeida/pixu/discussions)
+- [ ] TECR level 3 — semantic / generative shared model \(M\) with explicit \(C_{\text{model}}\)
+- [ ] Animated formats (GIF, animated WebP)
+- [ ] SSR-friendly paths
+- [ ] Framework hooks
+- [ ] CLI
 
 ---
 
-<div align="center">
+## Documentation
 
-**Made with ❤️ by Heber Almeida**
+- [VitePress docs](https://heberalmeida.github.io/pixu/)
+- [TECR theory](https://heberalmeida.github.io/pixu/guide/theory/contextual-reconstructive-entropy)
+- [PIXU format](https://heberalmeida.github.io/pixu/guide/features/pixu-format)
+- [Framework examples](https://heberalmeida.github.io/pixu/examples/)
+- [Issues](https://github.com/heberalmeida/pixu/issues)
 
-[⭐ Star us on GitHub](https://github.com/heberalmeida/pixu) • [📦 npm](https://www.npmjs.com/package/pixu) • [🐛 Report Bug](https://github.com/heberalmeida/pixu/issues)
+---
 
-</div>
+## License
 
+MIT — see [LICENSE](LICENSE).
+
+## Contributing
+
+Contributions are welcome. Open an issue or pull request on [GitHub](https://github.com/heberalmeida/pixu).
+
+---
+
+Heber Almeida · [GitHub](https://github.com/heberalmeida/pixu) · [npm](https://www.npmjs.com/package/pixu)
