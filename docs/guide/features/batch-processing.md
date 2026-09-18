@@ -131,10 +131,10 @@ async function processImageBatch(files: File[]) {
     },
     onItemComplete: (result, index) => {
       const ratio = (result.compressionRatio * 100).toFixed(1);
-      console.log(`✓ ${files[index].name}: ${formatBytes(result.compressedSize)} (${ratio}% reduction)`);
+      console.log(` ${files[index].name}: ${formatBytes(result.compressedSize)} (${ratio}% reduction)`);
     },
     onItemError: (error, index) => {
-      console.error(`✗ ${files[index].name}: ${error.message}`);
+      console.error(` ${files[index].name}: ${error.message}`);
     },
   });
 

@@ -20,23 +20,17 @@ hero:
       link: /demo
 
 features:
-  - icon: 📐
-    title: Contextual Reconstructive Entropy
+  - title: Contextual Reconstructive Entropy
     details: Optimize L(x|M,C,ε) — ship fewer bytes given shared model, content context, and perceptual error. Shannon still holds; the problem we solve is better.
-  - icon: 🚀
-    title: PIXU Format
+  - title: PIXU Format
     details: image/pixu reconstructive path — typically 30–60% smaller than JPEG and 20–40% vs WebP at the same visual budget.
-  - icon: 🎯
-    title: Smart Context (C)
+  - title: Smart Context (C)
     details: Smart Quality classifies photo, graphic, and text so bitrate follows structure, not a blind constant.
-  - icon: 📦
-    title: Zero Dependencies
+  - title: Zero Dependencies
     details: Lightweight bundle (~14KB gzip). No external runtime deps — ship less, load faster.
-  - icon: 🧩
-    title: Framework Ready
+  - title: Framework Ready
     details: Drop-in components for Vue 3, React, Angular, Svelte, and Jacaré with real sample images.
-  - icon: 🔧
-    title: Full TypeScript
+  - title: Full TypeScript
     details: Typed API, CompressionResult, SupportedFormat, and PIXU_EXTENSION export.
 ---
 

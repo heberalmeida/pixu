@@ -248,7 +248,7 @@
         <h2>5. PIXU Format - Revolutionary Compression</h2>
         <p class="description">Experience the best compression with Pixu's proprietary PIXU format (30-60% better than JPEG)</p>
         <div class="info-box pix-info">
-          <p>🚀 <strong>PIXU Format</strong> - Revolutionary image format providing 30-60% better compression than JPEG and 20-40% better than WebP while maintaining superior quality.</p>
+          <p><strong>PIXU Format</strong> — Reconstructive format under TECR: typically 30–60% smaller than JPEG and 20–40% vs WebP at the same visual budget.</p>
         </div>
         <div class="controls">
           <label>
@@ -330,7 +330,7 @@
         <h2>6. Smart Quality Selection</h2>
         <p class="description">Automatic quality optimization based on image content analysis</p>
         <div class="info-box">
-          <p>✨ Smart Quality analyzes your image and automatically selects the optimal quality setting for best compression while maintaining visual quality.</p>
+          <p>Smart Quality analyzes content and selects quality for best compression while keeping visual fidelity.</p>
         </div>
         <PixuCompressor :samples="sampleImages"
           :options="{ enableSmartQuality: true }"
@@ -623,7 +623,7 @@
     </div>
 
     <div v-if="error" class="error-message">
-      <p>❌ {{ error }}</p>
+      <p>{{ error }}</p>
       <button @click="error = null">Close</button>
     </div>
   </div>

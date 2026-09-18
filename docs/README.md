@@ -20,7 +20,7 @@ npm run docs:preview   # http://localhost:4173
 
 | Path | Content |
 |------|---------|
-| `/` | Home — hero, features, live demo |
+| `/` | Home  hero, features, live demo |
 | `/demo` | Interactive Vue component demo |
 | `/guide/*` | Getting started, features, components |
 | `/api/*` | compress, compressBatch, types |
@@ -44,5 +44,5 @@ npm run docs:preview   # http://localhost:4173
 
 Use paths **without** `.html`:
 
-- ✅ `/examples/vue`
-- ❌ `/examples/vue.html`
+- `/examples/vue`
+- `/examples/vue.html`
