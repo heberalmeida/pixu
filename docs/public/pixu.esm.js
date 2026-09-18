@@ -1,10 +1,10 @@
-function Q(i) {
+function J(i) {
   if (!i || typeof i != "string")
     return !1;
   const e = i.toLowerCase().replace(/^image\/jpg$/, "image/jpeg");
   return e === "image/pixu" || e === "image/pix" ? !0 : /^image\/(jpeg|png|webp|avif|gif|bmp|svg\+xml)$/i.test(e);
 }
-function J(i) {
+function ae(i) {
   const e = i.toLowerCase().replace(/^image\/jpg$/, "image/jpeg");
   return {
     "image/jpeg": ".jpg",
@@ -17,7 +17,7 @@ function J(i) {
     "image/bmp": ".bmp"
   }[e] || ".jpg";
 }
-function K(i) {
+function ne(i) {
   return new Promise((e, t) => {
     if (typeof document > "u") {
       t(new Error("Not in browser environment"));
@@ -28,63 +28,63 @@ function K(i) {
     let r = !1;
     const n = () => {
       a.onload = null, a.onerror = null;
-    }, l = setTimeout(() => {
+    }, s = setTimeout(() => {
       r || (r = !0, n(), t(new Error("Image loading timeout")));
     }, 3e4);
     a.onload = () => {
-      clearTimeout(l), r || (r = !0, n(), e(a));
+      clearTimeout(s), r || (r = !0, n(), e(a));
     }, a.onerror = () => {
-      clearTimeout(l), r || (r = !0, n(), t(new Error("Failed to load image")));
+      clearTimeout(s), r || (r = !0, n(), t(new Error("Failed to load image")));
     }, a.src = i;
   });
 }
-function Z(i) {
+function oe(i) {
   const {
     naturalWidth: e,
     naturalHeight: t,
     maxWidth: a,
     maxHeight: r,
     minWidth: n = 0,
-    minHeight: l = 0,
+    minHeight: s = 0,
     width: o,
-    height: c,
-    mode: m
-  } = i, s = e / t;
-  let h = e, f = t;
-  if (m === "none")
-    o !== void 0 && (h = o), c !== void 0 && (f = c), o !== void 0 && c === void 0 ? f = h / s : c !== void 0 && o === void 0 && (h = f * s);
-  else if (m === "contain")
-    if (o && c) {
-      const g = o / c;
-      s > g ? (h = o, a !== void 0 && (h = Math.min(h, a)), f = h / s) : (f = c, r !== void 0 && (f = Math.min(f, r)), h = f * s);
-    } else o ? (h = o, a !== void 0 && (h = Math.min(h, a)), f = h / s) : c ? (f = c, r !== void 0 && (f = Math.min(f, r)), h = f * s) : (a !== void 0 || r !== void 0) && (a !== void 0 && r !== void 0 ? e / t > a / r ? (h = a, f = h / s) : (f = r, h = f * s) : a !== void 0 ? e > a && (h = a, f = h / s) : r !== void 0 && t > r && (f = r, h = f * s));
-  else if (m === "cover")
-    if (o && c) {
-      const g = o / c;
-      s > g ? (f = c, r !== void 0 && (f = Math.min(f, r)), h = f * s) : (h = o, a !== void 0 && (h = Math.min(h, a)), f = h / s);
-    } else o ? (h = o, a !== void 0 && (h = Math.min(h, a)), f = h / s) : c ? (f = c, r !== void 0 && (f = Math.min(f, r)), h = f * s) : (a !== void 0 || r !== void 0) && (a !== void 0 && r !== void 0 ? e / t > a / r ? (h = a, f = h / s) : (f = r, h = f * s) : a !== void 0 ? e > a && (h = a, f = h / s) : r !== void 0 && t > r && (f = r, h = f * s));
-  else if (m === "fit")
-    if (o && c) {
-      const g = o / c;
-      s > g ? (h = o, a !== void 0 && (h = Math.min(h, a)), f = h / s) : (f = c, r !== void 0 && (f = Math.min(f, r)), h = f * s);
-    } else o ? (h = o, a !== void 0 && (h = Math.min(h, a)), f = h / s) : c ? (f = c, r !== void 0 && (f = Math.min(f, r)), h = f * s) : (a !== void 0 || r !== void 0) && (a !== void 0 && r !== void 0 ? e / t > a / r ? (h = a, f = h / s) : (f = r, h = f * s) : a !== void 0 ? e > a && (h = a, f = h / s) : r !== void 0 && t > r && (f = r, h = f * s));
-  else m === "fill" && (h = o ?? e, f = c ?? t);
-  return n !== void 0 && n > 0 && (h = Math.max(h, n)), l !== void 0 && l > 0 && (f = Math.max(f, l)), a !== void 0 && (h = Math.min(h, a)), r !== void 0 && (f = Math.min(f, r)), {
-    width: Math.round(h),
-    height: Math.round(f)
+    height: l,
+    mode: f
+  } = i, m = e / t;
+  let c = e, h = t;
+  if (f === "none")
+    o !== void 0 && (c = o), l !== void 0 && (h = l), o !== void 0 && l === void 0 ? h = c / m : l !== void 0 && o === void 0 && (c = h * m);
+  else if (f === "contain")
+    if (o && l) {
+      const u = o / l;
+      m > u ? (c = o, a !== void 0 && (c = Math.min(c, a)), h = c / m) : (h = l, r !== void 0 && (h = Math.min(h, r)), c = h * m);
+    } else o ? (c = o, a !== void 0 && (c = Math.min(c, a)), h = c / m) : l ? (h = l, r !== void 0 && (h = Math.min(h, r)), c = h * m) : (a !== void 0 || r !== void 0) && (a !== void 0 && r !== void 0 ? e / t > a / r ? (c = a, h = c / m) : (h = r, c = h * m) : a !== void 0 ? e > a && (c = a, h = c / m) : r !== void 0 && t > r && (h = r, c = h * m));
+  else if (f === "cover")
+    if (o && l) {
+      const u = o / l;
+      m > u ? (h = l, r !== void 0 && (h = Math.min(h, r)), c = h * m) : (c = o, a !== void 0 && (c = Math.min(c, a)), h = c / m);
+    } else o ? (c = o, a !== void 0 && (c = Math.min(c, a)), h = c / m) : l ? (h = l, r !== void 0 && (h = Math.min(h, r)), c = h * m) : (a !== void 0 || r !== void 0) && (a !== void 0 && r !== void 0 ? e / t > a / r ? (c = a, h = c / m) : (h = r, c = h * m) : a !== void 0 ? e > a && (c = a, h = c / m) : r !== void 0 && t > r && (h = r, c = h * m));
+  else if (f === "fit")
+    if (o && l) {
+      const u = o / l;
+      m > u ? (c = o, a !== void 0 && (c = Math.min(c, a)), h = c / m) : (h = l, r !== void 0 && (h = Math.min(h, r)), c = h * m);
+    } else o ? (c = o, a !== void 0 && (c = Math.min(c, a)), h = c / m) : l ? (h = l, r !== void 0 && (h = Math.min(h, r)), c = h * m) : (a !== void 0 || r !== void 0) && (a !== void 0 && r !== void 0 ? e / t > a / r ? (c = a, h = c / m) : (h = r, c = h * m) : a !== void 0 ? e > a && (c = a, h = c / m) : r !== void 0 && t > r && (h = r, c = h * m));
+  else f === "fill" && (c = o ?? e, h = l ?? t);
+  return n !== void 0 && n > 0 && (c = Math.max(c, n)), s !== void 0 && s > 0 && (h = Math.max(h, s)), a !== void 0 && (c = Math.min(c, a)), r !== void 0 && (h = Math.min(h, r)), {
+    width: Math.round(c),
+    height: Math.round(h)
   };
 }
-function ee(i, e, t, a, r) {
-  const n = i / e, l = t / a;
-  let o = i, c = e, m = 0, s = 0;
-  return r === "cover" ? n > l ? (c = e, o = c * l, m = (i - o) / 2) : (o = i, c = o / l, s = (e - c) / 2) : (r === "contain" || r === "fit") && (n > l ? (o = i, c = o / l, s = (e - c) / 2) : (c = e, o = c * l, m = (i - o) / 2)), {
-    x: Math.round(m),
-    y: Math.round(s),
+function se(i, e, t, a, r) {
+  const n = i / e, s = t / a;
+  let o = i, l = e, f = 0, m = 0;
+  return r === "cover" ? n > s ? (l = e, o = l * s, f = (i - o) / 2) : (o = i, l = o / s, m = (e - l) / 2) : (r === "contain" || r === "fit") && (n > s ? (o = i, l = o / s, m = (e - l) / 2) : (l = e, o = l * s, f = (i - o) / 2)), {
+    x: Math.round(f),
+    y: Math.round(m),
     width: Math.round(o),
-    height: Math.round(c)
+    height: Math.round(l)
   };
 }
-function te(i) {
+function ce(i) {
   let e = 0, t = 1, a = 1;
   switch (i) {
     case 2:
@@ -111,7 +111,7 @@ function te(i) {
   }
   return { rotate: e, scaleX: t, scaleY: a };
 }
-function ie(i) {
+function le(i) {
   if (!i || i.byteLength < 2)
     return 1;
   const e = new DataView(i);
@@ -122,29 +122,29 @@ function ie(i) {
     if (e.getUint8(0) === 255 && e.getUint8(1) === 216) {
       let a = 2;
       const r = e.byteLength, n = Math.min(r, 65536);
-      let l = 0;
+      let s = 0;
       const o = 1e3;
-      for (; a + 1 < n && l < o && (l++, !(a >= r - 1)); ) {
+      for (; a + 1 < n && s < o && (s++, !(a >= r - 1)); ) {
         if (e.getUint8(a) === 255 && e.getUint8(a + 1) === 225) {
-          const c = a + 4;
-          if (c + 4 >= r)
+          const l = a + 4;
+          if (l + 4 >= r)
             break;
-          if (ae(e, c, 4) === "Exif") {
-            const m = a + 10;
-            if (m + 8 >= r)
+          if (me(e, l, 4) === "Exif") {
+            const f = a + 10;
+            if (f + 8 >= r)
               break;
-            const s = e.getUint16(m), h = s === 18761;
-            if ((h || s === 19789) && e.getUint16(m + 2, h) === 42) {
-              const f = e.getUint32(m + 4, h);
-              if (f >= 8 && f < 1048576 && // Max 1MB offset
-              m + f + 12 < r) {
-                const g = m + f, u = e.getUint16(g, h), p = Math.min(u, 100);
-                for (let M = 0; M < p; M++) {
-                  const d = g + M * 12 + 2;
-                  if (d + 10 >= r)
+            const m = e.getUint16(f), c = m === 18761;
+            if ((c || m === 19789) && e.getUint16(f + 2, c) === 42) {
+              const h = e.getUint32(f + 4, c);
+              if (h >= 8 && h < 1048576 && // Max 1MB offset
+              f + h + 12 < r) {
+                const u = f + h, g = e.getUint16(u, c), d = Math.min(g, 100);
+                for (let w = 0; w < d; w++) {
+                  const p = u + w * 12 + 2;
+                  if (p + 10 >= r)
                     break;
-                  if (e.getUint16(d, h) === 274) {
-                    t = e.getUint16(d + 8, h), (t < 1 || t > 8) && (t = 1);
+                  if (e.getUint16(p, c) === 274) {
+                    t = e.getUint16(p + 8, c), (t < 1 || t > 8) && (t = 1);
                     break;
                   }
                 }
@@ -161,132 +161,132 @@ function ie(i) {
   }
   return t;
 }
-function re(i) {
+function he(i) {
   if (!i || i.byteLength < 2 || i.byteLength > 10 * 1024 * 1024)
     return i;
   const e = new DataView(i), t = new Uint8Array(i), a = new Array(i.byteLength);
-  let r = 0, n = 0, l = 0;
+  let r = 0, n = 0, s = 0;
   const o = 1e4;
   if (e.getUint8(0) !== 255 || e.getUint8(1) !== 216)
     return i;
-  for (a[r++] = 255, a[r++] = 216, n = 2; n < t.length && l < o && (l++, !(n >= t.length - 1)); ) {
+  for (a[r++] = 255, a[r++] = 216, n = 2; n < t.length && s < o && (s++, !(n >= t.length - 1)); ) {
     if (t[n] === 255) {
-      const c = t[n + 1];
-      if (c === void 0)
+      const l = t[n + 1];
+      if (l === void 0)
         break;
-      if (c === 224 || c === 225) {
+      if (l === 224 || l === 225) {
         if (n + 3 >= t.length)
           break;
-        const m = t[n + 2] << 8 | t[n + 3];
-        if (m < 2 || m > 65535)
+        const f = t[n + 2] << 8 | t[n + 3];
+        if (f < 2 || f > 65535)
           break;
-        if (c === 225) {
-          if (n += m + 2, n > t.length)
+        if (l === 225) {
+          if (n += f + 2, n > t.length)
             break;
           continue;
         }
       }
-      if (c === 218) {
-        const m = t.length - n;
-        for (let s = 0; s < m; s++)
-          a[r++] = t[n + s];
+      if (l === 218) {
+        const f = t.length - n;
+        for (let m = 0; m < f; m++)
+          a[r++] = t[n + m];
         break;
       }
     }
     if (t[n] === 255 && n + 3 < t.length) {
-      const c = t[n + 2] << 8 | t[n + 3];
-      if (c < 2 || c > 65535 || n + c + 2 > t.length)
+      const l = t[n + 2] << 8 | t[n + 3];
+      if (l < 2 || l > 65535 || n + l + 2 > t.length)
         break;
-      const m = n + c + 2;
-      for (let s = n; s < m; s++)
-        a[r++] = t[s];
-      n += c + 2;
+      const f = n + l + 2;
+      for (let m = n; m < f; m++)
+        a[r++] = t[m];
+      n += l + 2;
     } else
       a[r++] = t[n], n++;
   }
   return new Uint8Array(a.slice(0, r)).buffer;
 }
-function ae(i, e, t) {
+function me(i, e, t) {
   let a = "";
   for (let r = 0; r < t; r++)
     a += String.fromCharCode(i.getUint8(e + r));
   return a;
 }
-function ne(i) {
+function fe(i) {
   return i.enableDualPass === !1 ? !1 : i.enableDualPass === !0 ? !0 : (i.targetSize ? i.targetSize : 0) / (1024 * 1024) > 2 || i.mode === "size";
 }
-function oe(i, e) {
+function ge(i, e) {
   const t = i.getImageData(0, 0, e.width, e.height), a = t.data;
   for (let r = 0; r < a.length; r += 4) {
-    const n = a[r], l = a[r + 1], o = a[r + 2], c = n * 0.299 + l * 0.587 + o * 0.114, m = 10;
-    Math.abs(n - c) < m && (a[r] = c), Math.abs(l - c) < m && (a[r + 1] = c), Math.abs(o - c) < m && (a[r + 2] = c);
+    const n = a[r], s = a[r + 1], o = a[r + 2], l = n * 0.299 + s * 0.587 + o * 0.114, f = 10;
+    Math.abs(n - l) < f && (a[r] = l), Math.abs(s - l) < f && (a[r + 1] = l), Math.abs(o - l) < f && (a[r + 2] = l);
   }
   i.putImageData(t, 0, 0);
 }
-function se(i, e) {
+function ue(i, e) {
   const t = i.getImageData(0, 0, e.width, e.height), a = t.data;
   for (let r = 0; r < a.length; r += 4) {
-    const n = a[r], l = a[r + 1], o = a[r + 2], m = n * 0.2126 + l * 0.7152 + o * 0.0722 > 128 ? 1.05 : 0.95;
-    a[r] = Math.min(255, n * m), a[r + 1] = Math.min(255, l * m), a[r + 2] = Math.min(255, o * m);
+    const n = a[r], s = a[r + 1], o = a[r + 2], f = n * 0.2126 + s * 0.7152 + o * 0.0722 > 128 ? 1.05 : 0.95;
+    a[r] = Math.min(255, n * f), a[r + 1] = Math.min(255, s * f), a[r + 2] = Math.min(255, o * f);
   }
   i.putImageData(t, 0, 0);
 }
-function le(i, e) {
+function de(i, e) {
   const t = i.getImageData(0, 0, e.width, e.height), a = t.data, r = 0.8;
   for (let n = 0; n < a.length; n += 4)
     a[n] = Math.min(255, a[n] * r), a[n + 1] = Math.min(255, a[n + 1] * r), a[n + 2] = Math.min(255, a[n + 2] * r);
   i.putImageData(t, 0, 0);
 }
-function W(i, e, t) {
+function H(i, e, t) {
   return new Promise((a, r) => {
     const n = e === "image/jpeg" || e === "image/jpg" || e === "image/webp";
-    let l;
-    if (n && t !== void 0 && t !== null && (l = Math.max(0, Math.min(1, t)), l >= 0.99 && (l = 0.99)), i.toBlob)
+    let s;
+    if (n && t !== void 0 && t !== null && (s = Math.max(0, Math.min(1, t)), s >= 0.99 && (s = 0.99)), i.toBlob)
       i.toBlob(
         (o) => {
           o ? a(o) : r(new Error("Failed to convert canvas to blob"));
         },
         e,
-        l
+        s
       );
     else {
-      const o = i.toDataURL(e, l), c = atob(o.split(",")[1]), m = o.split(",")[0].split(":")[1].split(";")[0], s = new ArrayBuffer(c.length), h = new Uint8Array(s);
-      for (let f = 0; f < c.length; f++)
-        h[f] = c.charCodeAt(f);
-      a(new Blob([s], { type: m }));
+      const o = i.toDataURL(e, s), l = atob(o.split(",")[1]), f = o.split(",")[0].split(":")[1].split(";")[0], m = new ArrayBuffer(l.length), c = new Uint8Array(m);
+      for (let h = 0; h < l.length; h++)
+        c[h] = l.charCodeAt(h);
+      a(new Blob([m], { type: f }));
     }
   });
 }
-function O(i, e) {
+function V(i, e) {
   const t = document.createElement("canvas");
   return t.width = i, t.height = e, t;
 }
-function Y(i, e, t) {
+function K(i, e, t) {
   const {
     srcX: a = 0,
     srcY: r = 0,
     srcWidth: n = e.width,
-    srcHeight: l = e.height,
+    srcHeight: s = e.height,
     destX: o = 0,
-    destY: c = 0,
-    destWidth: m = e.width,
-    destHeight: s = e.height,
-    rotate: h = 0,
-    scaleX: f = 1,
-    scaleY: g = 1
+    destY: l = 0,
+    destWidth: f = e.width,
+    destHeight: m = e.height,
+    rotate: c = 0,
+    scaleX: h = 1,
+    scaleY: u = 1
   } = t || {};
-  if (i.save(), h !== 0 || f !== 1 || g !== 1) {
-    const u = o + m / 2, p = c + s / 2;
-    i.translate(u, p), i.rotate(h * Math.PI / 180), i.scale(f, g), i.drawImage(
+  if (i.save(), c !== 0 || h !== 1 || u !== 1) {
+    const g = o + f / 2, d = l + m / 2;
+    i.translate(g, d), i.rotate(c * Math.PI / 180), i.scale(h, u), i.drawImage(
       e,
       a,
       r,
       n,
-      l,
+      s,
+      -f / 2,
       -m / 2,
-      -s / 2,
-      m,
-      s
+      f,
+      m
     );
   } else
     i.drawImage(
@@ -294,15 +294,15 @@ function Y(i, e, t) {
       a,
       r,
       n,
-      l,
+      s,
       o,
-      c,
-      m,
-      s
+      l,
+      f,
+      m
     );
   i.restore();
 }
-class ce {
+class pe {
   constructor() {
     this.plugins = /* @__PURE__ */ new Map();
   }
@@ -335,55 +335,54 @@ class ce {
     return Array.from(this.plugins.values());
   }
 }
-const he = {
+const we = {
   "social-media": {
     maxWidth: 1080,
-    quality: 0.85,
-    format: "auto",
+    quality: 0.82,
+    format: "image/pixu",
     stripMetadata: !0
   },
   print: {
     maxWidth: 3e3,
-    quality: 0.95,
+    quality: 0.92,
     format: "image/jpeg",
     stripMetadata: !1
   },
   web: {
     maxWidth: 1920,
-    quality: 0.8,
-    format: "auto",
+    quality: 0.78,
+    format: "image/pixu",
     stripMetadata: !0
   },
   thumbnail: {
     maxWidth: 320,
     quality: 0.7,
-    format: "auto",
+    format: "image/pixu",
     stripMetadata: !0
   },
   email: {
     maxWidth: 800,
-    quality: 0.75,
+    quality: 0.72,
     format: "image/jpeg",
     stripMetadata: !0
   }
 };
-function fe(i) {
-  const e = he[i];
+function ye(i) {
+  const e = we[i];
   if (!e)
     throw new Error(`Unknown preset: ${i}`);
   return {
     maxWidth: e.maxWidth,
     maxHeight: e.maxWidth,
-    // Maintain aspect ratio
     quality: e.quality,
     format: e.format,
     stripMetadata: e.stripMetadata,
-    resize: "contain"
-    // Presets explicitly use resize mode
+    resize: "contain",
+    enableSmartQuality: e.format === "image/pixu" || e.format === "auto"
   };
 }
-function me(i, e) {
-  const t = fe(e);
+function Me(i, e) {
+  const t = ye(e);
   return {
     ...t,
     ...i,
@@ -391,78 +390,78 @@ function me(i, e) {
     quality: i.quality ?? t.quality
   };
 }
-function ge(i, e, t, a) {
+function xe(i, e, t, a) {
   let r, n;
   typeof t == "string" ? (r = t, n = a ?? 1) : (r = t.type, n = t.value ?? 1);
-  const l = i.getImageData(0, 0, e.width, e.height), o = l.data;
+  const s = i.getImageData(0, 0, e.width, e.height), o = s.data;
   switch (r) {
     case "grayscale":
-      ue(o);
+      be(o);
       break;
     case "sepia":
-      de(o);
+      Ce(o);
       break;
     case "vintage":
-      pe(o);
+      ve(o);
       break;
     case "brightness":
-      we(o, n);
+      Ie(o, n);
       break;
     case "contrast":
-      ye(o, n);
+      Pe(o, n);
       break;
     case "saturation":
-      Me(o, n);
+      ze(o, n);
       break;
     case "blur":
       i.filter = `blur(${n}px)`;
-      const c = document.createElement("canvas");
-      c.width = e.width, c.height = e.height;
-      const m = c.getContext("2d");
-      m && (m.drawImage(e, 0, 0), i.clearRect(0, 0, e.width, e.height), i.filter = "none", i.drawImage(c, 0, 0));
+      const l = document.createElement("canvas");
+      l.width = e.width, l.height = e.height;
+      const f = l.getContext("2d");
+      f && (f.drawImage(e, 0, 0), i.clearRect(0, 0, e.width, e.height), i.filter = "none", i.drawImage(l, 0, 0));
       return;
     case "sharpen":
-      xe(i, e, n);
+      Ee(i, e, n);
       return;
   }
-  i.putImageData(l, 0, 0);
+  i.putImageData(s, 0, 0);
 }
-function ue(i) {
+function be(i) {
   for (let e = 0; e < i.length; e += 4) {
     const t = i[e] * 0.299 + i[e + 1] * 0.587 + i[e + 2] * 0.114;
     i[e] = t, i[e + 1] = t, i[e + 2] = t;
   }
 }
-function de(i) {
+function Ce(i) {
   for (let e = 0; e < i.length; e += 4) {
     const t = i[e], a = i[e + 1], r = i[e + 2];
     i[e] = Math.min(255, t * 0.393 + a * 0.769 + r * 0.189), i[e + 1] = Math.min(255, t * 0.349 + a * 0.686 + r * 0.168), i[e + 2] = Math.min(255, t * 0.272 + a * 0.534 + r * 0.131);
   }
 }
-function pe(i) {
+function ve(i) {
   for (let e = 0; e < i.length; e += 4) {
     const t = i[e] * 0.3 + i[e + 1] * 0.59 + i[e + 2] * 0.11;
     i[e] = Math.min(255, i[e] * 0.7 + t * 0.3), i[e + 1] = Math.min(255, i[e + 1] * 0.7 + t * 0.3), i[e + 2] = Math.min(255, i[e + 2] * 0.7 + t * 0.3), i[e] = Math.min(255, i[e] * 1.1), i[e + 2] = Math.min(255, i[e + 2] * 0.9);
   }
 }
-function we(i, e) {
+function Ie(i, e) {
   const t = (e - 0.5) * 2;
   for (let a = 0; a < i.length; a += 4)
     i[a] = Math.max(0, Math.min(255, i[a] + t * 128)), i[a + 1] = Math.max(0, Math.min(255, i[a + 1] + t * 128)), i[a + 2] = Math.max(0, Math.min(255, i[a + 2] + t * 128));
 }
-function ye(i, e) {
+function Pe(i, e) {
   const t = (e - 0.5) * 2, a = 128 * (1 - t);
   for (let r = 0; r < i.length; r += 4)
     i[r] = Math.max(0, Math.min(255, i[r] * t + a)), i[r + 1] = Math.max(0, Math.min(255, i[r + 1] * t + a)), i[r + 2] = Math.max(0, Math.min(255, i[r + 2] * t + a));
 }
-function Me(i, e) {
+function ze(i, e) {
   for (let t = 0; t < i.length; t += 4) {
     const a = i[t] * 0.299 + i[t + 1] * 0.587 + i[t + 2] * 0.114;
     i[t] = Math.max(0, Math.min(255, a + (i[t] - a) * e)), i[t + 1] = Math.max(0, Math.min(255, a + (i[t + 1] - a) * e)), i[t + 2] = Math.max(0, Math.min(255, a + (i[t + 2] - a) * e));
   }
 }
-function xe(i, e, t) {
-  const a = i.getImageData(0, 0, e.width, e.height), r = a.data, n = e.width, l = e.height, o = [
+function Ee(i, e, t) {
+  const a = i.getImageData(0, 0, e.width, e.height), r = a.data, n = e.width, s = e.height, o = [
     0,
     -t,
     0,
@@ -472,22 +471,22 @@ function xe(i, e, t) {
     0,
     -t,
     0
-  ], c = new Uint8ClampedArray(r);
-  for (let m = 1; m < l - 1; m++)
-    for (let s = 1; s < n - 1; s++)
-      for (let h = 0; h < 3; h++) {
-        let f = 0;
-        for (let u = -1; u <= 1; u++)
-          for (let p = -1; p <= 1; p++) {
-            const M = ((m + u) * n + (s + p)) * 4 + h, d = o[(u + 1) * 3 + (p + 1)];
-            f += c[M] * d;
+  ], l = new Uint8ClampedArray(r);
+  for (let f = 1; f < s - 1; f++)
+    for (let m = 1; m < n - 1; m++)
+      for (let c = 0; c < 3; c++) {
+        let h = 0;
+        for (let g = -1; g <= 1; g++)
+          for (let d = -1; d <= 1; d++) {
+            const w = ((f + g) * n + (m + d)) * 4 + c, p = o[(g + 1) * 3 + (d + 1)];
+            h += l[w] * p;
           }
-        const g = (m * n + s) * 4 + h;
-        r[g] = Math.max(0, Math.min(255, f));
+        const u = (f * n + m) * 4 + c;
+        r[u] = Math.max(0, Math.min(255, h));
       }
   i.putImageData(a, 0, 0);
 }
-async function N(i) {
+async function Z(i) {
   const e = {
     isValid: !0,
     errors: [],
@@ -500,29 +499,29 @@ async function N(i) {
   e.declaredFormat = t, (!t || !t.startsWith("image/")) && e.warnings.push("File type not declared or not an image");
   try {
     const a = URL.createObjectURL(i), r = new Image();
-    await new Promise((n, l) => {
+    await new Promise((n, s) => {
       const o = setTimeout(() => {
-        l(new Error("Image loading timeout"));
+        s(new Error("Image loading timeout"));
       }, 5e3);
       r.onload = () => {
         clearTimeout(o), e.dimensions = {
           width: r.naturalWidth,
           height: r.naturalHeight
         }, (r.naturalWidth <= 0 || r.naturalHeight <= 0) && (e.isValid = !1, e.errors.push("Invalid image dimensions")), (r.naturalWidth > 16384 || r.naturalHeight > 16384) && e.warnings.push("Image dimensions are very large (>16K pixels)");
-        const c = document.createElement("canvas");
-        c.width = 1, c.height = 1;
-        const m = c.getContext("2d");
-        if (m) {
-          m.drawImage(r, 0, 0);
+        const l = document.createElement("canvas");
+        l.width = 1, l.height = 1;
+        const f = l.getContext("2d");
+        if (f) {
+          f.drawImage(r, 0, 0);
           try {
-            const s = c.toDataURL();
-            s.startsWith("data:image/") && (e.actualFormat = s.split(";")[0].split(":")[1]);
+            const m = l.toDataURL();
+            m.startsWith("data:image/") && (e.actualFormat = m.split(";")[0].split(":")[1]);
           } catch {
           }
         }
         URL.revokeObjectURL(a), n();
       }, r.onerror = () => {
-        clearTimeout(o), e.isValid = !1, e.errors.push("Failed to load image - file may be corrupted"), URL.revokeObjectURL(a), l(new Error("Image load failed"));
+        clearTimeout(o), e.isValid = !1, e.errors.push("Failed to load image - file may be corrupted"), URL.revokeObjectURL(a), s(new Error("Image load failed"));
       }, r.src = a;
     }), e.actualFormat && e.declaredFormat && e.actualFormat !== e.declaredFormat && e.warnings.push(
       `Format mismatch: declared as ${e.declaredFormat}, actual format is ${e.actualFormat}`
@@ -534,10 +533,10 @@ async function N(i) {
   }
   return e;
 }
-function $e(i) {
-  return N(i).then((e) => e.isValid);
+function Ge(i) {
+  return Z(i).then((e) => e.isValid);
 }
-async function be(i) {
+async function Se(i) {
   const e = i.getContext("2d");
   if (!e)
     return {
@@ -547,41 +546,41 @@ async function be(i) {
       complexity: "medium",
       recommendedQuality: 0.8
     };
-  const a = e.getImageData(0, 0, i.width, i.height).data, r = i.width, n = i.height, l = r * n;
+  const a = e.getImageData(0, 0, i.width, i.height).data, r = i.width, n = i.height, s = r * n;
   let o = 0;
-  const c = /* @__PURE__ */ new Map();
-  let m = 0;
-  const s = 10;
-  for (let w = 0; w < a.length; w += 4 * s) {
-    const x = a[w], C = a[w + 1], z = a[w + 2];
-    if (a[w + 3] < 255)
+  const l = /* @__PURE__ */ new Map();
+  let f = 0;
+  const m = 10;
+  for (let b = 0; b < a.length; b += 4 * m) {
+    const x = a[b], M = a[b + 1], I = a[b + 2];
+    if (a[b + 3] < 255)
       continue;
-    const S = `${Math.floor(x / 16)}-${Math.floor(C / 16)}-${Math.floor(z / 16)}`;
-    c.has(S) || (o++, c.set(S, 1));
-    const E = w / 4 % r, D = Math.floor(w / 4 / r);
-    if (E > 0 && D > 0 && E < r - 1 && D < n - 1) {
-      const k = (D * r + E) * 4, T = (D * r + (E + 1)) * 4;
+    const v = `${Math.floor(x / 16)}-${Math.floor(M / 16)}-${Math.floor(I / 16)}`;
+    l.has(v) || (o++, l.set(v, 1));
+    const P = b / 4 % r, T = Math.floor(b / 4 / r);
+    if (P > 0 && T > 0 && P < r - 1 && T < n - 1) {
+      const D = (T * r + P) * 4, E = (T * r + (P + 1)) * 4;
       Math.abs(
-        (a[k] + a[k + 1] + a[k + 2]) / 3 - (a[T] + a[T + 1] + a[T + 2]) / 3
-      ) > 30 && m++;
+        (a[D] + a[D + 1] + a[D + 2]) / 3 - (a[E] + a[E + 1] + a[E + 2]) / 3
+      ) > 30 && f++;
     }
   }
-  const h = l / s, f = o / h, g = m / h, u = f > 0.3 && g > 0.1, p = f < 0.2 && g < 0.05, M = g > 0.15 && f < 0.4;
-  let d;
-  f < 0.1 && g < 0.05 ? d = "low" : f > 0.5 || g > 0.2 ? d = "high" : d = "medium";
+  const c = s / m, h = o / c, u = f / c, g = h > 0.3 && u > 0.1, d = h < 0.2 && u < 0.05, w = u > 0.15 && h < 0.4;
+  let p;
+  h < 0.1 && u < 0.05 ? p = "low" : h > 0.5 || u > 0.2 ? p = "high" : p = "medium";
   let y;
-  return p || M ? y = 0.9 : u && d === "high" ? y = 0.75 : u && d === "low" ? y = 0.85 : y = 0.8, {
-    isPhoto: u,
-    isGraphic: p,
-    hasText: M,
-    complexity: d,
+  return d || w ? y = 0.9 : g && p === "high" ? y = 0.75 : g && p === "low" ? y = 0.85 : y = 0.8, {
+    isPhoto: g,
+    isGraphic: d,
+    hasText: w,
+    complexity: p,
     recommendedQuality: y
   };
 }
-function Ce(i, e) {
+function ke(i, e) {
   return i.quality !== void 0 && i.quality !== null ? i.quality : e.recommendedQuality;
 }
-async function Be(i, e, t = {}) {
+async function Qe(i, e, t = {}) {
   const a = document.createElement("canvas");
   i instanceof HTMLImageElement ? (a.width = i.naturalWidth, a.height = i.naturalHeight) : (a.width = i.width, a.height = i.height);
   const r = a.getContext("2d");
@@ -593,7 +592,7 @@ async function Be(i, e, t = {}) {
   }
   return i instanceof HTMLImageElement, r.drawImage(i, 0, 0), a;
 }
-async function V(i) {
+async function ee(i) {
   let e, t;
   if (i instanceof HTMLImageElement) {
     if (e = document.createElement("canvas"), e.width = i.naturalWidth, e.height = i.naturalHeight, t = e.getContext("2d"), !t)
@@ -602,141 +601,141 @@ async function V(i) {
   } else if (e = i, t = e.getContext("2d"), !t)
     return !1;
   const r = t.getImageData(0, 0, e.width, e.height).data, n = 100;
-  for (let l = 3; l < r.length; l += 4 * n)
-    if (r[l] < 255)
+  for (let s = 3; s < r.length; s += 4 * n)
+    if (r[s] < 255)
       return !0;
   return !1;
 }
-function ve(i, e, t) {
+function De(i, e, t) {
   return i === "image/jpeg" || i === "image/jpg" || i === "image/png" && e ? !1 : i === "image/png" && t > 5e5;
 }
-function ze(i, e = {}) {
+function Re(i, e = {}) {
   const t = i.getContext("2d");
   if (!t)
     return i;
   const a = t.getImageData(0, 0, i.width, i.height), r = a.data, n = /* @__PURE__ */ new Map();
-  let l = 0;
+  let s = 0;
   for (let o = 0; o < r.length; o += 4) {
-    const c = r[o], m = r[o + 1], s = r[o + 2];
-    if (r[o + 3] < 255 && l++, e.reduceColors) {
-      const f = `${Math.floor(c / 16) * 16}-${Math.floor(m / 16) * 16}-${Math.floor(s / 16) * 16}`;
-      n.set(f, (n.get(f) || 0) + 1);
+    const l = r[o], f = r[o + 1], m = r[o + 2];
+    if (r[o + 3] < 255 && s++, e.reduceColors) {
+      const h = `${Math.floor(l / 16) * 16}-${Math.floor(f / 16) * 16}-${Math.floor(m / 16) * 16}`;
+      n.set(h, (n.get(h) || 0) + 1);
     }
   }
   if (e.reduceColors && e.maxColors) {
-    const o = Math.min(e.maxColors, 256), c = Array.from(n.entries()).sort((s, h) => h[1] - s[1]).slice(0, o), m = /* @__PURE__ */ new Map();
-    c.forEach(([s]) => {
-      const [h, f, g] = s.split("-").map(Number);
-      m.set(s, [h, f, g]);
+    const o = Math.min(e.maxColors, 256), l = Array.from(n.entries()).sort((m, c) => c[1] - m[1]).slice(0, o), f = /* @__PURE__ */ new Map();
+    l.forEach(([m]) => {
+      const [c, h, u] = m.split("-").map(Number);
+      f.set(m, [c, h, u]);
     });
-    for (let s = 0; s < r.length; s += 4) {
-      const h = r[s], f = r[s + 1], g = r[s + 2];
-      let u = 1 / 0, p = [h, f, g];
-      for (const [M, d] of m.entries()) {
+    for (let m = 0; m < r.length; m += 4) {
+      const c = r[m], h = r[m + 1], u = r[m + 2];
+      let g = 1 / 0, d = [c, h, u];
+      for (const [w, p] of f.entries()) {
         const y = Math.sqrt(
-          Math.pow(h - d[0], 2) + Math.pow(f - d[1], 2) + Math.pow(g - d[2], 2)
+          Math.pow(c - p[0], 2) + Math.pow(h - p[1], 2) + Math.pow(u - p[2], 2)
         );
-        y < u && (u = y, p = d);
+        y < g && (g = y, d = p);
       }
-      r[s] = p[0], r[s + 1] = p[1], r[s + 2] = p[2];
+      r[m] = d[0], r[m + 1] = d[1], r[m + 2] = d[2];
     }
   }
-  if (e.optimizeTransparency && l > 0)
+  if (e.optimizeTransparency && s > 0)
     for (let o = 0; o < r.length; o += 4)
       r[o + 3] === 0 && (r[o] = 0, r[o + 1] = 0, r[o + 2] = 0);
   return t.putImageData(a, 0, 0), i;
 }
-function Ie(i, e) {
+function Fe(i, e) {
   const t = i.getContext("2d");
   if (!t)
     return { x: 0, y: 0, width: i.width, height: i.height };
-  const r = t.getImageData(0, 0, i.width, i.height).data, n = i.width, l = i.height;
-  let o = 0, c = 0, m = 0;
-  const s = 5;
-  for (let C = 0; C < l; C += s)
-    for (let z = 0; z < n; z += s) {
-      const v = (C * n + z) * 4, S = r[v], E = r[v + 1], D = r[v + 2];
-      if (r[v + 3] < 128) continue;
-      const T = (S + E + D) / 3;
-      let I = 0;
-      if (z > 0 && z < n - 1 && C > 0 && C < l - 1) {
-        const R = (C * n + (z + 1)) * 4, j = ((C + 1) * n + z) * 4;
-        I = Math.abs(
-          (r[R] + r[R + 1] + r[R + 2]) / 3 - T
+  const r = t.getImageData(0, 0, i.width, i.height).data, n = i.width, s = i.height;
+  let o = 0, l = 0, f = 0;
+  const m = 5;
+  for (let M = 0; M < s; M += m)
+    for (let I = 0; I < n; I += m) {
+      const k = (M * n + I) * 4, v = r[k], P = r[k + 1], T = r[k + 2];
+      if (r[k + 3] < 128) continue;
+      const E = (v + P + T) / 3;
+      let L = 0;
+      if (I > 0 && I < n - 1 && M > 0 && M < s - 1) {
+        const j = (M * n + (I + 1)) * 4, U = ((M + 1) * n + I) * 4;
+        L = Math.abs(
+          (r[j] + r[j + 1] + r[j + 2]) / 3 - E
         ) + Math.abs(
-          (r[j] + r[j + 1] + r[j + 2]) / 3 - T
+          (r[U] + r[U + 1] + r[U + 2]) / 3 - E
         );
       }
-      const U = T * 0.5 + I * 0.5;
-      o += U, c += z * U, m += C * U;
+      const R = E * 0.5 + L * 0.5;
+      o += R, l += I * R, f += M * R;
     }
-  const h = o > 0 ? c / o : n / 2, f = o > 0 ? m / o : l / 2;
-  let g = h, u = f;
+  const c = o > 0 ? l / o : n / 2, h = o > 0 ? f / o : s / 2;
+  let u = c, g = h;
   switch (e.focus) {
     case "top":
-      u = l * 0.25;
+      g = s * 0.25;
       break;
     case "bottom":
-      u = l * 0.75;
+      g = s * 0.75;
       break;
     case "left":
-      g = n * 0.25;
+      u = n * 0.25;
       break;
     case "right":
-      g = n * 0.75;
+      u = n * 0.75;
       break;
   }
-  const p = e.width / e.height, M = n / l;
-  let d, y;
-  p > M ? (y = l, d = l * p) : (d = n, y = n / p), d = Math.min(d, n), y = Math.min(y, l);
-  let w = g - d / 2, x = u - y / 2;
-  return w = Math.max(0, Math.min(w, n - d)), x = Math.max(0, Math.min(x, l - y)), {
-    x: Math.floor(w),
+  const d = e.width / e.height, w = n / s;
+  let p, y;
+  d > w ? (y = s, p = s * d) : (p = n, y = n / d), p = Math.min(p, n), y = Math.min(y, s);
+  let b = u - p / 2, x = g - y / 2;
+  return b = Math.max(0, Math.min(b, n - p)), x = Math.max(0, Math.min(x, s - y)), {
+    x: Math.floor(b),
     y: Math.floor(x),
-    width: Math.floor(d),
+    width: Math.floor(p),
     height: Math.floor(y)
   };
 }
-function Ee(i, e, t) {
+function Te(i, e, t) {
   const {
     text: a,
     image: r,
     position: n = "bottom-right",
-    opacity: l = 0.7,
+    opacity: s = 0.7,
     fontSize: o = 16,
-    fontFamily: c = "Arial",
-    color: m = "#ffffff",
-    padding: s = 10,
-    scale: h = 0.2,
-    rotation: f = 0
+    fontFamily: l = "Arial",
+    color: f = "#ffffff",
+    padding: m = 10,
+    scale: c = 0.2,
+    rotation: h = 0
   } = t;
-  i.save(), i.globalAlpha = l;
-  let g = 0, u = 0;
+  i.save(), i.globalAlpha = s;
+  let u = 0, g = 0;
   switch (n) {
     case "top-left":
-      g = s, u = s;
+      u = m, g = m;
       break;
     case "top-right":
-      g = e.width - s, u = s;
+      u = e.width - m, g = m;
       break;
     case "bottom-left":
-      g = s, u = e.height - s;
+      u = m, g = e.height - m;
       break;
     case "bottom-right":
-      g = e.width - s, u = e.height - s;
+      u = e.width - m, g = e.height - m;
       break;
     case "center":
-      g = e.width / 2, u = e.height / 2;
+      u = e.width / 2, g = e.height / 2;
       break;
   }
-  if (f !== 0 && (i.translate(g, u), i.rotate(f * Math.PI / 180), i.translate(-g, -u)), a && (i.font = `${o}px ${c}`, i.fillStyle = m, i.textAlign = n.includes("right") ? "right" : n.includes("left") ? "left" : "center", i.textBaseline = n.includes("bottom") ? "bottom" : n.includes("top") ? "top" : "middle", i.fillText(a, g, u)), r) {
-    const p = r.width * h, M = r.height * h;
-    let d = g, y = u;
-    n.includes("right") ? d = g - p : n === "center" && (d = g - p / 2), n.includes("bottom") ? y = u - M : n === "center" && (y = u - M / 2), i.drawImage(r, d, y, p, M);
+  if (h !== 0 && (i.translate(u, g), i.rotate(h * Math.PI / 180), i.translate(-u, -g)), a && (i.font = `${o}px ${l}`, i.fillStyle = f, i.textAlign = n.includes("right") ? "right" : n.includes("left") ? "left" : "center", i.textBaseline = n.includes("bottom") ? "bottom" : n.includes("top") ? "top" : "middle", i.fillText(a, u, g)), r) {
+    const d = r.width * c, w = r.height * c;
+    let p = u, y = g;
+    n.includes("right") ? p = u - d : n === "center" && (p = u - d / 2), n.includes("bottom") ? y = g - w : n === "center" && (y = g - w / 2), i.drawImage(r, p, y, d, w);
   }
   i.restore();
 }
-class Pe {
+class je {
   constructor(e) {
     this.metrics = {
       startTime: performance.now(),
@@ -746,7 +745,7 @@ class Pe {
     }, this.startMemory = this.getCurrentMemory();
   }
   recordCompression(e) {
-    const t = performance.now(), a = t - this.metrics.startTime, r = 1 - e / this.metrics.originalSize, n = this.metrics.originalSize / (a / 1e3), l = this.getCurrentMemory(), o = l - this.startMemory;
+    const t = performance.now(), a = t - this.metrics.startTime, r = 1 - e / this.metrics.originalSize, n = this.metrics.originalSize / (a / 1e3), s = this.getCurrentMemory(), o = s - this.startMemory;
     return this.metrics = {
       ...this.metrics,
       endTime: t,
@@ -755,7 +754,7 @@ class Pe {
       compressionRatio: r,
       throughput: n,
       memoryUsed: o,
-      memoryPeak: l
+      memoryPeak: s
     }, this.metrics;
   }
   getMetrics() {
@@ -765,23 +764,23 @@ class Pe {
     return "memory" in performance ? performance.memory.usedJSHeapSize : 0;
   }
 }
-function We(i) {
-  if (i === 0) return "0 B";
-  const e = 1024, t = ["B", "KB", "MB", "GB"], a = Math.floor(Math.log(i) / Math.log(e));
-  return Math.round(i / Math.pow(e, a) * 100) / 100 + " " + t[a];
+function Ye(i) {
+  if (!Number.isFinite(i) || i === 0) return "0 B";
+  const e = i < 0 ? "-" : "", t = Math.abs(i), a = 1024, r = ["B", "KB", "MB", "GB"], n = Math.min(r.length - 1, Math.floor(Math.log(t) / Math.log(a)));
+  return `${e}${Math.round(t / Math.pow(a, n) * 100) / 100} ${r[n]}`;
 }
-function He(i) {
+function Ne(i) {
   return i < 1e3 ? `${Math.round(i)}ms` : i < 6e4 ? `${(i / 1e3).toFixed(2)}s` : `${(i / 6e4).toFixed(2)}min`;
 }
-const $ = "image/pixu", Se = ".pixu", qe = $, Ae = Se;
+const z = "image/pixu", Ue = ".pixu", Ve = z, _e = Ue;
 function _() {
   return !0;
 }
-const Oe = _;
-function ke(i) {
-  return i === "image/pix" ? $ : i;
+const Je = _;
+function $e(i) {
+  return i === "image/pix" ? z : i;
 }
-async function q(i, e = 0.85, t = {}) {
+async function X(i, e = 0.85, t = {}) {
   const {
     adaptive: a = !0
   } = t, r = i.getContext("2d", {
@@ -790,65 +789,65 @@ async function q(i, e = 0.85, t = {}) {
   });
   if (!r)
     throw new Error("Failed to get canvas context");
-  const n = i.width, l = i.height, c = r.getImageData(0, 0, n, l).data;
-  let m = e;
-  a && (m = De(c, n, l, e));
-  const s = Re(m, c), h = Math.max(0.5, Math.min(0.95, s));
+  const n = i.width, s = i.height, l = r.getImageData(0, 0, n, s).data;
+  let f = e;
+  a && (f = Le(l, n, s, e));
+  const m = Be(f, l), c = Math.max(0.5, Math.min(0.95, m));
   try {
-    const f = await W(i, "image/webp", h);
-    return new Blob([f], { type: $ });
+    const h = await H(i, "image/webp", c);
+    return new Blob([h], { type: z });
   } catch {
-    const f = Math.max(0.6, h), g = await W(i, "image/jpeg", f);
-    return new Blob([g], { type: $ });
+    const h = Math.max(0.6, c), u = await H(i, "image/jpeg", h);
+    return new Blob([u], { type: z });
   }
 }
-const Xe = q;
-function De(i, e, t, a) {
+const Ke = X;
+function Le(i, e, t, a) {
   let r = 0, n = 0;
-  const l = 8, o = Math.floor(e / l), c = Math.floor(t / l);
-  for (let f = 0; f < c; f++)
-    for (let g = 0; g < o; g++) {
-      const u = Fe(
+  const s = 8, o = Math.floor(e / s), l = Math.floor(t / s);
+  for (let h = 0; h < l; h++)
+    for (let u = 0; u < o; u++) {
+      const g = We(
         i,
         e,
         t,
-        g * l,
-        f * l,
-        l
+        u * s,
+        h * s,
+        s
       );
-      u > 500 ? r++ : u < 100 && n++;
+      g > 500 ? r++ : g < 100 && n++;
     }
-  const m = o * c, s = r / m, h = n / m;
-  return s > 0.3 ? Math.max(0.6, a - 0.1) : h > 0.5 ? Math.max(0.5, a - 0.15) : a;
+  const f = o * l, m = r / f, c = n / f;
+  return m > 0.3 ? Math.max(0.6, a - 0.1) : c > 0.5 ? Math.max(0.5, a - 0.15) : a;
 }
-function Fe(i, e, t, a, r, n) {
-  let l = 0, o = 0, c = 0;
-  for (let s = r; s < Math.min(r + n, t); s++)
-    for (let h = a; h < Math.min(a + n, e); h++) {
-      const f = (s * e + h) * 4, g = i[f], u = i[f + 1], p = i[f + 2], M = 0.299 * g + 0.587 * u + 0.114 * p;
-      l += M, o += M * M, c++;
+function We(i, e, t, a, r, n) {
+  let s = 0, o = 0, l = 0;
+  for (let m = r; m < Math.min(r + n, t); m++)
+    for (let c = a; c < Math.min(a + n, e); c++) {
+      const h = (m * e + c) * 4, u = i[h], g = i[h + 1], d = i[h + 2], w = 0.299 * u + 0.587 * g + 0.114 * d;
+      s += w, o += w * w, l++;
     }
-  if (c === 0) return 0;
-  const m = l / c;
-  return o / c - m * m;
+  if (l === 0) return 0;
+  const f = s / l;
+  return o / l - f * f;
 }
-function Re(i, e, t, a) {
+function Be(i, e, t, a) {
   let r = 0, n = 0;
   for (let o = 0; o < e.length; o += 4) {
-    const c = e[o], m = e[o + 1], s = e[o + 2], h = Math.max(c, m, s), f = Math.min(c, m, s);
-    (h === 0 ? 0 : (h - f) / h) > 0.5 && r++, n++;
+    const l = e[o], f = e[o + 1], m = e[o + 2], c = Math.max(l, f, m), h = Math.min(l, f, m);
+    (c === 0 ? 0 : (c - h) / c) > 0.5 && r++, n++;
   }
-  const l = r / n;
-  return l < 0.2 ? Math.max(0.5, i - 0.08) : (l > 0.6, i);
+  const s = r / n;
+  return s < 0.2 ? Math.max(0.5, i - 0.08) : (s > 0.6, i);
 }
-function Te(i, e, t, a) {
-  const n = 1 - e, l = Math.min(1, t * a / (1920 * 1080)), o = 0.7 - n * 0.2 + l * 0.1;
+function He(i, e, t, a) {
+  const n = 1 - e, s = Math.min(1, t * a / (1920 * 1080)), o = 0.7 - n * 0.2 + s * 0.1;
   return Math.max(0.4, Math.min(0.8, o));
 }
-const Ge = Te;
-class A {
+const Ze = He;
+class G {
   constructor() {
-    this.aborted = !1, this.isCompressing = !1, this.plugins = new ce();
+    this.aborted = !1, this.isCompressing = !1, this.plugins = new pe();
   }
   async compress(e, t = {}) {
     if (this.aborted)
@@ -856,74 +855,74 @@ class A {
     if (this.isCompressing)
       throw new Error("Compression already in progress");
     const r = (e.type || "").toLowerCase().replace(/^image\/jpg$/, "image/jpeg");
-    if (!Q(r))
+    if (!J(r))
       throw new Error("File must be an image");
     let n = t;
-    if (t.preset && (n = me(t, t.preset)), n.validateImage) {
-      const l = await N(e);
-      if (!l.isValid)
-        throw new Error(`Image validation failed: ${l.errors.join(", ")}`);
-      l.warnings.length > 0 && console.warn("Image validation warnings:", l.warnings);
+    if (t.preset && (n = Me(t, t.preset)), n.validateImage) {
+      const s = await Z(e);
+      if (!s.isValid)
+        throw new Error(`Image validation failed: ${s.errors.join(", ")}`);
+      s.warnings.length > 0 && console.warn("Image validation warnings:", s.warnings);
     }
     this.isCompressing = !0;
     try {
-      let l = e;
+      let s = e;
       try {
-        l = await this.plugins.runBeforeCompress(e, n);
-      } catch (m) {
-        console.warn("Plugin beforeCompress error:", m);
+        s = await this.plugins.runBeforeCompress(e, n);
+      } catch (f) {
+        console.warn("Plugin beforeCompress error:", f);
       }
-      const o = await this.performCompression(l, n);
-      let c = o;
+      const o = await this.performCompression(s, n);
+      let l = o;
       try {
-        c = await this.plugins.runAfterCompress(o, n);
-      } catch (m) {
-        console.warn("Plugin afterCompress error:", m);
+        l = await this.plugins.runAfterCompress(o, n);
+      } catch (f) {
+        console.warn("Plugin afterCompress error:", f);
       }
-      return c;
+      return l;
     } finally {
       this.isCompressing = !1;
     }
   }
   async performCompression(e, t) {
-    var c, m;
+    var l, f, m;
     if (this.aborted)
       throw new Error("Compression was aborted");
     const a = e.size;
-    t.monitorPerformance && new Pe(a);
-    let r = null, n = 1, l = (e.type || "image/jpeg").toLowerCase();
-    if (l === "image/jpg" && (l = "image/jpeg"), t.fixOrientation || t.stripMetadata)
+    t.monitorPerformance && new je(a);
+    let r = null, n = 1, s = (e.type || "image/jpeg").toLowerCase();
+    if (s === "image/jpg" && (s = "image/jpeg"), t.fixOrientation || t.stripMetadata)
       try {
         if (r = await e.arrayBuffer(), !r || r.byteLength === 0)
           throw new Error("Invalid image data");
         if (t.fixOrientation)
           try {
-            n = ie(r), (!n || n < 1 || n > 8) && (n = 1);
-          } catch (s) {
-            console.warn("Failed to read EXIF orientation, using default:", s), n = 1;
+            n = le(r), (!n || n < 1 || n > 8) && (n = 1);
+          } catch (c) {
+            console.warn("Failed to read EXIF orientation, using default:", c), n = 1;
           }
         if (t.stripMetadata)
           try {
-            r = re(r);
-          } catch (s) {
-            console.warn("Failed to strip EXIF, continuing with original:", s);
+            r = he(r);
+          } catch (c) {
+            console.warn("Failed to strip EXIF, continuing with original:", c);
           }
-      } catch (s) {
-        console.warn("Failed to process image buffer, continuing without EXIF processing:", s), r = null, n = 1;
+      } catch (c) {
+        console.warn("Failed to process image buffer, continuing without EXIF processing:", c), r = null, n = 1;
       }
     let o;
     if (r) {
-      const s = new Blob([r], { type: l });
-      o = URL.createObjectURL(s);
+      const c = new Blob([r], { type: s });
+      o = URL.createObjectURL(c);
     } else
       o = URL.createObjectURL(e);
     try {
-      const s = await K(o), h = s.naturalWidth, f = s.naturalHeight;
-      if (!h || !f || h <= 0 || f <= 0)
+      const c = await ne(o), h = c.naturalWidth, u = c.naturalHeight;
+      if (!h || !u || h <= 0 || u <= 0)
         throw new Error("Invalid image dimensions");
-      const g = Z({
+      const g = oe({
         naturalWidth: h,
-        naturalHeight: f,
+        naturalHeight: u,
         maxWidth: t.maxWidth,
         // undefined if not set
         maxHeight: t.maxHeight,
@@ -939,90 +938,90 @@ class A {
         mode: t.resize || "none"
         // 'none' by default - no resizing
       });
-      let u = l;
+      let d = s;
       if (t.format && t.format !== "auto")
-        u = t.format.toLowerCase(), u === "image/jpg" && (u = "image/jpeg");
+        d = t.format.toLowerCase(), d === "image/jpg" && (d = "image/jpeg");
       else if (t.format === "auto")
-        if (_() && (l === "image/jpeg" || l === "image/png"))
-          u = $;
-        else if (l === "image/jpeg" || l === "image/png")
+        if (_() && (s === "image/jpeg" || s === "image/png"))
+          d = z;
+        else if (s === "image/jpeg" || s === "image/png")
           try {
             if (typeof document < "u") {
-              const b = document.createElement("canvas");
-              b.width = 1, b.height = 1;
-              const P = b.toDataURL("image/webp");
-              P && P.indexOf("image/webp") === 5 ? u = "image/webp" : u = l;
+              const C = document.createElement("canvas");
+              C.width = 1, C.height = 1;
+              const F = C.toDataURL("image/webp");
+              F && F.indexOf("image/webp") === 5 ? d = "image/webp" : d = s;
             } else
-              u = l;
+              d = s;
           } catch {
-            u = l;
+            d = s;
           }
         else
-          u = l;
-      u = ke(u), (!u || !Q(u) && u !== $) && (u = "image/jpeg"), u === "image/jpg" && (u = "image/jpeg");
-      let p = t.quality ?? 0.8;
-      if (t.enableSmartQuality === !0 || u === $ && t.enableSmartQuality !== !1)
+          d = s;
+      d === "image/png" && s !== "image/png" && !((l = t.optimizePNG) != null && l.enabled) && _() && (d = z), d = $e(d), (!d || !J(d) && d !== z) && (d = "image/jpeg"), d === "image/jpg" && (d = "image/jpeg");
+      let w = t.quality ?? 0.8;
+      if (t.enableSmartQuality === !0 || d === z && t.enableSmartQuality !== !1)
         try {
-          const b = O(h, f), P = b.getContext("2d");
-          if (P) {
-            P.drawImage(s, 0, 0);
-            const F = await be(b);
-            t.quality == null ? p = Ce(
+          const C = V(h, u), F = C.getContext("2d");
+          if (F) {
+            F.drawImage(c, 0, 0);
+            const S = await Se(C);
+            t.quality == null ? w = ke(
               { ...t, enableSmartQuality: !0 },
-              F
-            ) : p = Math.min(
+              S
+            ) : w = Math.min(
               t.quality,
-              (t.quality + F.recommendedQuality) / 2
+              (t.quality + S.recommendedQuality) / 2
             );
           }
-        } catch (b) {
-          console.warn("Smart quality analysis failed, using default:", b);
+        } catch (C) {
+          console.warn("Smart quality analysis failed, using default:", C);
         }
       else if (t.mode === "adaptive" && !t.quality) {
-        const b = e.size / 1048576;
-        b > 10 ? p = 0.7 : b > 5 ? p = 0.75 : b < 1 ? p = 0.85 : p = 0.8;
+        const C = e.size / 1048576;
+        C > 10 ? w = 0.7 : C > 5 ? w = 0.75 : C < 1 ? w = 0.85 : w = 0.8;
       }
-      p = Math.max(0.1, Math.min(0.99, p)), t.onProgress && t.onProgress(0.3);
-      let d = null;
-      if ((c = t.smartCrop) != null && c.enabled) {
-        const b = O(h, f), P = b.getContext("2d");
-        P && (P.drawImage(s, 0, 0), d = Ie(b, {
+      w = Math.max(0.1, Math.min(0.99, w)), t.onProgress && t.onProgress(0.3);
+      let y = null;
+      if ((f = t.smartCrop) != null && f.enabled) {
+        const C = V(h, u), F = C.getContext("2d");
+        F && (F.drawImage(c, 0, 0), y = Fe(C, {
           width: t.smartCrop.width,
           height: t.smartCrop.height,
           focus: t.smartCrop.focus
-        }), g.width = d.width, g.height = d.height);
+        }), g.width = y.width, g.height = y.height);
       }
       if (g.width <= 0 || g.height <= 0 || !isFinite(g.width) || !isFinite(g.height))
         throw new Error("Invalid canvas dimensions");
-      const y = 16384;
-      if (g.width > y || g.height > y)
-        throw new Error(`Canvas dimensions too large (max ${y}px)`);
-      const w = O(g.width, g.height), x = w.getContext("2d", { willReadFrequently: !0 });
-      if (!x)
+      const b = 16384;
+      if (g.width > b || g.height > b)
+        throw new Error(`Canvas dimensions too large (max ${b}px)`);
+      const x = V(g.width, g.height), M = x.getContext("2d", { willReadFrequently: !0 });
+      if (!M)
         throw new Error("Failed to get canvas context");
-      if (x.fillStyle = u === "image/jpeg" ? "#ffffff" : "transparent", x.fillRect(0, 0, g.width, g.height), t.beforeProcess && t.beforeProcess(x, w), this.aborted)
+      if (M.fillStyle = d === "image/jpeg" ? "#ffffff" : "transparent", M.fillRect(0, 0, g.width, g.height), t.beforeProcess && t.beforeProcess(M, x), this.aborted)
         throw new Error("Compression was aborted");
-      const C = te(n), z = t.resize || "none";
+      const I = ce(n), k = t.resize || "none";
       let v;
-      if ((z === "cover" || z === "contain") && (v = ee(
+      if ((k === "cover" || k === "contain") && (v = se(
         h,
-        f,
+        u,
         g.width,
         g.height,
-        z
-      )), d ? Y(x, s, {
-        srcX: d.x,
-        srcY: d.y,
-        srcWidth: d.width,
-        srcHeight: d.height,
+        k
+      )), y ? K(M, c, {
+        srcX: y.x,
+        srcY: y.y,
+        srcWidth: y.width,
+        srcHeight: y.height,
         destX: 0,
         destY: 0,
         destWidth: g.width,
         destHeight: g.height,
-        rotate: C.rotate,
-        scaleX: C.scaleX,
-        scaleY: C.scaleY
-      }) : Y(x, s, {
+        rotate: I.rotate,
+        scaleX: I.scaleX,
+        scaleY: I.scaleY
+      }) : K(M, c, {
         srcX: v == null ? void 0 : v.x,
         srcY: v == null ? void 0 : v.y,
         srcWidth: v == null ? void 0 : v.width,
@@ -1031,95 +1030,97 @@ class A {
         destY: 0,
         destWidth: g.width,
         destHeight: g.height,
-        rotate: C.rotate,
-        scaleX: C.scaleX,
-        scaleY: C.scaleY
-      }), t.enableNoiseAware && oe(x, w), t.enableColorWeighting && se(x, w), t.enableHdrToSdr && le(x, w), u === "image/png" && ((m = t.optimizePNG) != null && m.enabled))
+        rotate: I.rotate,
+        scaleX: I.scaleX,
+        scaleY: I.scaleY
+      }), t.enableNoiseAware && ge(M, x), t.enableColorWeighting && ue(M, x), t.enableHdrToSdr && de(M, x), d === "image/png" && ((m = t.optimizePNG) != null && m.enabled))
         try {
-          ze(w, {
+          Re(x, {
             reduceColors: t.optimizePNG.reduceColors,
             maxColors: t.optimizePNG.maxColors,
             optimizeTransparency: t.optimizePNG.optimizeTransparency
           });
-        } catch (b) {
-          console.warn("PNG optimization failed:", b);
+        } catch (C) {
+          console.warn("PNG optimization failed:", C);
         }
       if (t.filters && t.filters.length > 0)
-        for (const b of t.filters)
+        for (const C of t.filters)
           try {
-            ge(x, w, b);
-          } catch (P) {
-            console.warn("Filter application failed:", P);
+            xe(M, x, C);
+          } catch (F) {
+            console.warn("Filter application failed:", F);
           }
       if (t.watermark)
         try {
-          Ee(x, w, t.watermark);
-        } catch (b) {
-          console.warn("Watermark application failed:", b);
+          Te(M, x, t.watermark);
+        } catch (C) {
+          console.warn("Watermark application failed:", C);
         }
-      if (t.convertToJPEG && u !== "image/jpeg")
+      if (t.convertToJPEG && d !== "image/jpeg")
         try {
-          const b = await V(w);
-          ve(u, b, a) && (x.fillStyle = "#ffffff", x.globalCompositeOperation = "destination-over", x.fillRect(0, 0, w.width, w.height), x.globalCompositeOperation = "source-over", u = "image/jpeg");
-        } catch (b) {
-          console.warn("Format conversion failed:", b);
+          const C = await ee(x);
+          De(d, C, a) && (M.fillStyle = "#ffffff", M.globalCompositeOperation = "destination-over", M.fillRect(0, 0, x.width, x.height), M.globalCompositeOperation = "source-over", d = "image/jpeg");
+        } catch (C) {
+          console.warn("Format conversion failed:", C);
         }
-      t.afterProcess && t.afterProcess(x, w);
+      t.afterProcess && t.afterProcess(M, x);
       try {
-        await this.plugins.runTransform(w, t);
-      } catch (b) {
-        console.warn("Plugin transform error:", b);
+        await this.plugins.runTransform(x, t);
+      } catch (C) {
+        console.warn("Plugin transform error:", C);
       }
       if (this.aborted)
         throw new Error("Compression was aborted");
       t.onProgress && t.onProgress(0.8);
-      let S;
-      const E = ne(t) && t.mode === "size" && t.targetSize, D = u;
-      E && t.targetSize ? D === $ ? S = await q(w, p, { adaptive: !0 }) : S = await this.dualPassCompression(w, D, p, a, t.targetSize) : D === $ ? S = await q(w, p, {
+      let P;
+      const T = fe(t) && t.mode === "size" && t.targetSize, D = d;
+      T && t.targetSize ? D === z ? P = await X(x, w, { adaptive: !0 }) : P = await this.dualPassCompression(x, D, w, a, t.targetSize) : D === z ? P = await X(x, w, {
         progressive: t.enableProgressive !== !1,
         adaptive: !0,
         chromaSubsampling: "4:2:0"
-      }) : S = await W(w, D, p), t.onProgress && t.onProgress(1);
-      const k = e instanceof File ? e.name : "image", T = J(u), I = u === "image/jpg" ? "image/jpeg" : u, U = new File([S], k.replace(/\.[^.]+$/, T), {
-        type: I,
+      }) : P = await H(x, D, w), t.onProgress && t.onProgress(1);
+      const E = e instanceof File ? e.name : "image", L = ae(d), R = d === "image/jpg" ? "image/jpeg" : d, j = new File([P], E.replace(/\.[^.]+$/, L), {
+        type: R,
         lastModified: Date.now()
-      }), R = U.size, j = t.strict !== !1;
-      let B = U, L = R;
-      if (R >= a) {
-        if (!(t.width !== void 0 && t.width !== h || t.height !== void 0 && t.height !== f || t.maxWidth !== void 0 && g.width < h || t.maxHeight !== void 0 && g.height < f || t.minWidth !== void 0 && g.width > h || t.minHeight !== void 0 && g.height > f || t.resize && t.resize !== "none") && I === l)
-          try {
-            const P = Math.max(0.5, (p || 0.8) - 0.2);
-            let F;
-            if (I === $ ? F = await q(w, P, { adaptive: !0 }) : F = await W(w, I, P), F.size < a)
-              B = new File([F], k, { type: I }), L = F.size;
-            else {
-              const G = Math.max(0.4, P - 0.15);
-              let H;
-              I === $ ? H = await q(w, G, { adaptive: !0 }) : H = await W(w, I, G), H.size < a ? (B = new File([H], k, { type: I }), L = H.size) : j ? (B = e instanceof File ? e : new File([e], k, { type: l }), L = a) : (B = new File([H], k, { type: I }), L = H.size);
+      }), U = j.size, q = t.strict !== !1;
+      let W = j, $ = U, B = R, Q = w;
+      const Y = 0.15, te = t.width !== void 0 && t.width !== h || t.height !== void 0 && t.height !== u || t.maxWidth !== void 0 && g.width < h || t.maxHeight !== void 0 && g.height < u || t.minWidth !== void 0 && g.width > h || t.minHeight !== void 0 && g.height > u || t.resize && t.resize !== "none", N = () => 1 - $ / a;
+      if ($ >= a || N() < Y) {
+        const C = [0.72, 0.62, 0.52, 0.42, 0.32, 0.25], F = (B === "image/png" || $ >= a ? [z, "image/webp", "image/jpeg", B] : te ? [B, "image/webp", "image/jpeg", z] : [z, "image/webp", "image/jpeg", B]).filter((S, A, O) => O.indexOf(S) === A);
+        for (const S of F) {
+          for (const A of C)
+            try {
+              const O = S === z ? await X(x, A, { adaptive: !0 }) : await H(x, S, A);
+              if (O.size < $) {
+                const re = S === z ? ".pixu" : S === "image/jpeg" ? ".jpg" : S === "image/webp" ? ".webp" : S === "image/png" ? ".png" : ".jpg";
+                W = new File(
+                  [O],
+                  E.replace(/\.[^.]+$/, re),
+                  { type: S, lastModified: Date.now() }
+                ), $ = O.size, B = S, Q = A;
+              }
+              if (N() >= Y)
+                break;
+            } catch {
             }
-          } catch {
-            j && (B = e instanceof File ? e : new File([e], k, { type: l }), L = a);
-          }
-        else if (j && R > a)
-          try {
-            const P = Math.max(0.5, (p || 0.8) - 0.15);
-            let F;
-            I === $ ? F = await q(w, P, { adaptive: !0 }) : F = await W(w, I, P), F.size < R && (B = new File([F], k, { type: I }), L = F.size);
-          } catch {
-          }
+          if (N() >= Y)
+            break;
+        }
+        $ >= a && q && (W = e instanceof File ? e : new File([e], E, { type: s }), $ = a, B = s, Q = 1);
       }
-      const X = 1 - L / a;
+      const ie = Math.max(0, 1 - $ / a);
       return {
-        file: B,
+        file: W,
         originalSize: a,
-        compressedSize: L,
-        compressionRatio: X,
-        format: I,
+        compressedSize: $,
+        compressionRatio: ie,
+        format: B,
         width: g.width,
         height: g.height,
         metadata: {
           hasExif: !t.stripMetadata && n > 1,
-          orientation: n > 1 ? n : void 0
+          orientation: n > 1 ? n : void 0,
+          quality: Q
         }
       };
     } finally {
@@ -1127,11 +1128,11 @@ class A {
     }
   }
   async dualPassCompression(e, t, a, r, n) {
-    let l = Math.max(0.1, Math.min(0.99, a)), o = await W(e, t, l), c = 0;
-    const m = 10;
-    for (; o.size > n && c < m; ) {
-      const s = o.size / n;
-      if (s > 2 ? l *= 0.7 : s > 1.5 ? l *= 0.8 : l *= 0.9, l = Math.max(0.1, Math.min(0.99, l)), o = await W(e, t, l), c++, l <= 0.1)
+    let s = Math.max(0.1, Math.min(0.99, a)), o = await H(e, t, s), l = 0;
+    const f = 10;
+    for (; o.size > n && l < f; ) {
+      const m = o.size / n;
+      if (m > 2 ? s *= 0.7 : m > 1.5 ? s *= 0.8 : s *= 0.9, s = Math.max(0.1, Math.min(0.99, s)), o = await H(e, t, s), l++, s <= 0.1)
         break;
     }
     return o;
@@ -1146,33 +1147,33 @@ class A {
     this.plugins.unregister(e);
   }
 }
-async function Qe(i, e = {}) {
-  const t = e.concurrency || 3, a = [], r = [], n = new A();
-  async function l(c, m) {
+async function et(i, e = {}) {
+  const t = e.concurrency || 3, a = [], r = [], n = new G();
+  async function s(l, f) {
     try {
-      const s = await n.compress(c, e);
-      a[m] = s, e.onItemComplete && e.onItemComplete(s, m);
-    } catch (s) {
-      const h = s instanceof Error ? s : new Error("Unknown error");
-      r[m] = h, e.onItemError && e.onItemError(h, m);
+      const m = await n.compress(l, e);
+      a[f] = m, e.onItemComplete && e.onItemComplete(m, f);
+    } catch (m) {
+      const c = m instanceof Error ? m : new Error("Unknown error");
+      r[f] = c, e.onItemError && e.onItemError(c, f);
     }
   }
   const o = [];
-  for (let c = 0; c < i.length; c += t)
-    o.push(i.slice(c, c + t));
-  for (const c of o)
+  for (let l = 0; l < i.length; l += t)
+    o.push(i.slice(l, l + t));
+  for (const l of o)
     await Promise.all(
-      c.map((m, s) => {
-        const h = o.indexOf(c) * t + s;
-        return l(m, h);
+      l.map((f, m) => {
+        const c = o.indexOf(l) * t + m;
+        return s(f, c);
       })
     );
   if (r.length > 0 && !e.onItemError)
     throw new Error(`Batch compression failed for ${r.length} file(s)`);
   return a;
 }
-async function* Ye(i, e = {}) {
-  const t = new A();
+async function* tt(i, e = {}) {
+  const t = new G();
   for await (const a of i) {
     const r = await t.compress(a, e);
     if (yield r, e.onChunk) {
@@ -1181,57 +1182,57 @@ async function* Ye(i, e = {}) {
     }
   }
 }
-async function Ue(i, e) {
+async function qe(i, e) {
   const t = i.getContext("2d");
   if (!t)
     throw new Error("Failed to get canvas context");
-  const r = t.getImageData(0, 0, i.width, i.height).data, n = i.width, l = i.height, o = n * l, c = /* @__PURE__ */ new Map();
-  let m = 0, s = 0;
-  const h = 10;
-  for (let E = 0; E < r.length; E += 4 * h) {
-    const D = r[E], k = r[E + 1], T = r[E + 2];
-    r[E + 3] < 255 && m++;
-    const U = `${Math.floor(D / 8)}-${Math.floor(k / 8)}-${Math.floor(T / 8)}`;
-    c.set(U, (c.get(U) || 0) + 1);
-    const R = E / 4 % n, j = Math.floor(E / 4 / n);
-    if (R > 0 && j > 0 && R < n - 1 && j < l - 1) {
-      const B = (j * n + R) * 4, L = (j * n + (R + 1)) * 4;
+  const r = t.getImageData(0, 0, i.width, i.height).data, n = i.width, s = i.height, o = n * s, l = /* @__PURE__ */ new Map();
+  let f = 0, m = 0;
+  const c = 10;
+  for (let P = 0; P < r.length; P += 4 * c) {
+    const T = r[P], D = r[P + 1], E = r[P + 2];
+    r[P + 3] < 255 && f++;
+    const R = `${Math.floor(T / 8)}-${Math.floor(D / 8)}-${Math.floor(E / 8)}`;
+    l.set(R, (l.get(R) || 0) + 1);
+    const j = P / 4 % n, U = Math.floor(P / 4 / n);
+    if (j > 0 && U > 0 && j < n - 1 && U < s - 1) {
+      const q = (U * n + j) * 4, W = (U * n + (j + 1)) * 4;
       Math.abs(
-        (r[B] + r[B + 1] + r[B + 2]) / 3 - (r[L] + r[L + 1] + r[L + 2]) / 3
-      ) > 30 && s++;
+        (r[q] + r[q + 1] + r[q + 2]) / 3 - (r[W] + r[W + 1] + r[W + 2]) / 3
+      ) > 30 && m++;
     }
   }
-  const f = o / h, g = c.size, u = g / f, p = s / f, M = m > f * 0.01;
-  let d;
-  u > 0.3 && p > 0.1 ? d = "photo" : u < 0.2 && p < 0.05 ? d = "graphic" : p > 0.15 && u < 0.4 ? d = "text" : d = "mixed";
+  const h = o / c, u = l.size, g = u / h, d = m / h, w = f > h * 0.01;
+  let p;
+  g > 0.3 && d > 0.1 ? p = "photo" : g < 0.2 && d < 0.05 ? p = "graphic" : d > 0.15 && g < 0.4 ? p = "text" : p = "mixed";
   let y;
-  u < 0.1 && p < 0.05 ? y = "low" : u > 0.5 || p > 0.2 ? y = "high" : y = "medium";
-  let w = 0.5;
-  e && (w = 1 - n * l * 4 / e);
+  g < 0.1 && d < 0.05 ? y = "low" : g > 0.5 || d > 0.2 ? y = "high" : y = "medium";
+  let b = 0.5;
+  e && (b = 1 - n * s * 4 / e);
   let x;
-  w > 0.8 ? x = "very-high" : w > 0.5 ? x = "high" : w > 0.2 ? x = "medium" : x = "low";
-  let C;
-  M ? C = "image/png" : d === "photo" && y === "high" ? C = "image/webp" : d === "photo" ? C = "image/jpeg" : C = "image/png";
-  let z;
-  d === "graphic" || d === "text" ? z = 0.9 : d === "photo" && y === "high" ? z = 0.75 : z = 0.8;
-  const v = Math.min(0.9, w + 0.3), S = [];
-  return M && C === "image/jpeg" && S.push("Consider converting to PNG to preserve transparency"), g < 256 && d === "graphic" && S.push("Image can benefit from color reduction"), w < 0.3 && S.push("High compression potential - consider lower quality"), (n > 1920 || l > 1080) && S.push("Consider resizing for web use"), {
+  b > 0.8 ? x = "very-high" : b > 0.5 ? x = "high" : b > 0.2 ? x = "medium" : x = "low";
+  let M;
+  w ? M = "image/png" : p === "photo" && y === "high" ? M = "image/webp" : p === "photo" ? M = "image/jpeg" : M = "image/png";
+  let I;
+  p === "graphic" || p === "text" ? I = 0.9 : p === "photo" && y === "high" ? I = 0.75 : I = 0.8;
+  const k = Math.min(0.9, b + 0.3), v = [];
+  return w && M === "image/jpeg" && v.push("Consider converting to PNG to preserve transparency"), u < 256 && p === "graphic" && v.push("Image can benefit from color reduction"), b < 0.3 && v.push("High compression potential - consider lower quality"), (n > 1920 || s > 1080) && v.push("Consider resizing for web use"), {
     quality: x,
-    compressionLevel: w,
-    contentType: d,
-    hasText: d === "text",
+    compressionLevel: b,
+    contentType: p,
+    hasText: p === "text",
     complexity: y,
-    colorCount: g,
-    hasTransparency: M,
-    recommendedFormat: C,
-    recommendedQuality: z,
-    estimatedSizeReduction: v,
-    suggestions: S
+    colorCount: u,
+    hasTransparency: w,
+    recommendedFormat: M,
+    recommendedQuality: I,
+    estimatedSizeReduction: k,
+    suggestions: v
   };
 }
-async function Ne(i, e, t) {
-  const a = [], r = await Ue(e, i.size);
-  i.type === "image/png" && !await V(e) && i.size > 5e5 && a.push({
+async function it(i, e, t) {
+  const a = [], r = await qe(e, i.size);
+  i.type === "image/png" && !await ee(e) && i.size > 5e5 && a.push({
     type: "format",
     message: "PNG without transparency can be converted to JPEG",
     suggestion: 'Use convertToJPEG: true or format: "image/jpeg"',
@@ -1269,25 +1270,25 @@ async function Ne(i, e, t) {
       suggestion: "Review image analysis results",
       priority: "low"
     });
-  return a.sort((n, l) => {
+  return a.sort((n, s) => {
     const o = { high: 3, medium: 2, low: 1 };
-    return o[l.priority] - o[n.priority];
+    return o[s.priority] - o[n.priority];
   });
 }
-function Ve(i, e) {
+function rt(i, e) {
   let t = 0;
   return e.quality && e.quality < 0.9 && (t += (0.9 - e.quality) * 0.5), (e.maxWidth || e.maxHeight) && (t += 0.3), e.stripMetadata && (t += 0.05), (e.format === "image/webp" || e.format === "image/avif") && (t += 0.2), Math.min(0.9, t);
 }
-async function _e(i, e) {
+async function at(i, e) {
   const t = e.widths || [320, 640, 960, 1280, 1920], a = e.formats || ["image/webp", "image/jpeg"];
   e.quality;
   const r = [], n = [];
-  for (const l of a) {
+  for (const s of a) {
     const o = [];
-    for (const c of t)
-      o.push(`image-${c}w.${l.split("/")[1]} ${c}w`);
+    for (const l of t)
+      o.push(`image-${l}w.${s.split("/")[1]} ${l}w`);
     n.push({
-      format: l,
+      format: s,
       srcset: o.join(", "),
       sizes: "(max-width: 320px) 320px, (max-width: 640px) 640px, (max-width: 960px) 960px, 1280px"
     });
@@ -1300,16 +1301,16 @@ async function _e(i, e) {
     formats: n
   };
 }
-function Je(i) {
+function nt(i) {
   return i.map((e) => `${e.url} ${e.width}w`).join(", ");
 }
-function Ke(i) {
+function ot(i) {
   const e = [];
   for (let t = 0; t < i.length - 1; t++)
     e.push(`(max-width: ${i[t]}px) ${i[t]}px`);
   return e.push(`${i[i.length - 1]}px`), e.join(", ");
 }
-function Ze(i) {
+function st(i) {
   return i.getContext("2d", { colorSpace: "srgb" }), {
     isSRGB: !0,
     // Canvas default
@@ -1320,13 +1321,13 @@ function Ze(i) {
     // Already in sRGB
   };
 }
-function et(i, e) {
+function ct(i, e) {
   const t = i.getImageData(0, 0, e.width, e.height), a = t.data;
   for (let r = 0; r < a.length; r += 4)
     ;
   i.putImageData(t, 0, 0);
 }
-function tt() {
+function lt() {
   if (typeof document > "u")
     return !1;
   const i = document.createElement("canvas");
@@ -1336,7 +1337,7 @@ function tt() {
     return !1;
   }
 }
-function it(i) {
+function ht(i) {
   const e = new DataView(i);
   if (e.getUint8(0) !== 255 || e.getUint8(1) !== 216)
     return !1;
@@ -1353,12 +1354,12 @@ function it(i) {
   }
   return r;
 }
-function rt() {
+function mt() {
   return typeof document < "u" && typeof HTMLCanvasElement < "u";
 }
-class at {
+class ft {
   constructor() {
-    this.paused = !1, this.cancelled = !1, this.startTime = 0, this.completedCount = 0, this.errorCount = 0, this.compressor = new A();
+    this.paused = !1, this.cancelled = !1, this.startTime = 0, this.completedCount = 0, this.errorCount = 0, this.compressor = new G();
   }
   async processBatch(e, t = {}) {
     this.startTime = Date.now(), this.completedCount = 0, this.errorCount = 0, this.paused = !1, this.cancelled = !1;
@@ -1366,66 +1367,66 @@ class at {
       concurrency: a = 3,
       retryAttempts: r = 2,
       retryDelay: n = 1e3,
-      priority: l = "fifo",
+      priority: s = "fifo",
       onProgress: o,
-      onItemComplete: c,
-      onItemError: m
-    } = t, s = this.sortByPriority(e, l), h = new Array(e.length), f = [], g = /* @__PURE__ */ new Map();
-    s.forEach((M, d) => {
-      g.set(M, e.indexOf(M));
+      onItemComplete: l,
+      onItemError: f
+    } = t, m = this.sortByPriority(e, s), c = new Array(e.length), h = [], u = /* @__PURE__ */ new Map();
+    m.forEach((w, p) => {
+      u.set(w, e.indexOf(w));
     });
-    const u = async (M, d) => {
+    const g = async (w, p) => {
       if (this.cancelled)
         return;
       for (; this.paused && !this.cancelled; )
-        await new Promise((w) => setTimeout(w, 100));
+        await new Promise((b) => setTimeout(b, 100));
       if (this.cancelled)
         return;
       let y = null;
-      for (let w = 0; w <= r; w++)
+      for (let b = 0; b <= r; b++)
         try {
           const {
             retryAttempts: x,
-            retryDelay: C,
-            priority: z,
-            onProgress: v,
-            pause: S,
-            resume: E,
-            onItemComplete: D,
-            onItemError: k,
-            concurrency: T,
-            ...I
-          } = t, U = await this.compressor.compress(M, I);
-          h[d] = U, this.completedCount++, c && c(U, d), o && o(
+            retryDelay: M,
+            priority: I,
+            onProgress: k,
+            pause: v,
+            resume: P,
+            onItemComplete: T,
+            onItemError: D,
+            concurrency: E,
+            ...L
+          } = t, R = await this.compressor.compress(w, L);
+          c[p] = R, this.completedCount++, l && l(R, p), o && o(
             this.completedCount,
             e.length,
             this.errorCount
           );
           return;
         } catch (x) {
-          y = x instanceof Error ? x : new Error("Unknown error"), w < r && await new Promise((C) => setTimeout(C, n));
+          y = x instanceof Error ? x : new Error("Unknown error"), b < r && await new Promise((M) => setTimeout(M, n));
         }
-      this.errorCount++, f[d] = y, m && m(y, d), o && o(
+      this.errorCount++, h[p] = y, f && f(y, p), o && o(
         this.completedCount,
         e.length,
         this.errorCount
       );
-    }, p = [];
-    for (let M = 0; M < s.length; M += a)
-      p.push(s.slice(M, M + a));
-    for (const M of p) {
+    }, d = [];
+    for (let w = 0; w < m.length; w += a)
+      d.push(m.slice(w, w + a));
+    for (const w of d) {
       if (this.cancelled)
         break;
       await Promise.all(
-        M.map((d) => {
-          const y = g.get(d);
-          return u(d, y);
+        w.map((p) => {
+          const y = u.get(p);
+          return g(p, y);
         })
       );
     }
-    if (f.length > 0 && !m)
-      throw new Error(`Batch compression failed for ${f.length} file(s)`);
-    return h;
+    if (h.length > 0 && !f)
+      throw new Error(`Batch compression failed for ${h.length} file(s)`);
+    return c;
   }
   pause() {
     this.paused = !0;
@@ -1465,7 +1466,7 @@ class at {
     }
   }
 }
-function je() {
+function Ae() {
   if ("memory" in performance) {
     const i = performance.memory;
     return {
@@ -1482,65 +1483,65 @@ function je() {
     // Assume 500MB limit
   };
 }
-function nt(i) {
+function gt(i) {
   return i > 10 * 1024 * 1024;
 }
-function ot(i, e) {
-  const t = e || je().available, a = Math.min(t * 0.1, 5 * 1024 * 1024);
+function ut(i, e) {
+  const t = e || Ae().available, a = Math.min(t * 0.1, 5 * 1024 * 1024);
   return Math.max(a, 1024 * 1024);
 }
-const Le = new A();
-async function st(i, e) {
-  return Le.compress(i, e);
+const Oe = new G();
+async function dt(i, e) {
+  return Oe.compress(i, e);
 }
 export {
-  at as AdvancedBatchProcessor,
-  Se as PIXU_EXTENSION,
-  $ as PIXU_MIME_TYPE,
-  Ae as PIX_EXTENSION,
-  qe as PIX_MIME_TYPE,
-  Pe as PerformanceMonitor,
-  A as PixuCompressor,
-  ce as PluginManager,
-  Ze as analyzeColorSpace,
-  Ue as analyzeImage,
-  be as analyzeImageContent,
-  ge as applyFilter,
-  me as applyPreset,
-  Ee as applyWatermark,
-  ot as calculateChunkSize,
-  Ie as calculateSmartCrop,
-  Xe as canvasToPix,
-  q as canvasToPixu,
-  st as compress,
-  Qe as compressBatch,
-  Ye as compressStream,
-  Be as convertFormat,
-  Le as default,
-  V as detectTransparency,
-  Ve as estimateCompressionSavings,
-  Ge as estimatePixCompression,
-  Te as estimatePixuCompression,
-  We as formatBytes,
-  He as formatDuration,
-  _e as generateResponsiveImages,
-  Ke as generateSizes,
-  Je as generateSrcset,
-  je as getMemoryInfo,
-  Ne as getOptimizationHints,
-  fe as getPresetOptions,
-  Ce as getSmartQuality,
-  Oe as isPixSupported,
+  ft as AdvancedBatchProcessor,
+  Ue as PIXU_EXTENSION,
+  z as PIXU_MIME_TYPE,
+  _e as PIX_EXTENSION,
+  Ve as PIX_MIME_TYPE,
+  je as PerformanceMonitor,
+  G as PixuCompressor,
+  pe as PluginManager,
+  st as analyzeColorSpace,
+  qe as analyzeImage,
+  Se as analyzeImageContent,
+  xe as applyFilter,
+  Me as applyPreset,
+  Te as applyWatermark,
+  ut as calculateChunkSize,
+  Fe as calculateSmartCrop,
+  Ke as canvasToPix,
+  X as canvasToPixu,
+  dt as compress,
+  et as compressBatch,
+  tt as compressStream,
+  Qe as convertFormat,
+  Oe as default,
+  ee as detectTransparency,
+  rt as estimateCompressionSavings,
+  Ze as estimatePixCompression,
+  He as estimatePixuCompression,
+  Ye as formatBytes,
+  Ne as formatDuration,
+  at as generateResponsiveImages,
+  ot as generateSizes,
+  nt as generateSrcset,
+  Ae as getMemoryInfo,
+  it as getOptimizationHints,
+  ye as getPresetOptions,
+  ke as getSmartQuality,
+  Je as isPixSupported,
   _ as isPixuSupported,
-  it as isProgressiveJPEG,
-  $e as isValidImage,
-  ke as normalizePixuFormat,
-  et as normalizeToSRGB,
-  ze as optimizePNG,
-  ve as shouldConvertToJPEG,
-  nt as shouldUseStreaming,
-  rt as supportsProgressiveJPEG,
-  tt as supportsWideGamut,
-  N as validateImage
+  ht as isProgressiveJPEG,
+  Ge as isValidImage,
+  $e as normalizePixuFormat,
+  ct as normalizeToSRGB,
+  Re as optimizePNG,
+  De as shouldConvertToJPEG,
+  gt as shouldUseStreaming,
+  mt as supportsProgressiveJPEG,
+  lt as supportsWideGamut,
+  Z as validateImage
 };
 //# sourceMappingURL=pixu.esm.js.map

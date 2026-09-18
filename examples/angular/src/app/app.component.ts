@@ -2,9 +2,17 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PixuCompressorComponent } from '../../../../components/angular/pixu-compressor.component';
-import type { CompressionResult } from 'pixu';
-import { compress } from 'pixu';
+import type { CompressionOptions, CompressionResult, ImageFilter, SupportedFormat } from 'pixu';
+import { compress, compressBatch, PIXU_EXTENSION } from 'pixu';
 import { angularSampleImages, fetchSampleFile } from '../../../shared/samples';
+
+type ResultWithMetrics = CompressionResult & {
+  metrics?: {
+    duration?: number;
+    memoryUsed?: number;
+    throughput?: number;
+  };
+};
 
 @Component({
   selector: 'app-root',
@@ -37,146 +45,600 @@ import { angularSampleImages, fetchSampleFile } from '../../../shared/samples';
         </div>
       </section>
 
-      <div *ngIf="sampleResult" class="section">
+      <div *ngIf="sampleResult" class="section sample-result">
         <h2>Sample compression result</h2>
         <p class="description">{{ sampleResult.label }} — {{ sampleResult.format }} ({{ (sampleResult.compressionRatio * 100).toFixed(1) }}% reduction)</p>
-        <div class="sample-preview">
-          <figure><img [src]="sampleOriginalUrl" alt="Original" /><figcaption>{{ formatBytes(sampleResult.originalSize) }}</figcaption></figure>
-          <figure><img [src]="sampleCompressedUrl" alt="Compressed" /><figcaption>{{ formatBytes(sampleResult.compressedSize) }}</figcaption></figure>
+        <div class="image-comparison">
+          <div class="image-preview">
+            <h4>Original</h4>
+            <img [src]="sampleOriginalUrl" alt="Original" />
+            <p class="image-info">{{ formatBytes(sampleResult.originalSize) }}</p>
+          </div>
+          <div class="image-preview">
+            <h4>Compressed</h4>
+            <img [src]="sampleCompressedUrl" alt="Compressed" />
+            <p class="image-info">{{ formatBytes(sampleResult.compressedSize) }}</p>
+            <button (click)="downloadImage(sampleResult.file, sampleResult.label)" class="download-btn">Download</button>
+          </div>
         </div>
       </div>
 
       <div class="content">
-        <!-- Basic Compression -->
         <div class="section">
           <h2>1. Basic Compression</h2>
-          <p class="description">Simple compression with quality setting only</p>
+          <p class="description">Simple compression with quality setting and live preview</p>
+          <div class="controls-inline">
+            <label>
+              Quality: {{ (basicOptions.quality * 100).toFixed(0) }}%
+              <input type="range" min="0.1" max="1" step="0.05" [(ngModel)]="basicOptions.quality" />
+            </label>
+          </div>
           <pixu-compressor
             [samples]="sampleImages"
-            [options]="{ quality: 0.8 }"
+            [options]="basicOptions"
+            (source)="onBasicSource($event)"
             (compress)="handleBasicCompress($event)"
             (error)="handleError($event)"
+            (progress)="basicProgress = $event"
           ></pixu-compressor>
-          <div *ngIf="basicResult" class="result-card">
-            <h3>Result</h3>
-            <div class="stats">
-              <div class="stat">
-                <span class="label">Original:</span>
-                <span class="value">{{ formatBytes(basicResult.originalSize) }}</span>
-              </div>
-              <div class="stat">
-                <span class="label">Compressed:</span>
-                <span class="value">{{ formatBytes(basicResult.compressedSize) }}</span>
-              </div>
-              <div class="stat">
-                <span class="label">Ratio:</span>
-                <span class="value">{{ (basicResult.compressionRatio * 100).toFixed(1) }}%</span>
-              </div>
+          <div *ngIf="basicProgress > 0 && basicProgress < 1" class="progress-bar">
+            <div class="progress-fill" [style.width.%]="basicProgress * 100"></div>
+          </div>
+          <div *ngIf="basicResult" class="image-comparison">
+            <div class="image-preview">
+              <h4>Original</h4>
+              <img [src]="basicOriginalUrl" alt="Original" />
+              <p class="image-info">{{ formatBytes(basicResult.originalSize) }}</p>
+            </div>
+            <div class="image-preview">
+              <h4>Compressed</h4>
+              <img [src]="basicCompressedUrl" alt="Compressed" />
+              <p class="image-info">{{ formatBytes(basicResult.compressedSize) }} ({{ (basicResult.compressionRatio * 100).toFixed(1) }}% reduction)</p>
+              <button (click)="downloadImage(basicResult.file, 'compressed')" class="download-btn">Download</button>
             </div>
           </div>
         </div>
 
-        <!-- Advanced Options -->
         <div class="section">
           <h2>2. Advanced Options</h2>
-          <p class="description">Customizable quality, dimensions, format, and metadata</p>
+          <p class="description">Customize all compression settings with real-time updates</p>
           <div class="controls">
             <label>
               Quality: {{ (advancedOptions.quality * 100).toFixed(0) }}%
-              <input
-                type="range"
-                min="0.1"
-                max="1"
-                step="0.1"
-                [(ngModel)]="advancedOptions.quality"
-              />
+              <input type="range" min="0.1" max="1" step="0.05" [(ngModel)]="advancedOptions.quality" />
             </label>
             <label>
-              Max Width:
-              <input
-                type="number"
-                [(ngModel)]="advancedOptions.maxWidth"
-                min="100"
-                max="4000"
-              />
+              Max Width: <input type="number" [(ngModel)]="advancedOptions.maxWidth" min="100" max="4000" />
+            </label>
+            <label>
+              Max Height: <input type="number" [(ngModel)]="advancedOptions.maxHeight" min="100" max="4000" />
             </label>
             <label>
               Format:
               <select [(ngModel)]="advancedOptions.format">
-                <option value="auto">Auto (prefers PIX)</option>
+                <option value="auto">Auto (Prefers PIXU)</option>
                 <option value="image/jpeg">JPEG</option>
                 <option value="image/png">PNG</option>
                 <option value="image/webp">WebP</option>
-                <option value="image/pixu">PIXU (.pixu)</option>
+                <option value="image/pixu">PIXU (Best)</option>
               </select>
             </label>
             <label>
-              <input
-                type="checkbox"
-                [(ngModel)]="advancedOptions.stripMetadata"
-              />
+              <input type="checkbox" [(ngModel)]="advancedOptions.stripMetadata" />
               Strip Metadata
+            </label>
+            <label>
+              <input type="checkbox" [(ngModel)]="advancedOptions.enableSmartQuality" />
+              Smart Quality
             </label>
           </div>
           <pixu-compressor
             [samples]="sampleImages"
             [options]="advancedOptions"
+            (source)="onAdvancedSource($event)"
             (compress)="handleAdvancedCompress($event)"
             (error)="handleError($event)"
+            (progress)="advancedProgress = $event"
           ></pixu-compressor>
+          <div *ngIf="advancedProgress > 0 && advancedProgress < 1" class="progress-bar">
+            <div class="progress-fill" [style.width.%]="advancedProgress * 100"></div>
+          </div>
           <div *ngIf="advancedResult" class="result-card">
-            <h3>Result</h3>
-            <div class="stats">
-              <div class="stat">
-                <span class="label">Original:</span>
-                <span class="value">{{ formatBytes(advancedResult.originalSize) }}</span>
+            <div class="stats-grid">
+              <div class="stat-box">
+                <span class="stat-label">Original Size</span>
+                <span class="stat-value">{{ formatBytes(advancedResult.originalSize) }}</span>
               </div>
-              <div class="stat">
-                <span class="label">Compressed:</span>
-                <span class="value">{{ formatBytes(advancedResult.compressedSize) }}</span>
+              <div class="stat-box">
+                <span class="stat-label">Compressed Size</span>
+                <span class="stat-value highlight">{{ formatBytes(advancedResult.compressedSize) }}</span>
               </div>
-              <div class="stat">
-                <span class="label">Format:</span>
-                <span class="value">{{ advancedResult.format }}</span>
+              <div class="stat-box">
+                <span class="stat-label">Compression Ratio</span>
+                <span class="stat-value success">{{ (advancedResult.compressionRatio * 100).toFixed(1) }}%</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-label">Format</span>
+                <span class="stat-value">{{ advancedResult.format }}</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-label">Dimensions</span>
+                <span class="stat-value">{{ advancedResult.width }}×{{ advancedResult.height }}</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-label">Savings</span>
+                <span class="stat-value success">{{ formatBytes(advancedResult.originalSize - advancedResult.compressedSize) }}</span>
+              </div>
+            </div>
+            <div class="image-preview-grid">
+              <div class="preview-item">
+                <img [src]="advancedOriginalUrl" alt="Original" />
+                <p>Original</p>
+              </div>
+              <div class="preview-item">
+                <img [src]="advancedCompressedUrl" alt="Compressed" />
+                <p>Compressed</p>
+                <button (click)="downloadImage(advancedResult.file, 'advanced')" class="download-btn-small">Download</button>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Presets -->
         <div class="section">
           <h2>3. Compression Presets</h2>
-          <p class="description">Pre-configured settings for common use cases</p>
+          <p class="description">Compare different presets side by side</p>
           <div class="preset-selector">
             <button
               *ngFor="let preset of presets"
+              type="button"
               (click)="selectedPreset = preset"
               [class.active]="selectedPreset === preset"
               class="preset-btn"
             >
-              {{ preset }}
+              {{ presetNames[preset] }}
             </button>
           </div>
           <pixu-compressor
             [samples]="sampleImages"
-            [options]="{ preset: selectedPreset }"
+            [options]="presetOptions"
+            (source)="onPresetSource($event)"
             (compress)="handlePresetCompress($event)"
             (error)="handleError($event)"
+            (progress)="presetProgress = $event"
           ></pixu-compressor>
+          <div *ngIf="presetProgress > 0 && presetProgress < 1" class="progress-bar">
+            <div class="progress-fill" [style.width.%]="presetProgress * 100"></div>
+          </div>
           <div *ngIf="presetResult" class="result-card">
-            <h3>Result</h3>
-            <div class="stats">
-              <div class="stat">
-                <span class="label">Preset:</span>
-                <span class="value">{{ selectedPreset }}</span>
+            <div class="preset-info">
+              <h3>{{ presetNames[selectedPreset] }} Preset</h3>
+              <div class="stats-inline">
+                <span><strong>Original:</strong> {{ formatBytes(presetResult.originalSize) }}</span>
+                <span><strong>Compressed:</strong> {{ formatBytes(presetResult.compressedSize) }}</span>
+                <span><strong>Savings:</strong> <span class="success">{{ formatBytes(presetResult.originalSize - presetResult.compressedSize) }}</span></span>
               </div>
-              <div class="stat">
-                <span class="label">Original:</span>
-                <span class="value">{{ formatBytes(presetResult.originalSize) }}</span>
+            </div>
+            <div class="image-preview-grid">
+              <div class="preview-item">
+                <img [src]="presetOriginalUrl" alt="Original" />
               </div>
-              <div class="stat">
-                <span class="label">Compressed:</span>
-                <span class="value">{{ formatBytes(presetResult.compressedSize) }}</span>
+              <div class="preview-item">
+                <img [src]="presetCompressedUrl" alt="Compressed" />
+                <button (click)="downloadImage(presetResult.file, 'preset-' + selectedPreset)" class="download-btn-small">Download</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>4. Image Filters</h2>
+          <p class="description">Apply visual effects with instant preview</p>
+          <div class="filter-grid">
+            <label *ngFor="let filter of filters" class="filter-item">
+              <input
+                type="checkbox"
+                [checked]="isFilterSelected(filter)"
+                (change)="toggleFilter(filter, $event)"
+              />
+              <span>{{ filterNames[filter] }}</span>
+            </label>
+          </div>
+          <div *ngIf="selectedFilters.length > 0" class="filter-preview">
+            <p>Active Filters: {{ activeFilterLabels }}</p>
+          </div>
+          <pixu-compressor
+            [samples]="sampleImages"
+            [options]="filterOptions"
+            (source)="onFilterSource($event)"
+            (compress)="handleFilterCompress($event)"
+            (error)="handleError($event)"
+            (progress)="filterProgress = $event"
+          ></pixu-compressor>
+          <div *ngIf="filterProgress > 0 && filterProgress < 1" class="progress-bar">
+            <div class="progress-fill" [style.width.%]="filterProgress * 100"></div>
+          </div>
+          <div *ngIf="filterResult" class="image-comparison">
+            <div class="image-preview">
+              <h4>Original</h4>
+              <img [src]="filterOriginalUrl" alt="Original" />
+            </div>
+            <div class="image-preview">
+              <h4>With Filters</h4>
+              <img [src]="filterCompressedUrl" alt="Filtered" />
+              <button (click)="downloadImage(filterResult.file, 'filtered')" class="download-btn">Download</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="section pix-section">
+          <h2>5. PIXU Format - Revolutionary Compression</h2>
+          <p class="description">Experience the best compression with Pixu's proprietary PIXU format (30-60% better than JPEG)</p>
+          <div class="info-box pix-info">
+            <p><strong>PIXU Format</strong> — Reconstructive format under TECR: typically 30–60% smaller than JPEG and 20–40% vs WebP at the same visual budget.</p>
+          </div>
+          <div class="controls">
+            <label>
+              Quality: {{ (pixOptions.quality * 100).toFixed(0) }}%
+              <input type="range" min="0.1" max="1" step="0.05" [(ngModel)]="pixOptions.quality" />
+            </label>
+            <label>
+              Max Width: <input type="number" [(ngModel)]="pixOptions.maxWidth" min="100" max="4000" />
+            </label>
+            <label>
+              Max Height: <input type="number" [(ngModel)]="pixOptions.maxHeight" min="100" max="4000" />
+            </label>
+            <label>
+              <input type="checkbox" [(ngModel)]="pixOptions.stripMetadata" />
+              Strip Metadata
+            </label>
+            <label>
+              <input type="checkbox" [(ngModel)]="pixOptions.enableSmartQuality" />
+              Smart Quality
+            </label>
+          </div>
+          <pixu-compressor
+            [samples]="sampleImages"
+            [options]="pixOptions"
+            (source)="onPixSource($event)"
+            (compress)="handlePixCompress($event)"
+            (error)="handleError($event)"
+            (progress)="pixProgress = $event"
+          ></pixu-compressor>
+          <div *ngIf="pixProgress > 0 && pixProgress < 1" class="progress-bar">
+            <div class="progress-fill" [style.width.%]="pixProgress * 100"></div>
+          </div>
+          <div *ngIf="pixResult" class="result-card">
+            <div class="pix-comparison">
+              <h3>PIXU Format Results</h3>
+              <div class="stats-grid">
+                <div class="stat-box highlight-box">
+                  <span class="stat-label">Original Size</span>
+                  <span class="stat-value">{{ formatBytes(pixResult.originalSize) }}</span>
+                </div>
+                <div class="stat-box highlight-box">
+                  <span class="stat-label">PIXU Compressed</span>
+                  <span class="stat-value highlight">{{ formatBytes(pixResult.compressedSize) }}</span>
+                </div>
+                <div class="stat-box highlight-box">
+                  <span class="stat-label">Compression Ratio</span>
+                  <span class="stat-value success">{{ (pixResult.compressionRatio * 100).toFixed(1) }}%</span>
+                </div>
+                <div class="stat-box highlight-box">
+                  <span class="stat-label">Format</span>
+                  <span class="stat-value">{{ pixResult.format }}</span>
+                </div>
+                <div class="stat-box highlight-box">
+                  <span class="stat-label">Savings</span>
+                  <span class="stat-value success">{{ formatBytes(pixResult.originalSize - pixResult.compressedSize) }}</span>
+                </div>
+                <div class="stat-box highlight-box">
+                  <span class="stat-label">Dimensions</span>
+                  <span class="stat-value">{{ pixResult.width }}×{{ pixResult.height }}</span>
+                </div>
+              </div>
+              <div class="image-preview-grid">
+                <div class="preview-item">
+                  <img [src]="pixOriginalUrl" alt="Original" />
+                  <p>Original Image</p>
+                  <p class="image-info">{{ formatBytes(pixResult.originalSize) }}</p>
+                </div>
+                <div class="preview-item">
+                  <img [src]="pixCompressedUrl" alt="PIXU Compressed" />
+                  <p>PIXU Format ({{ (pixResult.compressionRatio * 100).toFixed(1) }}% smaller)</p>
+                  <p class="image-info">{{ formatBytes(pixResult.compressedSize) }}</p>
+                  <button (click)="downloadImage(pixResult.file, 'pixu-compressed')" class="download-btn">Download PIXU</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>6. Smart Quality Selection</h2>
+          <p class="description">Automatic quality optimization based on image content analysis</p>
+          <div class="info-box">
+            <p>Smart Quality analyzes content and selects quality for best compression while keeping visual fidelity.</p>
+          </div>
+          <pixu-compressor
+            [samples]="sampleImages"
+            [options]="smartQualityOptions"
+            (compress)="handleSmartQualityCompress($event)"
+            (error)="handleError($event)"
+            (progress)="smartQualityProgress = $event"
+          ></pixu-compressor>
+          <div *ngIf="smartQualityProgress > 0 && smartQualityProgress < 1" class="progress-bar">
+            <div class="progress-fill" [style.width.%]="smartQualityProgress * 100"></div>
+          </div>
+          <div *ngIf="smartQualityResult" class="result-card">
+            <div class="smart-quality-info">
+              <h3>Smart Quality Analysis</h3>
+              <div class="stats-grid">
+                <div class="stat-box">
+                  <span class="stat-label">Original</span>
+                  <span class="stat-value">{{ formatBytes(smartQualityResult.originalSize) }}</span>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-label">Compressed</span>
+                  <span class="stat-value highlight">{{ formatBytes(smartQualityResult.compressedSize) }}</span>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-label">Optimization</span>
+                  <span class="stat-value success">{{ (smartQualityResult.compressionRatio * 100).toFixed(1) }}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>7. Format Conversion</h2>
+          <p class="description">Convert between formats with size comparison</p>
+          <div class="controls">
+            <label>
+              Target Format:
+              <select [(ngModel)]="conversionFormat">
+                <option value="image/jpeg">JPEG</option>
+                <option value="image/png">PNG</option>
+                <option value="image/webp">WebP</option>
+                <option value="image/pixu">PIXU (Best)</option>
+              </select>
+            </label>
+            <label>
+              <input type="checkbox" [(ngModel)]="convertToJPEG" />
+              Auto Convert PNG to JPEG
+            </label>
+          </div>
+          <pixu-compressor
+            [samples]="sampleImages"
+            [options]="conversionOptions"
+            (compress)="handleConversionCompress($event)"
+            (error)="handleError($event)"
+            (progress)="conversionProgress = $event"
+          ></pixu-compressor>
+          <div *ngIf="conversionProgress > 0 && conversionProgress < 1" class="progress-bar">
+            <div class="progress-fill" [style.width.%]="conversionProgress * 100"></div>
+          </div>
+          <div *ngIf="conversionResult" class="result-card">
+            <div class="format-comparison">
+              <div class="format-item">
+                <span class="format-label">Original Format</span>
+                <span class="format-value">{{ conversionResult.format }}</span>
+              </div>
+              <div class="format-item">
+                <span class="format-label">Size</span>
+                <span class="format-value">{{ formatBytes(conversionResult.compressedSize) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>8. PNG Optimization</h2>
+          <p class="description">Lossless PNG compression with color reduction</p>
+          <div class="controls">
+            <label>
+              <input type="checkbox" [(ngModel)]="pngOptimization.enabled" />
+              Enable PNG Optimization
+            </label>
+            <label *ngIf="pngOptimization.enabled">
+              <input type="checkbox" [(ngModel)]="pngOptimization.reduceColors" />
+              Reduce Colors
+            </label>
+            <label *ngIf="pngOptimization.enabled && pngOptimization.reduceColors">
+              Max Colors: <input type="number" [(ngModel)]="pngOptimization.maxColors" min="2" max="256" />
+            </label>
+          </div>
+          <pixu-compressor
+            [samples]="sampleImages"
+            [options]="pngCompressOptions"
+            (compress)="handlePNGCompress($event)"
+            (error)="handleError($event)"
+            (progress)="pngProgress = $event"
+          ></pixu-compressor>
+          <div *ngIf="pngProgress > 0 && pngProgress < 1" class="progress-bar">
+            <div class="progress-fill" [style.width.%]="pngProgress * 100"></div>
+          </div>
+          <div *ngIf="pngResult" class="result-card">
+            <div class="stats-inline">
+              <span><strong>Original:</strong> {{ formatBytes(pngResult.originalSize) }}</span>
+              <span><strong>Optimized:</strong> {{ formatBytes(pngResult.compressedSize) }}</span>
+              <span>
+                <strong>Savings:</strong>
+                <span [class.success]="pngSavings >= 0" [class.danger]="pngSavings < 0">{{ formatBytes(pngSavings) }}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>9. Smart Cropping</h2>
+          <p class="description">Intelligent image cropping with focus detection</p>
+          <div class="controls">
+            <label>
+              Crop Width: <input type="number" [(ngModel)]="smartCrop.width" min="100" max="2000" />
+            </label>
+            <label>
+              Crop Height: <input type="number" [(ngModel)]="smartCrop.height" min="100" max="2000" />
+            </label>
+            <label>
+              Focus:
+              <select [(ngModel)]="smartCrop.focus">
+                <option value="center">Center</option>
+                <option value="top">Top</option>
+                <option value="bottom">Bottom</option>
+                <option value="left">Left</option>
+                <option value="right">Right</option>
+              </select>
+            </label>
+          </div>
+          <pixu-compressor
+            [samples]="sampleImages"
+            [options]="smartCropOptions"
+            (compress)="handleSmartCropCompress($event)"
+            (error)="handleError($event)"
+            (progress)="smartCropProgress = $event"
+          ></pixu-compressor>
+          <div *ngIf="smartCropProgress > 0 && smartCropProgress < 1" class="progress-bar">
+            <div class="progress-fill" [style.width.%]="smartCropProgress * 100"></div>
+          </div>
+          <div *ngIf="smartCropResult" class="result-card">
+            <div class="stats-inline">
+              <span><strong>Dimensions:</strong> {{ smartCropResult.width }}×{{ smartCropResult.height }}</span>
+              <span><strong>Size:</strong> {{ formatBytes(smartCropResult.compressedSize) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>10. Watermark</h2>
+          <p class="description">Add text or image watermarks with customization</p>
+          <div class="controls">
+            <label>
+              Watermark Text: <input type="text" [(ngModel)]="watermarkText" placeholder="Enter text" />
+            </label>
+            <label>
+              Position:
+              <select [(ngModel)]="watermarkPosition">
+                <option value="top-left">Top Left</option>
+                <option value="top-right">Top Right</option>
+                <option value="bottom-left">Bottom Left</option>
+                <option value="bottom-right">Bottom Right</option>
+                <option value="center">Center</option>
+              </select>
+            </label>
+            <label>
+              Opacity: {{ (watermarkOpacity * 100).toFixed(0) }}%
+              <input type="range" min="0.1" max="1" step="0.1" [(ngModel)]="watermarkOpacity" />
+            </label>
+          </div>
+          <pixu-compressor
+            [samples]="sampleImages"
+            [options]="watermarkOptions"
+            (compress)="handleWatermarkCompress($event)"
+            (error)="handleError($event)"
+            (progress)="watermarkProgress = $event"
+          ></pixu-compressor>
+          <div *ngIf="watermarkProgress > 0 && watermarkProgress < 1" class="progress-bar">
+            <div class="progress-fill" [style.width.%]="watermarkProgress * 100"></div>
+          </div>
+          <div *ngIf="watermarkResult && watermarkText" class="result-card">
+            <div class="image-preview-grid">
+              <div class="preview-item">
+                <img [src]="watermarkCompressedUrl" alt="Watermarked" />
+                <p>Watermarked Image</p>
+                <button (click)="downloadImage(watermarkResult.file, 'watermarked')" class="download-btn-small">Download</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>11. Performance Monitoring</h2>
+          <p class="description">Track compression metrics and performance in real-time</p>
+          <pixu-compressor
+            [samples]="sampleImages"
+            [options]="performanceOptions"
+            (compress)="handlePerformanceCompress($event)"
+            (error)="handleError($event)"
+            (progress)="performanceProgress = $event"
+          ></pixu-compressor>
+          <div *ngIf="performanceProgress > 0 && performanceProgress < 1" class="progress-bar">
+            <div class="progress-fill" [style.width.%]="performanceProgress * 100"></div>
+          </div>
+          <div *ngIf="performanceResult" class="result-card">
+            <div class="stats-grid">
+              <div class="stat-box">
+                <span class="stat-label">Original Size</span>
+                <span class="stat-value">{{ formatBytes(performanceResult.originalSize) }}</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-label">Compressed Size</span>
+                <span class="stat-value highlight">{{ formatBytes(performanceResult.compressedSize) }}</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-label">Compression Ratio</span>
+                <span class="stat-value success">{{ (performanceResult.compressionRatio * 100).toFixed(1) }}%</span>
+              </div>
+            </div>
+            <div *ngIf="performanceResult.metrics" class="metrics-card">
+              <h3>Performance Metrics</h3>
+              <div class="metrics-grid">
+                <div class="metric-item">
+                  <span class="metric-label">Duration</span>
+                  <span class="metric-value">{{ (performanceResult.metrics.duration ?? 0).toFixed(2) }}ms</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-label">Memory Used</span>
+                  <span class="metric-value">{{ formatBytes(performanceResult.metrics.memoryUsed || 0) }}</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-label">Throughput</span>
+                  <span class="metric-value">{{ formatBytes(performanceResult.metrics.throughput || 0) }}/s</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>12. Batch Processing</h2>
+          <p class="description">Compress multiple images at once with progress tracking</p>
+          <div class="batch-controls">
+            <input type="file" multiple (change)="handleBatchFiles($event)" accept="image/*" id="batch-input" />
+            <label for="batch-input" class="file-input-label">Select Multiple Images</label>
+          </div>
+          <div *ngIf="batchProgress > 0 && batchProgress < 1" class="progress-bar">
+            <div class="progress-fill" [style.width.%]="batchProgress * 100"></div>
+            <span class="progress-text">{{ (batchProgress * 100) | number: '1.0-0' }}%</span>
+          </div>
+          <div *ngIf="batchResults.length > 0" class="batch-results">
+            <h3>Batch Results ({{ batchResults.length }} images)</h3>
+            <div class="batch-summary">
+              <div class="summary-item">
+                <span class="summary-label">Total Original</span>
+                <span class="summary-value">{{ formatBytes(batchTotalOriginal) }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">Total Compressed</span>
+                <span class="summary-value highlight">{{ formatBytes(batchTotalCompressed) }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">Total Savings</span>
+                <span class="summary-value success">{{ formatBytes(batchTotalOriginal - batchTotalCompressed) }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">Average Ratio</span>
+                <span class="summary-value">{{ (batchAverageRatio * 100).toFixed(1) }}%</span>
+              </div>
+            </div>
+            <div class="batch-list">
+              <div *ngFor="let result of batchResults; let i = index" class="batch-item">
+                <div class="batch-item-info">
+                  <span class="batch-index">#{{ i + 1 }}</span>
+                  <span class="batch-size">{{ formatBytes(result.originalSize) }} → {{ formatBytes(result.compressedSize) }}</span>
+                  <span class="batch-ratio success">{{ (result.compressionRatio * 100).toFixed(1) }}%</span>
+                </div>
+                <button type="button" (click)="downloadImage(result.file, 'batch-' + i)" class="download-btn-tiny">Download</button>
               </div>
             </div>
           </div>
@@ -185,199 +647,11 @@ import { angularSampleImages, fetchSampleFile } from '../../../shared/samples';
 
       <div *ngIf="error" class="error-message">
         <p>{{ error }}</p>
-        <button (click)="error = null">Close</button>
+        <button type="button" (click)="error = null">Close</button>
       </div>
     </div>
   `,
-  styles: [`
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 2rem;
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 3rem;
-    }
-
-    .header h1 {
-      font-size: 2.5rem;
-      margin-bottom: 0.5rem;
-      color: var(--pixu-text);
-    }
-
-    .header p {
-      font-size: 1.1rem;
-      color: var(--pixu-muted);
-    }
-
-    .content {
-      display: flex;
-      flex-direction: column;
-      gap: 3rem;
-    }
-
-    .section {
-      background: rgba(18, 24, 38, 0.92);
-      border: 1px solid var(--pixu-border);
-      border-radius: var(--pixu-radius);
-      padding: 2rem;
-      box-shadow: var(--pixu-shadow);
-    }
-
-    .section h2 {
-      margin-bottom: 0.5rem;
-      color: var(--pixu-text);
-      font-size: 1.5rem;
-      border-bottom: 2px solid transparent;
-      border-image: var(--pixu-gradient) 1;
-      padding-bottom: 0.5rem;
-    }
-
-    .description {
-      margin-bottom: 1.5rem;
-      color: var(--pixu-muted);
-      font-size: 0.95rem;
-    }
-
-    .sample-preview {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1rem;
-      margin-top: 1rem;
-    }
-
-    .sample-preview img {
-      width: 100%;
-      border-radius: 10px;
-      border: 1px solid var(--pixu-border);
-    }
-
-    .controls {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-      padding: 1.5rem;
-      background: var(--pixu-surface-2);
-      border-radius: 8px;
-    }
-
-    .controls label {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      font-size: 0.9rem;
-      color: var(--pixu-muted);
-    }
-
-    .controls input[type="range"] {
-      width: 100%;
-    }
-
-    .controls input[type="number"],
-    .controls select {
-      padding: 0.5rem;
-      border: 1px solid var(--pixu-border);
-      background: var(--pixu-surface);
-      color: var(--pixu-text);
-      border-radius: 4px;
-      font-size: 0.9rem;
-    }
-
-    .preset-selector {
-      display: flex;
-      gap: 0.5rem;
-      margin-bottom: 1.5rem;
-      flex-wrap: wrap;
-    }
-
-    .preset-btn {
-      padding: 0.75rem 1.5rem;
-      border: 2px solid #3498db;
-      background: white;
-      color: #3498db;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      font-weight: 500;
-      transition: all 0.2s;
-    }
-
-    .preset-btn:hover {
-      background: var(--pixu-gradient);
-      color: white;
-      border-color: transparent;
-    }
-
-    .preset-btn.active {
-      background: var(--pixu-gradient);
-      color: white;
-      border-color: transparent;
-    }
-
-    .result-card {
-      margin-top: 1.5rem;
-      padding: 1.5rem;
-      background: var(--pixu-surface-2);
-      border-radius: 8px;
-      border: 1px solid var(--pixu-border);
-    }
-
-    .result-card h3 {
-      margin-bottom: 1rem;
-      color: var(--pixu-text);
-      font-size: 1.1rem;
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 1rem;
-    }
-
-    .stat {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
-
-    .stat .label {
-      font-size: 0.85rem;
-      color: var(--pixu-muted);
-      font-weight: 500;
-    }
-
-    .stat .value {
-      font-size: 1.1rem;
-      color: #3498db;
-      font-weight: 600;
-    }
-
-    .error-message {
-      position: fixed;
-      top: 2rem;
-      right: 2rem;
-      background: #e74c3c;
-      color: white;
-      padding: 1rem 1.5rem;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      z-index: 1000;
-      max-width: 400px;
-    }
-
-    .error-message button {
-      margin-top: 0.5rem;
-      padding: 0.5rem 1rem;
-      background: white;
-      color: #e74c3c;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-  `]
+  styles: []
 })
 export class AppComponent {
   sampleImages = angularSampleImages;
@@ -387,23 +661,227 @@ export class AppComponent {
   sampleOriginalUrl = '';
   sampleCompressedUrl = '';
 
+  basicOptions = {
+    quality: 0.8,
+  };
+
   advancedOptions = {
     quality: 0.8,
     maxWidth: 1920,
     maxHeight: 1080,
-    format: 'auto' as const,
+    format: 'auto' as SupportedFormat,
     stripMetadata: true,
+    enableSmartQuality: false,
   };
 
   presets = ['web', 'print', 'social', 'thumbnail', 'email'];
+  presetNames: Record<string, string> = {
+    web: 'Web',
+    print: 'Print',
+    social: 'Social Media',
+    thumbnail: 'Thumbnail',
+    email: 'Email',
+  };
   selectedPreset = 'web';
+
+  filters: ImageFilter[] = ['grayscale', 'sepia', 'vintage', 'brightness', 'contrast', 'saturation', 'blur', 'sharpen'];
+  filterNames: Record<string, string> = {
+    grayscale: 'Grayscale',
+    sepia: 'Sepia',
+    vintage: 'Vintage',
+    brightness: 'Brightness',
+    contrast: 'Contrast',
+    saturation: 'Saturation',
+    blur: 'Blur',
+    sharpen: 'Sharpen',
+  };
+  selectedFilters: ImageFilter[] = [];
+
+  pixOptions = {
+    quality: 0.85,
+    maxWidth: 1920,
+    maxHeight: 1080,
+    format: 'image/pixu' as const,
+    stripMetadata: true,
+    enableSmartQuality: true,
+  };
+
+  conversionFormat: SupportedFormat = 'image/jpeg';
+  convertToJPEG = false;
+
+  pngOptimization = {
+    enabled: false,
+    reduceColors: false,
+    maxColors: 128,
+  };
+
+  smartCrop = {
+    width: 800,
+    height: 600,
+    focus: 'center' as const,
+  };
+
+  watermarkText = '';
+  watermarkPosition: NonNullable<CompressionOptions['watermark']>['position'] = 'bottom-right';
+  watermarkOpacity = 0.7;
 
   basicResult: CompressionResult | null = null;
   advancedResult: CompressionResult | null = null;
   presetResult: CompressionResult | null = null;
+  filterResult: CompressionResult | null = null;
+  pixResult: CompressionResult | null = null;
+  smartQualityResult: CompressionResult | null = null;
+  conversionResult: CompressionResult | null = null;
+  pngResult: CompressionResult | null = null;
+  smartCropResult: CompressionResult | null = null;
+  watermarkResult: CompressionResult | null = null;
+  performanceResult: ResultWithMetrics | null = null;
+  batchResults: CompressionResult[] = [];
   error: string | null = null;
 
-  async compressSample(sample: typeof this.sampleImages[0]) {
+  basicProgress = 0;
+  advancedProgress = 0;
+  presetProgress = 0;
+  filterProgress = 0;
+  pixProgress = 0;
+  smartQualityProgress = 0;
+  conversionProgress = 0;
+  pngProgress = 0;
+  smartCropProgress = 0;
+  watermarkProgress = 0;
+  performanceProgress = 0;
+  batchProgress = 0;
+
+  basicOriginalUrl = '';
+  basicCompressedUrl = '';
+  advancedOriginalUrl = '';
+  advancedCompressedUrl = '';
+  presetOriginalUrl = '';
+  presetCompressedUrl = '';
+  filterOriginalUrl = '';
+  filterCompressedUrl = '';
+  pixOriginalUrl = '';
+  pixCompressedUrl = '';
+  watermarkCompressedUrl = '';
+
+  get presetOptions(): CompressionOptions {
+    return { preset: this.selectedPreset as CompressionOptions['preset'] };
+  }
+
+  get filterOptions(): CompressionOptions {
+    return { quality: 0.8, filters: this.selectedFilters };
+  }
+
+  get smartQualityOptions(): CompressionOptions {
+    return { enableSmartQuality: true };
+  }
+
+  get conversionOptions(): CompressionOptions {
+    return { format: this.conversionFormat, convertToJPEG: this.convertToJPEG };
+  }
+
+  get pngCompressOptions(): CompressionOptions {
+    if (this.pngOptimization.enabled) {
+      return {
+        format: 'image/png',
+        optimizePNG: { ...this.pngOptimization },
+        strict: true,
+      };
+    }
+    return {
+      format: 'auto',
+      strict: true,
+    };
+  }
+
+  get smartCropOptions(): CompressionOptions {
+    return {
+      quality: 0.8,
+      smartCrop: { ...this.smartCrop, enabled: true },
+    };
+  }
+
+  get watermarkOptions(): CompressionOptions {
+    return {
+      quality: 0.8,
+      watermark: this.watermarkText
+        ? {
+            text: this.watermarkText,
+            position: this.watermarkPosition,
+            opacity: this.watermarkOpacity,
+          }
+        : undefined,
+    };
+  }
+
+  get performanceOptions(): CompressionOptions {
+    return { quality: 0.8, monitorPerformance: true };
+  }
+
+  get activeFilterLabels(): string {
+    return this.selectedFilters.map((f) => this.filterNames[f]).join(', ');
+  }
+
+  get pngSavings(): number {
+    return this.pngResult
+      ? this.pngResult.originalSize - this.pngResult.compressedSize
+      : 0;
+  }
+
+  get batchTotalOriginal(): number {
+    return this.batchResults.reduce((sum, r) => sum + r.originalSize, 0);
+  }
+
+  get batchTotalCompressed(): number {
+    return this.batchResults.reduce((sum, r) => sum + r.compressedSize, 0);
+  }
+
+  get batchAverageRatio(): number {
+    if (this.batchResults.length === 0) return 0;
+    const total = this.batchResults.reduce((sum, r) => sum + r.compressionRatio, 0);
+    return total / this.batchResults.length;
+  }
+
+  isFilterSelected(filter: ImageFilter): boolean {
+    return this.selectedFilters.includes(filter);
+  }
+
+  toggleFilter(filter: ImageFilter, event: Event) {
+    const checked = (event.target as HTMLInputElement).checked;
+    if (checked) {
+      this.selectedFilters = [...this.selectedFilters, filter];
+    } else {
+      this.selectedFilters = this.selectedFilters.filter((f) => f !== filter);
+    }
+  }
+
+  private setOriginalUrl(key: 'basicOriginalUrl' | 'advancedOriginalUrl' | 'presetOriginalUrl' | 'filterOriginalUrl' | 'pixOriginalUrl', url: string) {
+    const current = this[key];
+    if (current) URL.revokeObjectURL(current);
+    this[key] = url;
+  }
+
+  onBasicSource(payload: { url: string }) {
+    this.setOriginalUrl('basicOriginalUrl', payload.url);
+  }
+
+  onAdvancedSource(payload: { url: string }) {
+    this.setOriginalUrl('advancedOriginalUrl', payload.url);
+  }
+
+  onPresetSource(payload: { url: string }) {
+    this.setOriginalUrl('presetOriginalUrl', payload.url);
+  }
+
+  onFilterSource(payload: { url: string }) {
+    this.setOriginalUrl('filterOriginalUrl', payload.url);
+  }
+
+  onPixSource(payload: { url: string }) {
+    this.setOriginalUrl('pixOriginalUrl', payload.url);
+  }
+
+  async compressSample(sample: (typeof this.sampleImages)[0]) {
     this.sampleLoading = sample.id;
     try {
       const file = await fetchSampleFile(sample);
@@ -427,14 +905,95 @@ export class AppComponent {
 
   handleBasicCompress(result: CompressionResult) {
     this.basicResult = result;
+    this.basicProgress = 1;
+    if (this.basicCompressedUrl) URL.revokeObjectURL(this.basicCompressedUrl);
+    if (result.file) this.basicCompressedUrl = URL.createObjectURL(result.file);
   }
 
   handleAdvancedCompress(result: CompressionResult) {
     this.advancedResult = result;
+    this.advancedProgress = 1;
+    if (this.advancedCompressedUrl) URL.revokeObjectURL(this.advancedCompressedUrl);
+    if (result.file) this.advancedCompressedUrl = URL.createObjectURL(result.file);
   }
 
   handlePresetCompress(result: CompressionResult) {
     this.presetResult = result;
+    this.presetProgress = 1;
+    if (this.presetCompressedUrl) URL.revokeObjectURL(this.presetCompressedUrl);
+    if (result.file) this.presetCompressedUrl = URL.createObjectURL(result.file);
+  }
+
+  handleFilterCompress(result: CompressionResult) {
+    this.filterResult = result;
+    this.filterProgress = 1;
+    if (this.filterCompressedUrl) URL.revokeObjectURL(this.filterCompressedUrl);
+    if (result.file) this.filterCompressedUrl = URL.createObjectURL(result.file);
+  }
+
+  handlePixCompress(result: CompressionResult) {
+    this.pixResult = result;
+    this.pixProgress = 1;
+    if (this.pixCompressedUrl) URL.revokeObjectURL(this.pixCompressedUrl);
+    if (result.file) this.pixCompressedUrl = URL.createObjectURL(result.file);
+  }
+
+  handleSmartQualityCompress(result: CompressionResult) {
+    this.smartQualityResult = result;
+    this.smartQualityProgress = 1;
+  }
+
+  handleConversionCompress(result: CompressionResult) {
+    this.conversionResult = result;
+    this.conversionProgress = 1;
+  }
+
+  handlePNGCompress(result: CompressionResult) {
+    this.pngResult = result;
+    this.pngProgress = 1;
+  }
+
+  handleSmartCropCompress(result: CompressionResult) {
+    this.smartCropResult = result;
+    this.smartCropProgress = 1;
+  }
+
+  handleWatermarkCompress(result: CompressionResult) {
+    this.watermarkResult = result;
+    this.watermarkProgress = 1;
+    if (result.file) {
+      if (this.watermarkCompressedUrl) URL.revokeObjectURL(this.watermarkCompressedUrl);
+      this.watermarkCompressedUrl = URL.createObjectURL(result.file);
+    }
+  }
+
+  handlePerformanceCompress(result: CompressionResult) {
+    this.performanceResult = result as ResultWithMetrics;
+    this.performanceProgress = 1;
+  }
+
+  async handleBatchFiles(e: Event) {
+    const files = Array.from((e.target as HTMLInputElement).files || []);
+    if (files.length === 0) return;
+
+    this.batchProgress = 0;
+    this.batchResults = [];
+
+    try {
+      let completed = 0;
+      const results = await compressBatch(files, {
+        quality: 0.8,
+        concurrency: 3,
+        onItemComplete: () => {
+          completed++;
+          this.batchProgress = completed / files.length;
+        },
+      });
+      this.batchResults = results;
+      this.batchProgress = 1;
+    } catch (err) {
+      this.error = err instanceof Error ? err.message : 'Batch compression failed';
+    }
   }
 
   handleError(err: Error) {
@@ -445,12 +1004,25 @@ export class AppComponent {
     }, 5000);
   }
 
+  downloadImage(file: File | Blob, name: string) {
+    const url = URL.createObjectURL(file);
+    const a = document.createElement('a');
+    a.href = url;
+    const ext = file.type === 'image/pixu' ? PIXU_EXTENSION : `.${file.type.split('/')[1] || 'jpg'}`;
+    a.download = `${name}-${Date.now()}${ext}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   formatBytes(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
+    if (!Number.isFinite(bytes) || bytes === 0) return '0 Bytes';
+    const sign = bytes < 0 ? '-' : '';
+    const abs = Math.abs(bytes);
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    const i = Math.min(sizes.length - 1, Math.floor(Math.log(abs) / Math.log(k)));
+    return `${sign}${Math.round((abs / Math.pow(k, i)) * 100) / 100} ${sizes[i]}`;
   }
 }
-

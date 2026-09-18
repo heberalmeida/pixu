@@ -7,7 +7,7 @@ export <contract>
     samples: { type: 'any', default: [] }
     autoCompress: { type: 'boolean', default: true }
   }
-  emits: ['compress', 'error', 'progress']
+  emits: ['compress', 'error', 'progress', 'source']
 </contract>
 
 const file = pulse(null)
@@ -17,6 +17,24 @@ const error = pulse(null)
 const result = pulse(null)
 const originalUrl = pulse(null)
 const compressedUrl = pulse(null)
+
+const optionsProp = pulse({})
+const samplesProp = pulse([])
+const autoCompressProp = pulse(true)
+const emitRef = { current: null }
+
+function emit(name, ...payload) {
+  const handler = emitRef.current
+  if (typeof handler === 'function') handler(name, ...payload)
+}
+
+function bindProps(nextSamples, nextOptions, nextAuto, mountEmit) {
+  samplesProp.set(Array.isArray(nextSamples) ? nextSamples : [])
+  optionsProp.set(nextOptions && typeof nextOptions === 'object' ? nextOptions : {})
+  autoCompressProp.set(nextAuto !== false)
+  emitRef.current = typeof mountEmit === 'function' ? mountEmit : null
+  return ''
+}
 
 const progressPct = derive(() => `${Math.round(progress() * 100)}%`)
 const progressLabel = derive(() => `Compressing... ${Math.round(progress() * 100)}%`)
@@ -49,16 +67,21 @@ const compressedSizeLabel = derive(() => {
 })
 const compressedDims = derive(() => {
   const r = result()
-  return r ? `${r.width}×${r.height}` : ''
+  return r ? `${r.width}x${r.height}` : ''
 })
-const hasSamples = derive(() => Array.isArray(samples) && samples.length > 0)
+const hasSamples = derive(() => {
+  const list = samplesProp()
+  return Array.isArray(list) && list.length > 0
+})
 
 function formatBytes(bytes) {
-  if (!bytes) return '0 B'
+  if (!Number.isFinite(bytes) || bytes === 0) return '0 B'
+  const sign = bytes < 0 ? '-' : ''
+  const abs = Math.abs(bytes)
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return `${Math.round((bytes / Math.pow(k, i)) * 100) / 100} ${sizes[i]}`
+  const i = Math.min(sizes.length - 1, Math.floor(Math.log(abs) / Math.log(k)))
+  return `${sign}${Math.round((abs / Math.pow(k, i)) * 100) / 100} ${sizes[i]}`
 }
 
 function revokeUrls() {
@@ -113,22 +136,36 @@ async function loadSample(e, sample) {
 }
 
 async function processFile(selected) {
-  file.set(selected)
   loading.set(true)
   error.set(null)
   progress.set(0)
   result.set(null)
   revokeUrls()
-  originalUrl.set(URL.createObjectURL(selected))
-
-  if (autoCompress === false) {
-    loading.set(false)
-    return
-  }
 
   try {
-    const compressionResult = await compress(selected, {
-      ...(options || {}),
+    const buffer = await selected.arrayBuffer()
+    const type = selected.type || 'image/jpeg'
+    const previewBlob = new Blob([buffer.slice(0)], { type })
+    const appPreviewBlob = new Blob([buffer.slice(0)], { type })
+    const fileForCompress = new File([buffer.slice(0)], selected.name, {
+      type,
+      lastModified: selected.lastModified,
+    })
+
+    file.set(fileForCompress)
+    originalUrl.set(URL.createObjectURL(previewBlob))
+    emit('source', {
+      file: fileForCompress,
+      url: URL.createObjectURL(appPreviewBlob),
+    })
+
+    if (autoCompressProp() === false) {
+      loading.set(false)
+      return
+    }
+
+    const compressionResult = await compress(fileForCompress, {
+      ...(optionsProp() || {}),
       onProgress: (p) => {
         progress.set(p)
         emit('progress', p)
@@ -170,7 +207,7 @@ function reset() {
 }
 
 export <view>
-  <div class="pixu-compressor">
+  <div class="pixu-compressor" data-bind=${() => bindProps(samples, options, autoCompress, emit)}>
     #if !file()
       <div class="upload-area" on-click=${onUploadClick} on-dragover=${onDragOver} on-drop=${onDrop}>
         <input id="pixu-jacare-file" class="file-input" type="file" accept="image/*" on-change=${onFileChange} />
@@ -187,7 +224,7 @@ export <view>
           <div class="sample-gallery">
             <p class="sample-label">Or try a real sample</p>
             <div class="sample-grid">
-            #for samples as sample (sample.id)
+            #for samplesProp() as sample (sample.id)
               <button type="button" class="sample-card" on-click=${(e) => loadSample(e, sample)}>
                 <img src=${sample.url} alt=${sample.label} />
                 <span>${sample.label}</span>

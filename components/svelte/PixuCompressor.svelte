@@ -1,10 +1,17 @@
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte';
+  import { onMount, onDestroy, createEventDispatcher } from 'svelte';
   import type { CompressionOptions, CompressionResult } from 'pixu';
 
   export let options: CompressionOptions = {};
   export let autoCompress: boolean = true;
   export let samples: { id: string; label: string; url: string; file: string }[] = [];
+
+  const dispatch = createEventDispatcher<{
+    compress: CompressionResult;
+    error: Error;
+    progress: number;
+    source: { file: File; url: string };
+  }>();
 
   let file: File | null = null;
   let loading: boolean = false;
@@ -17,10 +24,6 @@
   let originalDimensions: string = '';
   let fileInput: HTMLInputElement;
   let compressFn: any = null;
-
-  const createEvent = (name: string, detail: any) => {
-    return new CustomEvent(name, { detail });
-  };
 
   onMount(async () => {
     try {
@@ -73,33 +76,49 @@
   }
 
   async function processFile(selectedFile: File) {
-    file = selectedFile;
     loading = true;
     error = null;
     progress = 0;
+    result = null;
 
     if (originalUrl) {
       URL.revokeObjectURL(originalUrl);
+      originalUrl = null;
     }
     if (compressedUrl) {
       URL.revokeObjectURL(compressedUrl);
-    }
-
-    originalUrl = URL.createObjectURL(selectedFile);
-    originalSize = selectedFile.size;
-
-    if (!autoCompress) {
-      loading = false;
-      return;
+      compressedUrl = null;
     }
 
     try {
+      const buffer = await selectedFile.arrayBuffer();
+      const type = selectedFile.type || 'image/jpeg';
+      const previewBlob = new Blob([buffer.slice(0)], { type });
+      const appPreviewBlob = new Blob([buffer.slice(0)], { type });
+      const fileForCompress = new File([buffer.slice(0)], selectedFile.name, {
+        type,
+        lastModified: selectedFile.lastModified,
+      });
+
+      file = fileForCompress;
+      originalUrl = URL.createObjectURL(previewBlob);
+      originalSize = fileForCompress.size;
+      dispatch('source', {
+        file: fileForCompress,
+        url: URL.createObjectURL(appPreviewBlob),
+      });
+
+      if (!autoCompress) {
+        loading = false;
+        return;
+      }
+
       if (!compressFn) {
         const module = await import('pixu');
         compressFn = module.compress;
       }
 
-      const compressionResult = await compressFn(selectedFile, {
+      const compressionResult = await compressFn(fileForCompress, {
         ...options,
         onProgress: (p: number) => {
           progress = p;
@@ -146,16 +165,13 @@
   }
 
   function formatBytes(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
+    if (!Number.isFinite(bytes) || bytes === 0) return '0 Bytes';
+    const sign = bytes < 0 ? '-' : '';
+    const abs = Math.abs(bytes);
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-  }
-
-  function dispatch(name: string, detail: any) {
-    const event = new CustomEvent(name, { detail });
-    document.dispatchEvent(event);
+    const i = Math.min(sizes.length - 1, Math.floor(Math.log(abs) / Math.log(k)));
+    return `${sign}${Math.round((abs / Math.pow(k, i)) * 100) / 100} ${sizes[i]}`;
   }
 </script>
 
@@ -244,7 +260,7 @@
             </div>
             <div class="stat-item">
               <span class="stat-label">Quality</span>
-              <span class="stat-value">{((result.metadata?.quality || 0) * 100).toFixed(0)}%</span>
+              <span class="stat-value">{result.metadata?.quality == null ? '—' : `${Math.round(result.metadata.quality * 100)}%`}</span>
             </div>
           </div>
           <div class="actions">

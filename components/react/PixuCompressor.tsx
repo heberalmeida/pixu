@@ -15,6 +15,7 @@ interface PixuCompressorProps {
   onCompress?: (result: CompressionResult) => void;
   onError?: (error: Error) => void;
   onProgress?: (progress: number) => void;
+  onSource?: (payload: { file: File; url: string }) => void;
 }
 
 const PixuCompressor: React.FC<PixuCompressorProps> = ({
@@ -24,6 +25,7 @@ const PixuCompressor: React.FC<PixuCompressorProps> = ({
   onCompress,
   onError,
   onProgress,
+  onSource,
 }) => {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -35,38 +37,55 @@ const PixuCompressor: React.FC<PixuCompressorProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const formatBytes = useCallback((bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
+    if (!Number.isFinite(bytes) || bytes === 0) return '0 Bytes';
+    const sign = bytes < 0 ? '-' : '';
+    const abs = Math.abs(bytes);
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    const i = Math.min(sizes.length - 1, Math.floor(Math.log(abs) / Math.log(k)));
+    return `${sign}${Math.round((abs / Math.pow(k, i)) * 100) / 100} ${sizes[i]}`;
   }, []);
 
   const processFile = useCallback(async (selectedFile: File) => {
-    setFile(selectedFile);
     setLoading(true);
     setError(null);
     setProgress(0);
+    setResult(null);
 
     if (originalUrl) {
       URL.revokeObjectURL(originalUrl);
+      setOriginalUrl(null);
     }
     if (compressedUrl) {
       URL.revokeObjectURL(compressedUrl);
-    }
-
-    const url = URL.createObjectURL(selectedFile);
-    setOriginalUrl(url);
-
-    if (!autoCompress) {
-      setLoading(false);
-      return;
+      setCompressedUrl(null);
     }
 
     try {
+      const buffer = await selectedFile.arrayBuffer();
+      const type = selectedFile.type || 'image/jpeg';
+      const previewBlob = new Blob([buffer.slice(0)], { type });
+      const appPreviewBlob = new Blob([buffer.slice(0)], { type });
+      const fileForCompress = new File([buffer.slice(0)], selectedFile.name, {
+        type,
+        lastModified: selectedFile.lastModified,
+      });
+
+      setFile(fileForCompress);
+      setOriginalUrl(URL.createObjectURL(previewBlob));
+      onSource?.({
+        file: fileForCompress,
+        url: URL.createObjectURL(appPreviewBlob),
+      });
+
+      if (!autoCompress) {
+        setLoading(false);
+        return;
+      }
+
       const { compress } = await import('pixu');
-      
-      const compressionResult = await compress(selectedFile, {
+
+      const compressionResult = await compress(fileForCompress, {
         ...options,
         onProgress: (p: number) => {
           setProgress(p);
@@ -75,8 +94,7 @@ const PixuCompressor: React.FC<PixuCompressorProps> = ({
       });
 
       setResult(compressionResult);
-      const compressedUrlObj = URL.createObjectURL(compressionResult.file);
-      setCompressedUrl(compressedUrlObj);
+      setCompressedUrl(URL.createObjectURL(compressionResult.file));
       onCompress?.(compressionResult);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Compression failed';
@@ -85,7 +103,7 @@ const PixuCompressor: React.FC<PixuCompressorProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [options, autoCompress, onCompress, onError, onProgress, originalUrl, compressedUrl]);
+  }, [options, autoCompress, onCompress, onError, onProgress, onSource, originalUrl, compressedUrl]);
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -256,7 +274,9 @@ const PixuCompressor: React.FC<PixuCompressorProps> = ({
               <div className="stat-item">
                 <span className="stat-label">Quality</span>
                 <span className="stat-value">
-                  {((result.metadata?.quality || 0) * 100).toFixed(0)}%
+                  {result.metadata?.quality == null
+                    ? '—'
+                    : `${Math.round(result.metadata.quality * 100)}%`}
                 </span>
               </div>
             </div>

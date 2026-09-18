@@ -195,7 +195,6 @@ export class PixuCompressor {
       let format: string = fileType;
       if (options.format && options.format !== 'auto') {
         format = options.format.toLowerCase();
-        // Normalize jpg to jpeg
         if (format === 'image/jpg') {
           format = 'image/jpeg';
         }
@@ -226,7 +225,22 @@ export class PixuCompressor {
           format = fileType;
         }
       }
-      
+
+      // JPEG/WebP photos forced to PNG almost always grow — only keep PNG when
+      // the source is already PNG or PNG optimization was explicitly requested.
+      if (
+        format === 'image/png' &&
+        fileType !== 'image/png' &&
+        !options.optimizePNG?.enabled
+      ) {
+        if (isPixuSupported()) {
+          format = PIXU_MIME_TYPE;
+        } else {
+          format = fileType === 'image/jpeg' ? 'image/jpeg' : fileType;
+        }
+      }
+
+
       format = normalizePixuFormat(format);
 
       if (!format || (!isImageType(format) && format !== PIXU_MIME_TYPE)) {
@@ -469,17 +483,17 @@ export class PixuCompressor {
       const useDualPass = shouldUseDualPass(options) && options.mode === 'size' && options.targetSize;
 
       // Normalize format for PIXU (use format directly, already normalized above)
-      const outputFormat = format;
+      const encodeFormat = format;
 
       if (useDualPass && options.targetSize) {
-        if (outputFormat === PIXU_MIME_TYPE) {
+        if (encodeFormat === PIXU_MIME_TYPE) {
           // Use PIX for dual pass
           blob = await canvasToPixu(canvas, quality, { adaptive: true });
         } else {
-          blob = await this.dualPassCompression(canvas, outputFormat, quality, originalSize, options.targetSize);
+          blob = await this.dualPassCompression(canvas, encodeFormat, quality, originalSize, options.targetSize);
         }
       } else {
-        if (outputFormat === PIXU_MIME_TYPE) {
+        if (encodeFormat === PIXU_MIME_TYPE) {
           // Use PIX format with advanced compression
           blob = await canvasToPixu(canvas, quality, {
             progressive: options.enableProgressive !== false,
@@ -487,7 +501,7 @@ export class PixuCompressor {
             chromaSubsampling: '4:2:0',
           });
         } else {
-          blob = await canvasToBlob(canvas, outputFormat, quality);
+          blob = await canvasToBlob(canvas, encodeFormat, quality);
         }
       }
 
@@ -505,103 +519,102 @@ export class PixuCompressor {
       });
 
       const compressedSize = finalFile.size;
-      
-      // Strict mode: return original if compressed is larger and no resize was applied
-      const strict = options.strict !== false; // Default to true
+
+      const strict = options.strict !== false;
       let resultFile: File | Blob = finalFile;
       let resultCompressedSize = compressedSize;
-      
-      // Advanced compression: if result is larger, apply aggressive recompression
-      if (compressedSize >= originalSize) {
-        // Check if resize was applied
-        const wasResized = 
-          (options.width !== undefined && options.width !== naturalWidth) ||
-          (options.height !== undefined && options.height !== naturalHeight) ||
-          (options.maxWidth !== undefined && dimensions.width < naturalWidth) ||
-          (options.maxHeight !== undefined && dimensions.height < naturalHeight) ||
-          (options.minWidth !== undefined && dimensions.width > naturalWidth) ||
-          (options.minHeight !== undefined && dimensions.height > naturalHeight) ||
-          (options.resize && options.resize !== 'none');
-        
-        // If no resize and same format, apply aggressive recompression
-        if (!wasResized && finalFormat === fileType) {
-          // Try aggressive compression with lower quality
-          try {
-            const aggressiveQuality = Math.max(0.5, (quality || 0.8) - 0.2);
-            let aggressiveBlob: Blob;
-            if (finalFormat === PIXU_MIME_TYPE) {
-              aggressiveBlob = await canvasToPixu(canvas, aggressiveQuality, { adaptive: true });
-            } else {
-              aggressiveBlob = await canvasToBlob(canvas, finalFormat, aggressiveQuality);
-            }
-            
-            if (aggressiveBlob.size < originalSize) {
-              resultFile = new File([aggressiveBlob], fileName, { type: finalFormat });
-              resultCompressedSize = aggressiveBlob.size;
-            } else {
-              // Try even more aggressive or different format
-              const veryAggressiveQuality = Math.max(0.4, aggressiveQuality - 0.15);
-              let veryAggressiveBlob: Blob;
-              if (finalFormat === PIXU_MIME_TYPE) {
-                veryAggressiveBlob = await canvasToPixu(canvas, veryAggressiveQuality, { adaptive: true });
-              } else {
-                veryAggressiveBlob = await canvasToBlob(canvas, finalFormat, veryAggressiveQuality);
+      let resultFormat = finalFormat;
+      let usedQuality = quality;
+
+      const minWorthwhileRatio = 0.15;
+      const wasResized =
+        (options.width !== undefined && options.width !== naturalWidth) ||
+        (options.height !== undefined && options.height !== naturalHeight) ||
+        (options.maxWidth !== undefined && dimensions.width < naturalWidth) ||
+        (options.maxHeight !== undefined && dimensions.height < naturalHeight) ||
+        (options.minWidth !== undefined && dimensions.width > naturalWidth) ||
+        (options.minHeight !== undefined && dimensions.height > naturalHeight) ||
+        (options.resize && options.resize !== 'none');
+
+      const savingsRatio = () => 1 - resultCompressedSize / originalSize;
+      const needsMoreSavings =
+        resultCompressedSize >= originalSize || savingsRatio() < minWorthwhileRatio;
+
+      if (needsMoreSavings) {
+        const qualities = [0.72, 0.62, 0.52, 0.42, 0.32, 0.25];
+        // Prefer lossy formats when PNG (or any pick) grew past the source
+        const formatsToTry = (
+          resultFormat === 'image/png' || resultCompressedSize >= originalSize
+            ? [PIXU_MIME_TYPE, 'image/webp', 'image/jpeg', resultFormat]
+            : wasResized
+              ? [resultFormat, 'image/webp', 'image/jpeg', PIXU_MIME_TYPE]
+              : [PIXU_MIME_TYPE, 'image/webp', 'image/jpeg', resultFormat]
+        ).filter((value, index, list) => list.indexOf(value) === index);
+
+        for (const candidateFormat of formatsToTry) {
+          for (const candidateQuality of qualities) {
+            try {
+              const candidateBlob =
+                candidateFormat === PIXU_MIME_TYPE
+                  ? await canvasToPixu(canvas, candidateQuality, { adaptive: true })
+                  : await canvasToBlob(canvas, candidateFormat, candidateQuality);
+
+              if (candidateBlob.size < resultCompressedSize) {
+                const candidateExtension =
+                  candidateFormat === PIXU_MIME_TYPE
+                    ? '.pixu'
+                    : candidateFormat === 'image/jpeg'
+                      ? '.jpg'
+                      : candidateFormat === 'image/webp'
+                        ? '.webp'
+                        : candidateFormat === 'image/png'
+                          ? '.png'
+                          : '.jpg';
+                resultFile = new File(
+                  [candidateBlob],
+                  fileName.replace(/\.[^.]+$/, candidateExtension),
+                  { type: candidateFormat, lastModified: Date.now() }
+                );
+                resultCompressedSize = candidateBlob.size;
+                resultFormat = candidateFormat;
+                usedQuality = candidateQuality;
               }
-              
-              if (veryAggressiveBlob.size < originalSize) {
-                resultFile = new File([veryAggressiveBlob], fileName, { type: finalFormat });
-                resultCompressedSize = veryAggressiveBlob.size;
-              } else if (strict) {
-                // Only return original if strict mode and all attempts failed
-                resultFile = file instanceof File ? file : new File([file], fileName, { type: fileType });
-                resultCompressedSize = originalSize;
-              } else {
-                // Use the best compression we achieved
-                resultFile = new File([veryAggressiveBlob], fileName, { type: finalFormat });
-                resultCompressedSize = veryAggressiveBlob.size;
+
+              if (savingsRatio() >= minWorthwhileRatio) {
+                break;
               }
-            }
-          } catch (recompressError) {
-            // If recompression fails, check strict mode
-            if (strict) {
-              resultFile = file instanceof File ? file : new File([file], fileName, { type: fileType });
-              resultCompressedSize = originalSize;
+            } catch {
+              // try next candidate
             }
           }
-        } else if (strict && compressedSize > originalSize) {
-          // Resize was applied or format changed, but result is larger
-          // Try one more aggressive compression
-          try {
-            const finalQuality = Math.max(0.5, (quality || 0.8) - 0.15);
-            let finalBlob: Blob;
-            if (finalFormat === PIXU_MIME_TYPE) {
-              finalBlob = await canvasToPixu(canvas, finalQuality, { adaptive: true });
-            } else {
-              finalBlob = await canvasToBlob(canvas, finalFormat, finalQuality);
-            }
-            if (finalBlob.size < compressedSize) {
-              resultFile = new File([finalBlob], fileName, { type: finalFormat });
-              resultCompressedSize = finalBlob.size;
-            }
-          } catch {
-            // Keep current result
+          if (savingsRatio() >= minWorthwhileRatio) {
+            break;
           }
         }
+
+        // Never return a file larger than the source when strict
+        if (resultCompressedSize >= originalSize && strict) {
+          resultFile = file instanceof File ? file : new File([file], fileName, { type: fileType });
+          resultCompressedSize = originalSize;
+          resultFormat = fileType;
+          usedQuality = 1;
+        }
       }
-      
-      const compressionRatio = 1 - resultCompressedSize / originalSize;
+
+      const compressionRatio = Math.max(0, 1 - resultCompressedSize / originalSize);
 
       return {
         file: resultFile,
         originalSize,
         compressedSize: resultCompressedSize,
         compressionRatio,
-        format: finalFormat,
+        format: resultFormat,
         width: dimensions.width,
         height: dimensions.height,
         metadata: {
           hasExif: !options.stripMetadata && orientation > 1,
           orientation: orientation > 1 ? orientation : undefined,
+          quality: usedQuality,
         },
       };
     } finally {

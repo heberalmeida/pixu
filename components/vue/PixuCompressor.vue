@@ -39,15 +39,14 @@
       <div class="image-preview-section">
         <div class="image-preview">
           <h4>Original</h4>
-          <img :src="originalUrl" alt="Original" />
+          <img v-if="originalUrl" :src="originalUrl" :key="originalUrl" alt="Original" />
           <div class="image-info">
             <span>{{ formatBytes(originalSize) }}</span>
-            <span>{{ originalDimensions }}</span>
           </div>
         </div>
         <div class="image-preview" v-if="result">
           <h4>Compressed</h4>
-          <img :src="compressedUrl" alt="Compressed" />
+          <img v-if="compressedUrl" :src="compressedUrl" :key="compressedUrl" alt="Compressed" />
           <div class="image-info">
             <span>{{ formatBytes(result.compressedSize) }}</span>
             <span>{{ result.width }}x{{ result.height }}</span>
@@ -68,7 +67,10 @@
           </div>
           <div class="stat-item">
             <span class="stat-label">Size Reduction</span>
-            <span class="stat-value">{{ formatBytes(originalSize - result.compressedSize) }}</span>
+            <span
+              class="stat-value"
+              :class="originalSize - result.compressedSize >= 0 ? 'success' : 'danger'"
+            >{{ formatBytes(originalSize - result.compressedSize) }}</span>
           </div>
           <div class="stat-item">
             <span class="stat-label">Format</span>
@@ -76,7 +78,7 @@
           </div>
           <div class="stat-item">
             <span class="stat-label">Quality</span>
-            <span class="stat-value">{{ (result.metadata?.quality * 100 || 0).toFixed(0) }}%</span>
+            <span class="stat-value">{{ qualityPercent }}</span>
           </div>
         </div>
         <div class="actions">
@@ -116,6 +118,7 @@ const emit = defineEmits<{
   compress: [result: CompressionResult];
   error: [error: Error];
   progress: [progress: number];
+  source: [payload: { file: File; url: string }];
 }>();
 
 const fileInput = ref<HTMLInputElement | null>(null);
@@ -128,11 +131,9 @@ const originalUrl = ref<string | null>(null);
 const compressedUrl = ref<string | null>(null);
 
 const originalSize = computed(() => file.value?.size || 0);
-const originalDimensions = computed(() => {
-  if (!file.value) return '';
-  const img = new Image();
-  img.src = originalUrl.value || '';
-  return img.width && img.height ? `${img.width}x${img.height}` : '';
+const qualityPercent = computed(() => {
+  const q = result.value?.metadata?.quality;
+  return q == null ? '—' : `${Math.round(q * 100)}%`;
 });
 
 const triggerFileInput = () => {
@@ -144,6 +145,7 @@ const handleFileChange = async (e: Event) => {
   const selectedFile = target.files?.[0];
   if (!selectedFile) return;
   await processFile(selectedFile);
+  target.value = '';
 };
 
 const handleDrop = async (e: DragEvent) => {
@@ -158,29 +160,49 @@ const loadSample = async (sample: SampleImageOption) => {
   const res = await fetch(sample.url);
   if (!res.ok) return;
   const blob = await res.blob();
-  const file = new File([blob], sample.file, { type: blob.type || 'image/jpeg' });
-  await processFile(file);
+  const sampleFile = new File([blob], sample.file, { type: blob.type || 'image/jpeg' });
+  await processFile(sampleFile);
 };
 
 const processFile = async (selectedFile: File) => {
-  file.value = selectedFile;
   loading.value = true;
   error.value = null;
   progress.value = 0;
+  result.value = null;
 
   if (originalUrl.value) {
     URL.revokeObjectURL(originalUrl.value);
+    originalUrl.value = null;
   }
   if (compressedUrl.value) {
     URL.revokeObjectURL(compressedUrl.value);
+    compressedUrl.value = null;
   }
 
-  originalUrl.value = URL.createObjectURL(selectedFile);
-
   try {
+    const buffer = await selectedFile.arrayBuffer();
+    const type = selectedFile.type || 'image/jpeg';
+    const previewBlob = new Blob([buffer.slice(0)], { type });
+    const appPreviewBlob = new Blob([buffer.slice(0)], { type });
+    const fileForCompress = new File([buffer.slice(0)], selectedFile.name, {
+      type,
+      lastModified: selectedFile.lastModified,
+    });
+
+    file.value = fileForCompress;
+    originalUrl.value = URL.createObjectURL(previewBlob);
+    emit('source', {
+      file: fileForCompress,
+      url: URL.createObjectURL(appPreviewBlob),
+    });
+
+    if (!props.autoCompress) {
+      loading.value = false;
+      return;
+    }
+
     const { compress } = await import('pixu');
-    
-    const compressionResult = await compress(selectedFile, {
+    const compressionResult = await compress(fileForCompress, {
       ...props.options,
       onProgress: (p: number) => {
         progress.value = p;
@@ -227,11 +249,13 @@ const reset = () => {
 };
 
 const formatBytes = (bytes: number): string => {
-  if (bytes === 0) return '0 Bytes';
+  if (!Number.isFinite(bytes) || bytes === 0) return '0 Bytes';
+  const sign = bytes < 0 ? '-' : '';
+  const abs = Math.abs(bytes);
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  const i = Math.min(sizes.length - 1, Math.floor(Math.log(abs) / Math.log(k)));
+  return `${sign}${Math.round((abs / Math.pow(k, i)) * 100) / 100} ${sizes[i]}`;
 };
 
 onUnmounted(() => {
@@ -431,6 +455,14 @@ onUnmounted(() => {
   font-size: 1.1rem;
   font-weight: 600;
   color: var(--vp-c-brand);
+}
+
+.stat-value.success {
+  color: #27ae60;
+}
+
+.stat-value.danger {
+  color: #c0392b;
 }
 
 .actions {

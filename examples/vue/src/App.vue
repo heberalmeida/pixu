@@ -57,6 +57,7 @@
         </div>
         <PixuCompressor :samples="sampleImages"
           :options="basicOptions"
+          @source="onBasicSource"
           @compress="handleBasicCompress"
           @error="handleError"
           @progress="(p) => basicProgress = p"
@@ -115,6 +116,7 @@
         </div>
         <PixuCompressor :samples="sampleImages"
           :options="advancedOptions"
+          @source="onAdvancedSource"
           @compress="handleAdvancedCompress"
           @error="handleError"
           @progress="(p) => advancedProgress = p"
@@ -157,7 +159,7 @@
             <div class="preview-item">
               <img :src="advancedCompressedUrl" alt="Compressed" />
               <p>Compressed</p>
-              <button @click="downloadImage(advancedResult.file, 'advanced')" class="download-btn-small">⬇ Download</button>
+              <button @click="downloadImage(advancedResult.file, 'advanced')" class="download-btn-small">Download</button>
             </div>
           </div>
         </div>
@@ -180,6 +182,7 @@
         </div>
         <PixuCompressor :samples="sampleImages"
           :options="{ preset: selectedPreset }"
+          @source="onPresetSource"
           @compress="handlePresetCompress"
           @error="handleError"
           @progress="(p) => presetProgress = p"
@@ -202,7 +205,7 @@
             </div>
             <div class="preview-item">
               <img :src="presetCompressedUrl" alt="Compressed" />
-              <button @click="downloadImage(presetResult.file, `preset-${selectedPreset}`)" class="download-btn-small">⬇ Download</button>
+              <button @click="downloadImage(presetResult.file, `preset-${selectedPreset}`)" class="download-btn-small">Download</button>
             </div>
           </div>
         </div>
@@ -223,6 +226,7 @@
         </div>
         <PixuCompressor :samples="sampleImages"
           :options="{ quality: 0.8, filters: selectedFilters }"
+          @source="onFilterSource"
           @compress="handleFilterCompress"
           @error="handleError"
           @progress="(p) => filterProgress = p"
@@ -272,6 +276,7 @@
         </div>
         <PixuCompressor :samples="sampleImages"
           :options="pixOptions"
+          @source="onPixSource"
           @compress="handlePixCompress"
           @error="handleError"
           @progress="(p) => pixProgress = p"
@@ -318,7 +323,7 @@
                 <img :src="pixCompressedUrl" alt="PIXU Compressed" />
                 <p>PIXU Format ({{ (pixResult.compressionRatio * 100).toFixed(1) }}% smaller)</p>
                 <p class="image-info">{{ formatBytes(pixResult.compressedSize) }}</p>
-                <button @click="downloadImage(pixResult.file, 'pixu-compressed')" class="download-btn">⬇ Download PIXU</button>
+                <button @click="downloadImage(pixResult.file, 'pixu-compressed')" class="download-btn">Download PIXU</button>
               </div>
             </div>
           </div>
@@ -422,7 +427,7 @@
           </label>
         </div>
         <PixuCompressor :samples="sampleImages"
-          :options="{ format: 'image/png', optimizePNG: pngOptimization }"
+          :options="pngCompressOptions"
           @compress="handlePNGCompress"
           @error="handleError"
           @progress="(p) => pngProgress = p"
@@ -434,7 +439,10 @@
           <div class="stats-inline">
             <span><strong>Original:</strong> {{ formatBytes(pngResult.originalSize) }}</span>
             <span><strong>Optimized:</strong> {{ formatBytes(pngResult.compressedSize) }}</span>
-            <span><strong>Savings:</strong> <span class="success">{{ formatBytes(pngResult.originalSize - pngResult.compressedSize) }}</span></span>
+            <span>
+              <strong>Savings:</strong>
+              <span :class="pngSavings >= 0 ? 'success' : 'danger'">{{ formatBytes(pngSavings) }}</span>
+            </span>
           </div>
         </div>
       </div>
@@ -522,7 +530,7 @@
             <div class="preview-item">
               <img :src="watermarkCompressedUrl" alt="Watermarked" />
               <p>Watermarked Image</p>
-              <button @click="downloadImage(watermarkResult.file, 'watermarked')" class="download-btn-small">⬇ Download</button>
+              <button @click="downloadImage(watermarkResult.file, 'watermarked')" class="download-btn-small">Download</button>
             </div>
           </div>
         </div>
@@ -560,15 +568,15 @@
             <h3>Performance Metrics</h3>
             <div class="metrics-grid">
               <div class="metric-item">
-                <span class="metric-label">⏱ Duration</span>
+                <span class="metric-label">Duration</span>
                 <span class="metric-value">{{ performanceResult.metrics.duration?.toFixed(2) || 0 }}ms</span>
               </div>
               <div class="metric-item">
-                <span class="metric-label">💾 Memory Used</span>
+                <span class="metric-label">Memory Used</span>
                 <span class="metric-value">{{ formatBytes(performanceResult.metrics.memoryUsed || 0) }}</span>
               </div>
               <div class="metric-item">
-                <span class="metric-label">📊 Throughput</span>
+                <span class="metric-label">Throughput</span>
                 <span class="metric-value">{{ formatBytes(performanceResult.metrics.throughput || 0) }}/s</span>
               </div>
             </div>
@@ -582,7 +590,7 @@
         <p class="description">Compress multiple images at once with progress tracking</p>
         <div class="batch-controls">
           <input type="file" multiple @change="handleBatchFiles" accept="image/*" id="batch-input" />
-          <label for="batch-input" class="file-input-label">📁 Select Multiple Images</label>
+          <label for="batch-input" class="file-input-label">Select Multiple Images</label>
         </div>
         <div v-if="batchProgress > 0 && batchProgress < 1" class="progress-bar">
           <div class="progress-fill" :style="{ width: (batchProgress * 100) + '%' }"></div>
@@ -615,7 +623,7 @@
                 <span class="batch-size">{{ formatBytes(result.originalSize) }} → {{ formatBytes(result.compressedSize) }}</span>
                 <span class="batch-ratio success">{{ (result.compressionRatio * 100).toFixed(1) }}%</span>
               </div>
-              <button @click="downloadImage(result.file, `batch-${index}`)" class="download-btn-tiny">⬇</button>
+              <button @click="downloadImage(result.file, `batch-${index}`)" class="download-btn-tiny">Download</button>
             </div>
           </div>
         </div>
@@ -695,6 +703,20 @@ const pngOptimization = ref({
   maxColors: 128,
 });
 
+const pngCompressOptions = computed(() => {
+  if (pngOptimization.value.enabled) {
+    return {
+      format: 'image/png' as const,
+      optimizePNG: { ...pngOptimization.value },
+      strict: true,
+    };
+  }
+  return {
+    format: 'auto' as const,
+    strict: true,
+  };
+});
+
 const smartCrop = ref({
   width: 800,
   height: 600,
@@ -714,6 +736,11 @@ const pixResult = ref<CompressionResult | null>(null);
 const smartQualityResult = ref<CompressionResult | null>(null);
 const conversionResult = ref<CompressionResult | null>(null);
 const pngResult = ref<CompressionResult | null>(null);
+const pngSavings = computed(() =>
+  pngResult.value
+    ? pngResult.value.originalSize - pngResult.value.compressedSize
+    : 0
+);
 const smartCropResult = ref<CompressionResult | null>(null);
 const watermarkResult = ref<CompressionResult | null>(null);
 const performanceResult = ref<CompressionResult | null>(null);
@@ -763,65 +790,50 @@ const batchAverageRatio = computed(() => {
 });
 
 // Handlers
+const setOriginalUrl = (target: typeof basicOriginalUrl, url: string) => {
+  if (target.value) URL.revokeObjectURL(target.value);
+  target.value = url;
+};
+
+const onBasicSource = (payload: { url: string }) => setOriginalUrl(basicOriginalUrl, payload.url);
+const onAdvancedSource = (payload: { url: string }) => setOriginalUrl(advancedOriginalUrl, payload.url);
+const onPresetSource = (payload: { url: string }) => setOriginalUrl(presetOriginalUrl, payload.url);
+const onFilterSource = (payload: { url: string }) => setOriginalUrl(filterOriginalUrl, payload.url);
+const onPixSource = (payload: { url: string }) => setOriginalUrl(pixOriginalUrl, payload.url);
+
 const handleBasicCompress = async (result: CompressionResult) => {
   basicResult.value = result;
   basicProgress.value = 1;
-  if (result.file) {
-    basicCompressedUrl.value = URL.createObjectURL(result.file);
-  }
-  // Get original file URL if available
-  const input = document.querySelector('input[type="file"]') as HTMLInputElement;
-  if (input?.files?.[0]) {
-    basicOriginalUrl.value = URL.createObjectURL(input.files[0]);
-  }
+  if (basicCompressedUrl.value) URL.revokeObjectURL(basicCompressedUrl.value);
+  if (result.file) basicCompressedUrl.value = URL.createObjectURL(result.file);
 };
 
 const handleAdvancedCompress = async (result: CompressionResult) => {
   advancedResult.value = result;
   advancedProgress.value = 1;
-  if (result.file) {
-    advancedCompressedUrl.value = URL.createObjectURL(result.file);
-  }
-  const input = document.querySelector('input[type="file"]') as HTMLInputElement;
-  if (input?.files?.[0]) {
-    advancedOriginalUrl.value = URL.createObjectURL(input.files[0]);
-  }
+  if (advancedCompressedUrl.value) URL.revokeObjectURL(advancedCompressedUrl.value);
+  if (result.file) advancedCompressedUrl.value = URL.createObjectURL(result.file);
 };
 
 const handlePresetCompress = async (result: CompressionResult) => {
   presetResult.value = result;
   presetProgress.value = 1;
-  if (result.file) {
-    presetCompressedUrl.value = URL.createObjectURL(result.file);
-  }
-  const input = document.querySelector('input[type="file"]') as HTMLInputElement;
-  if (input?.files?.[0]) {
-    presetOriginalUrl.value = URL.createObjectURL(input.files[0]);
-  }
+  if (presetCompressedUrl.value) URL.revokeObjectURL(presetCompressedUrl.value);
+  if (result.file) presetCompressedUrl.value = URL.createObjectURL(result.file);
 };
 
 const handleFilterCompress = async (result: CompressionResult) => {
   filterResult.value = result;
   filterProgress.value = 1;
-  if (result.file) {
-    filterCompressedUrl.value = URL.createObjectURL(result.file);
-  }
-  const input = document.querySelector('input[type="file"]') as HTMLInputElement;
-  if (input?.files?.[0]) {
-    filterOriginalUrl.value = URL.createObjectURL(input.files[0]);
-  }
+  if (filterCompressedUrl.value) URL.revokeObjectURL(filterCompressedUrl.value);
+  if (result.file) filterCompressedUrl.value = URL.createObjectURL(result.file);
 };
 
 const handlePixCompress = async (result: CompressionResult) => {
   pixResult.value = result;
   pixProgress.value = 1;
-  if (result.file) {
-    pixCompressedUrl.value = URL.createObjectURL(result.file);
-  }
-  const input = document.querySelector('input[type="file"]') as HTMLInputElement;
-  if (input?.files?.[0]) {
-    pixOriginalUrl.value = URL.createObjectURL(input.files[0]);
-  }
+  if (pixCompressedUrl.value) URL.revokeObjectURL(pixCompressedUrl.value);
+  if (result.file) pixCompressedUrl.value = URL.createObjectURL(result.file);
 };
 
 const handleSmartQualityCompress = (result: CompressionResult) => {
@@ -924,11 +936,13 @@ const downloadImage = (file: File | Blob, name: string) => {
 };
 
 const formatBytes = (bytes: number): string => {
-  if (bytes === 0) return '0 Bytes';
+  if (!Number.isFinite(bytes) || bytes === 0) return '0 Bytes';
+  const sign = bytes < 0 ? '-' : '';
+  const abs = Math.abs(bytes);
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  const i = Math.min(sizes.length - 1, Math.floor(Math.log(abs) / Math.log(k)));
+  return `${sign}${Math.round((abs / Math.pow(k, i)) * 100) / 100} ${sizes[i]}`;
 };
 </script>
 
@@ -1151,6 +1165,11 @@ const formatBytes = (bytes: number): string => {
 
 .stat-value.success {
   color: #27ae60;
+}
+
+.stat-value.danger,
+.stats-inline .danger {
+  color: #c0392b;
 }
 
 .stats-inline {

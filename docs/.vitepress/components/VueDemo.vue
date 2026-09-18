@@ -85,11 +85,13 @@ const handleError = (err: Error) => {
 const handleProgress = (_progress: number) => {}
 
 const formatBytes = (bytes: number): string => {
-  if (!bytes) return '0 B'
+  if (!Number.isFinite(bytes) || bytes === 0) return '0 B'
+  const sign = bytes < 0 ? '-' : ''
+  const abs = Math.abs(bytes)
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return `${Math.round((bytes / Math.pow(k, i)) * 100) / 100} ${sizes[i]}`
+  const i = Math.min(sizes.length - 1, Math.floor(Math.log(abs) / Math.log(k)))
+  return `${sign}${Math.round((abs / Math.pow(k, i)) * 100) / 100} ${sizes[i]}`
 }
 </script>
 

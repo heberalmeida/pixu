@@ -63,8 +63,8 @@ import type { CompressionOptions, CompressionResult } from 'pixu';
         </div>
 
         <div *ngIf="loading" class="progress-section">
-          <progress [value]="progress" max="1" class="progress-bar"></progress>
-          <p class="progress-text">Compressing... {{ Math.round(progress * 100) }}%</p>
+          <progress [value]="progressValue" max="1" class="progress-bar"></progress>
+          <p class="progress-text">Compressing... {{ Math.round(progressValue * 100) }}%</p>
         </div>
 
         <div *ngIf="result" class="result-section">
@@ -83,7 +83,7 @@ import type { CompressionOptions, CompressionResult } from 'pixu';
             </div>
             <div class="stat-item">
               <span class="stat-label">Quality</span>
-              <span class="stat-value">{{ ((result.metadata?.quality || 0) * 100).toFixed(0) }}%</span>
+              <span class="stat-value">{{ qualityLabel }}</span>
             </div>
           </div>
           <div class="actions">
@@ -92,8 +92,8 @@ import type { CompressionOptions, CompressionResult } from 'pixu';
           </div>
         </div>
 
-        <div *ngIf="error" class="error-section">
-          <p class="error-message">{{ error }}</p>
+        <div *ngIf="errorMessage" class="error-section">
+          <p class="error-message">{{ errorMessage }}</p>
           <button (click)="reset()" class="btn btn-secondary">Try Again</button>
         </div>
       </div>
@@ -173,8 +173,13 @@ import type { CompressionOptions, CompressionResult } from 'pixu';
       padding: 0.35rem;
       border: 1px solid rgba(123, 63, 239, 0.25);
       border-radius: 10px;
-      background: rgba(18, 24, 38, 0.6);
+      background: transparent;
       cursor: pointer;
+    }
+
+    .sample-card:hover {
+      border-color: #7b3fef;
+      transform: translateY(-2px);
     }
 
     .sample-card img {
@@ -187,7 +192,7 @@ import type { CompressionOptions, CompressionResult } from 'pixu';
     .sample-card span {
       font-size: 0.72rem;
       font-weight: 600;
-      color: #eef2ff;
+      color: #213547;
     }
 
     .compression-container {
@@ -352,6 +357,7 @@ export class PixuCompressorComponent implements OnInit, OnDestroy {
   @Output() compress = new EventEmitter<CompressionResult>();
   @Output() error = new EventEmitter<Error>();
   @Output() progress = new EventEmitter<number>();
+  @Output() source = new EventEmitter<{ file: File; url: string }>();
 
   file: File | null = null;
   loading: boolean = false;
@@ -362,8 +368,15 @@ export class PixuCompressorComponent implements OnInit, OnDestroy {
   compressedUrl: string | null = null;
   originalSize: number = 0;
   originalDimensions: string = '';
+  Math = Math;
 
   private compressFn: any = null;
+
+  get qualityLabel(): string {
+    const q = this.result?.metadata?.quality;
+    if (q == null) return '—';
+    return `${Math.round(q * 100)}%`;
+  }
 
   async ngOnInit() {
     try {
@@ -417,28 +430,49 @@ export class PixuCompressorComponent implements OnInit, OnDestroy {
   }
 
   async processFile(selectedFile: File) {
-    this.file = selectedFile;
     this.loading = true;
     this.errorMessage = null;
     this.progressValue = 0;
+    this.result = null;
 
     if (this.originalUrl) {
       URL.revokeObjectURL(this.originalUrl);
+      this.originalUrl = null;
     }
     if (this.compressedUrl) {
       URL.revokeObjectURL(this.compressedUrl);
+      this.compressedUrl = null;
     }
 
-    this.originalUrl = URL.createObjectURL(selectedFile);
-    this.originalSize = selectedFile.size;
-
     try {
+      const buffer = await selectedFile.arrayBuffer();
+      const type = selectedFile.type || 'image/jpeg';
+      const previewBlob = new Blob([buffer.slice(0)], { type });
+      const appPreviewBlob = new Blob([buffer.slice(0)], { type });
+      const fileForCompress = new File([buffer.slice(0)], selectedFile.name, {
+        type,
+        lastModified: selectedFile.lastModified,
+      });
+
+      this.file = fileForCompress;
+      this.originalUrl = URL.createObjectURL(previewBlob);
+      this.originalSize = fileForCompress.size;
+      this.source.emit({
+        file: fileForCompress,
+        url: URL.createObjectURL(appPreviewBlob),
+      });
+
+      if (!this.autoCompress) {
+        this.loading = false;
+        return;
+      }
+
       if (!this.compressFn) {
         const module = await import('pixu');
         this.compressFn = module.compress;
       }
 
-      const compressionResult = await this.compressFn(selectedFile, {
+      const compressionResult = await this.compressFn(fileForCompress, {
         ...this.options,
         onProgress: (p: number) => {
           this.progressValue = p;
@@ -485,11 +519,13 @@ export class PixuCompressorComponent implements OnInit, OnDestroy {
   }
 
   formatBytes(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
+    if (!Number.isFinite(bytes) || bytes === 0) return '0 Bytes';
+    const sign = bytes < 0 ? '-' : '';
+    const abs = Math.abs(bytes);
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    const i = Math.min(sizes.length - 1, Math.floor(Math.log(abs) / Math.log(k)));
+    return `${sign}${Math.round((abs / Math.pow(k, i)) * 100) / 100} ${sizes[i]}`;
   }
 }
 

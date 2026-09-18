@@ -1,17 +1,8 @@
-import { pulse } from '@jacare/core'
+import { pulse, derive } from '@jacare/core'
+import { compress, compressBatch, PIXU_EXTENSION } from 'pixu'
 import PixuCompressor from '../../../components/jacare/PixuCompressor.jcr'
 
-const options = {
-  format: 'image/pixu',
-  enableSmartQuality: true,
-  stripMetadata: true,
-  quality: 0.85,
-}
-
-const lastResult = pulse(null)
-const lastError = pulse(null)
-
-const samples = [
+const sampleImages = [
   { id: 'landscape', label: 'Mountains', url: '/photo-landscape.jpg', file: 'photo-landscape.jpg' },
   { id: 'portrait', label: 'Portrait', url: '/photo-portrait.jpg', file: 'photo-portrait.jpg' },
   { id: 'city', label: 'City', url: '/photo-city.jpg', file: 'photo-city.jpg' },
@@ -20,56 +11,819 @@ const samples = [
   { id: 'graphic', label: 'PNG Graphic', url: '/graphic-transparent.png', file: 'graphic-transparent.png' },
 ]
 
-function onCompress(result) {
-  lastResult.set(result)
-  lastError.set(null)
+const presets = ['web', 'print', 'social', 'thumbnail', 'email']
+const presetNames = {
+  web: 'Web',
+  print: 'Print',
+  social: 'Social Media',
+  thumbnail: 'Thumbnail',
+  email: 'Email',
+}
+const filters = ['grayscale', 'sepia', 'vintage', 'brightness', 'contrast', 'saturation', 'blur', 'sharpen']
+const filterNames = {
+  grayscale: 'Grayscale',
+  sepia: 'Sepia',
+  vintage: 'Vintage',
+  brightness: 'Brightness',
+  contrast: 'Contrast',
+  saturation: 'Saturation',
+  blur: 'Blur',
+  sharpen: 'Sharpen',
 }
 
-function onError(err) {
-  lastError.set(err instanceof Error ? err.message : String(err))
+const error = pulse(null)
+const sampleLoading = pulse(null)
+const sampleResult = pulse(null)
+const sampleOriginalUrl = pulse('')
+const sampleCompressedUrl = pulse('')
+
+const basicOptions = pulse({ quality: 0.8 })
+const basicResult = pulse(null)
+const basicProgress = pulse(0)
+
+const advancedOptions = pulse({
+  quality: 0.8,
+  maxWidth: 1920,
+  maxHeight: 1080,
+  format: 'auto',
+  stripMetadata: true,
+  enableSmartQuality: false,
+})
+const advancedResult = pulse(null)
+const advancedProgress = pulse(0)
+
+const selectedPreset = pulse('web')
+const presetResult = pulse(null)
+const presetProgress = pulse(0)
+
+const selectedFilters = pulse([])
+const filterResult = pulse(null)
+const filterProgress = pulse(0)
+
+const pixOptions = pulse({
+  quality: 0.85,
+  maxWidth: 1920,
+  maxHeight: 1080,
+  format: 'image/pixu',
+  stripMetadata: true,
+  enableSmartQuality: true,
+})
+const pixResult = pulse(null)
+const pixProgress = pulse(0)
+
+const smartQualityResult = pulse(null)
+const smartQualityProgress = pulse(0)
+
+const conversionFormat = pulse('image/jpeg')
+const convertToJPEG = pulse(false)
+const conversionResult = pulse(null)
+const conversionProgress = pulse(0)
+
+const pngOptimization = pulse({
+  enabled: false,
+  reduceColors: false,
+  maxColors: 128,
+})
+const pngResult = pulse(null)
+const pngProgress = pulse(0)
+
+const smartCrop = pulse({
+  width: 800,
+  height: 600,
+  focus: 'center',
+})
+const smartCropResult = pulse(null)
+const smartCropProgress = pulse(0)
+
+const watermarkText = pulse('')
+const watermarkPosition = pulse('bottom-right')
+const watermarkOpacity = pulse(0.7)
+const watermarkResult = pulse(null)
+const watermarkProgress = pulse(0)
+
+const performanceResult = pulse(null)
+const performanceProgress = pulse(0)
+
+const batchResults = pulse([])
+const batchProgress = pulse(0)
+
+const basicQualityLabel = derive(() => `${Math.round((basicOptions().quality || 0) * 100)}%`)
+const advancedQualityLabel = derive(() => `${Math.round((advancedOptions().quality || 0) * 100)}%`)
+const pixQualityLabel = derive(() => `${Math.round((pixOptions().quality || 0) * 100)}%`)
+const watermarkOpacityLabel = derive(() => `${Math.round((watermarkOpacity() || 0) * 100)}%`)
+const selectedPresetName = derive(() => presetNames[selectedPreset()] || selectedPreset())
+const activeFiltersLabel = derive(() => {
+  const list = selectedFilters()
+  if (!list.length) return ''
+  return list.map((f) => filterNames[f] || f).join(', ')
+})
+const pngCompressOptions = derive(() => {
+  const opt = pngOptimization()
+  if (opt.enabled) {
+    return { format: 'image/png', optimizePNG: { ...opt }, strict: true }
+  }
+  return { format: 'auto', strict: true }
+})
+const filterOptions = derive(() => ({ quality: 0.8, filters: selectedFilters() }))
+const presetOptions = derive(() => ({ preset: selectedPreset() }))
+const conversionOptions = derive(() => ({
+  format: conversionFormat(),
+  convertToJPEG: convertToJPEG(),
+}))
+const smartCropOptions = derive(() => ({
+  quality: 0.8,
+  smartCrop: { ...smartCrop(), enabled: true },
+}))
+const watermarkOptions = derive(() => {
+  const text = watermarkText()
+  return {
+    quality: 0.8,
+    watermark: text
+      ? { text, position: watermarkPosition(), opacity: watermarkOpacity() }
+      : undefined,
+  }
+})
+const batchTotalOriginal = derive(() =>
+  batchResults().reduce((sum, r) => sum + (r.originalSize || 0), 0)
+)
+const batchTotalCompressed = derive(() =>
+  batchResults().reduce((sum, r) => sum + (r.compressedSize || 0), 0)
+)
+const batchAverageRatio = derive(() => {
+  const list = batchResults()
+  if (!list.length) return 0
+  return list.reduce((sum, r) => sum + (r.compressionRatio || 0), 0) / list.length
+})
+const pngSavings = derive(() => {
+  const r = pngResult()
+  return r ? r.originalSize - r.compressedSize : 0
+})
+
+function formatBytes(bytes) {
+  if (!Number.isFinite(bytes) || bytes === 0) return '0 Bytes'
+  const sign = bytes < 0 ? '-' : ''
+  const abs = Math.abs(bytes)
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.min(sizes.length - 1, Math.floor(Math.log(abs) / Math.log(k)))
+  return `${sign}${Math.round((abs / Math.pow(k, i)) * 100) / 100} ${sizes[i]}`
 }
 
-function onProgress(_p) {}
+function handleError(err) {
+  error.set(err instanceof Error ? err.message : String(err))
+  setTimeout(() => error.set(null), 5000)
+}
+
+function clearError() {
+  error.set(null)
+}
+
+async function compressSample(sample) {
+  sampleLoading.set(sample.id)
+  try {
+    const res = await fetch(sample.url)
+    if (!res.ok) throw new Error(`Failed to load ${sample.label}`)
+    const blob = await res.blob()
+    const file = new File([blob], sample.file, { type: blob.type || 'image/jpeg' })
+    const prevO = sampleOriginalUrl()
+    const prevC = sampleCompressedUrl()
+    if (prevO) URL.revokeObjectURL(prevO)
+    if (prevC) URL.revokeObjectURL(prevC)
+    sampleOriginalUrl.set(URL.createObjectURL(file))
+    const result = await compress(file, {
+      quality: 0.85,
+      format: 'image/pixu',
+      stripMetadata: true,
+      enableSmartQuality: true,
+    })
+    sampleCompressedUrl.set(URL.createObjectURL(result.file))
+    sampleResult.set({ ...result, label: sample.label })
+  } catch (err) {
+    handleError(err)
+  } finally {
+    sampleLoading.set(null)
+  }
+}
+
+function downloadImage(file, name) {
+  if (!file) return
+  const url = URL.createObjectURL(file)
+  const a = document.createElement('a')
+  a.href = url
+  const ext = file.type === 'image/pixu' ? PIXU_EXTENSION : `.${String(file.type).split('/')[1] || 'jpg'}`
+  a.download = `${name}-${Date.now()}${ext}`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
+
+function setBasicQuality(e) {
+  basicOptions.set({ ...basicOptions(), quality: parseFloat(e.target.value) })
+}
+function setAdvancedQuality(e) {
+  advancedOptions.set({ ...advancedOptions(), quality: parseFloat(e.target.value) })
+}
+function setAdvancedMaxWidth(e) {
+  advancedOptions.set({ ...advancedOptions(), maxWidth: parseInt(e.target.value, 10) || 1920 })
+}
+function setAdvancedMaxHeight(e) {
+  advancedOptions.set({ ...advancedOptions(), maxHeight: parseInt(e.target.value, 10) || 1080 })
+}
+function setAdvancedFormat(e) {
+  advancedOptions.set({ ...advancedOptions(), format: e.target.value })
+}
+function toggleAdvancedStrip(e) {
+  advancedOptions.set({ ...advancedOptions(), stripMetadata: e.target.checked })
+}
+function toggleAdvancedSmart(e) {
+  advancedOptions.set({ ...advancedOptions(), enableSmartQuality: e.target.checked })
+}
+function selectPreset(preset) {
+  selectedPreset.set(preset)
+}
+function toggleFilter(filter) {
+  const current = selectedFilters()
+  if (current.includes(filter)) {
+    selectedFilters.set(current.filter((f) => f !== filter))
+  } else {
+    selectedFilters.set([...current, filter])
+  }
+}
+function setPixQuality(e) {
+  pixOptions.set({ ...pixOptions(), quality: parseFloat(e.target.value) })
+}
+function setPixMaxWidth(e) {
+  pixOptions.set({ ...pixOptions(), maxWidth: parseInt(e.target.value, 10) || 1920 })
+}
+function setPixMaxHeight(e) {
+  pixOptions.set({ ...pixOptions(), maxHeight: parseInt(e.target.value, 10) || 1080 })
+}
+function togglePixStrip(e) {
+  pixOptions.set({ ...pixOptions(), stripMetadata: e.target.checked })
+}
+function togglePixSmart(e) {
+  pixOptions.set({ ...pixOptions(), enableSmartQuality: e.target.checked })
+}
+function setConversionFormat(e) {
+  conversionFormat.set(e.target.value)
+}
+function toggleConvertToJPEG(e) {
+  convertToJPEG.set(e.target.checked)
+}
+function togglePngEnabled(e) {
+  pngOptimization.set({ ...pngOptimization(), enabled: e.target.checked })
+}
+function togglePngReduce(e) {
+  pngOptimization.set({ ...pngOptimization(), reduceColors: e.target.checked })
+}
+function setPngMaxColors(e) {
+  pngOptimization.set({ ...pngOptimization(), maxColors: parseInt(e.target.value, 10) || 128 })
+}
+function setCropWidth(e) {
+  smartCrop.set({ ...smartCrop(), width: parseInt(e.target.value, 10) || 800 })
+}
+function setCropHeight(e) {
+  smartCrop.set({ ...smartCrop(), height: parseInt(e.target.value, 10) || 600 })
+}
+function setCropFocus(e) {
+  smartCrop.set({ ...smartCrop(), focus: e.target.value })
+}
+function setWatermarkText(e) {
+  watermarkText.set(e.target.value)
+}
+function setWatermarkPosition(e) {
+  watermarkPosition.set(e.target.value)
+}
+function setWatermarkOpacity(e) {
+  watermarkOpacity.set(parseFloat(e.target.value))
+}
+
+async function handleBatchFiles(e) {
+  const files = Array.from(e.target.files || [])
+  if (!files.length) return
+  batchProgress.set(0)
+  batchResults.set([])
+  try {
+    let completed = 0
+    const results = await compressBatch(files, {
+      quality: 0.8,
+      concurrency: 3,
+      onItemComplete: () => {
+        completed++
+        batchProgress.set(completed / files.length)
+      },
+    })
+    batchResults.set(results)
+    batchProgress.set(1)
+  } catch (err) {
+    handleError(err)
+  }
+}
 
 export <view>
-  <main class="page">
+  <div class="container">
     <header class="pixu-header">
-      <img class="pixu-logo" src="/logo.png" alt="Pixu" />
+      <img src="/logo.png" alt="Pixu" class="pixu-logo" />
       <div class="pixu-brand">
         <h1>Pixu × Jacaré</h1>
-        <p>Documentation-style examples — PixuCompressor.jcr component</p>
+        <p>Documentation-style examples — same layout as the Pixu docs</p>
       </div>
     </header>
 
-    <section class="card">
-      <h2>PixuCompressor</h2>
-      <p class="description">Reusable Jacaré component — samples, upload, PIXU output, download</p>
-      <PixuCompressor
-        :options=${options}
-        :samples=${samples}
-        on-compress=${onCompress}
-        on-error=${onError}
-        on-progress=${onProgress}
-      />
+    <section class="pixu-gallery">
+      <span class="pixu-samples-label">Real sample images — click to compress with PIXU</span>
+      <div class="pixu-gallery-grid">
+      #for sampleImages as sample (sample.id)
+        <button
+          type="button"
+          class="pixu-gallery-card"
+          on-click=${() => compressSample(sample)}
+        >
+          <img src=${sample.url} alt=${sample.label} loading="lazy" />
+          <span>${() => sampleLoading() === sample.id ? 'Compressing...' : sample.label}</span>
+        </button>
+      #end
+      </div>
     </section>
 
-    #if lastError()
-      <p class="error">${lastError}</p>
+    #if sampleResult()
+      <div class="section sample-result">
+        <h2>Sample compression result</h2>
+        <p class="description">${() => `${sampleResult()?.label} — ${sampleResult()?.format} (${((sampleResult()?.compressionRatio || 0) * 100).toFixed(1)}% reduction)`}</p>
+        <div class="image-comparison">
+          <div class="image-preview">
+            <h4>Original</h4>
+            <img src=${sampleOriginalUrl} alt="Original" />
+            <p class="image-info">${() => formatBytes(sampleResult()?.originalSize || 0)}</p>
+          </div>
+          <div class="image-preview">
+            <h4>Compressed</h4>
+            <img src=${sampleCompressedUrl} alt="Compressed" />
+            <p class="image-info">${() => formatBytes(sampleResult()?.compressedSize || 0)}</p>
+            <button type="button" class="download-btn" on-click=${() => downloadImage(sampleResult()?.file, sampleResult()?.label || 'sample')}>Download</button>
+          </div>
+        </div>
+      </div>
     #end
 
-    #if lastResult()
-      <section class="card">
-        <h2>Last result</h2>
-        <p class="description">${() => lastResult()?.format} · ${() => `${((lastResult()?.compressionRatio ?? 0) * 100).toFixed(1)}%`} reduction</p>
-      </section>
+    <div class="content">
+      <div class="section">
+        <h2>1. Basic Compression</h2>
+        <p class="description">Simple compression with quality setting and live preview</p>
+        <div class="controls-inline">
+          <label>
+            Quality: ${basicQualityLabel}
+            <input type="range" min="0.1" max="1" step="0.05" value=${() => basicOptions().quality} on-input=${setBasicQuality} />
+          </label>
+        </div>
+        <PixuCompressor
+          :samples=${sampleImages}
+          :options=${() => basicOptions()}
+          on-compress=${(r) => { basicResult.set(r); basicProgress.set(1) }}
+          on-error=${handleError}
+          on-progress=${(p) => basicProgress.set(p)}
+        />
+        #if basicResult()
+          <div class="result-card">
+            <div class="stats-inline">
+              <span><strong>Original:</strong> ${() => formatBytes(basicResult()?.originalSize || 0)}</span>
+              <span><strong>Compressed:</strong> ${() => formatBytes(basicResult()?.compressedSize || 0)}</span>
+              <span><strong>Ratio:</strong> ${() => `${((basicResult()?.compressionRatio || 0) * 100).toFixed(1)}%`}</span>
+            </div>
+            <button type="button" class="download-btn-small" on-click=${() => downloadImage(basicResult()?.file, 'basic')}>Download</button>
+          </div>
+        #end
+      </div>
+
+      <div class="section">
+        <h2>2. Advanced Options</h2>
+        <p class="description">Customize all compression settings with real-time updates</p>
+        <div class="controls">
+          <label>
+            Quality: ${advancedQualityLabel}
+            <input type="range" min="0.1" max="1" step="0.05" value=${() => advancedOptions().quality} on-input=${setAdvancedQuality} />
+          </label>
+          <label>
+            Max Width
+            <input type="number" min="100" max="4000" value=${() => advancedOptions().maxWidth} on-input=${setAdvancedMaxWidth} />
+          </label>
+          <label>
+            Max Height
+            <input type="number" min="100" max="4000" value=${() => advancedOptions().maxHeight} on-input=${setAdvancedMaxHeight} />
+          </label>
+          <label>
+            Format
+            <select value=${() => advancedOptions().format} on-change=${setAdvancedFormat}>
+              <option value="auto">Auto (Prefers PIXU)</option>
+              <option value="image/jpeg">JPEG</option>
+              <option value="image/png">PNG</option>
+              <option value="image/webp">WebP</option>
+              <option value="image/pixu">PIXU (Best)</option>
+            </select>
+          </label>
+          <label>
+            <input type="checkbox" checked=${() => advancedOptions().stripMetadata} on-change=${toggleAdvancedStrip} />
+            Strip Metadata
+          </label>
+          <label>
+            <input type="checkbox" checked=${() => advancedOptions().enableSmartQuality} on-change=${toggleAdvancedSmart} />
+            Smart Quality
+          </label>
+        </div>
+        <PixuCompressor
+          :samples=${sampleImages}
+          :options=${() => advancedOptions()}
+          on-compress=${(r) => { advancedResult.set(r); advancedProgress.set(1) }}
+          on-error=${handleError}
+          on-progress=${(p) => advancedProgress.set(p)}
+        />
+        #if advancedResult()
+          <div class="result-card">
+            <div class="stats-grid">
+              <div class="stat-box">
+                <span class="stat-label">Original Size</span>
+                <span class="stat-value">${() => formatBytes(advancedResult()?.originalSize || 0)}</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-label">Compressed Size</span>
+                <span class="stat-value highlight">${() => formatBytes(advancedResult()?.compressedSize || 0)}</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-label">Compression Ratio</span>
+                <span class="stat-value success">${() => `${((advancedResult()?.compressionRatio || 0) * 100).toFixed(1)}%`}</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-label">Format</span>
+                <span class="stat-value">${() => advancedResult()?.format || '—'}</span>
+              </div>
+            </div>
+            <button type="button" class="download-btn-small" on-click=${() => downloadImage(advancedResult()?.file, 'advanced')}>Download</button>
+          </div>
+        #end
+      </div>
+
+      <div class="section">
+        <h2>3. Compression Presets</h2>
+        <p class="description">Compare different presets side by side</p>
+        <div class="preset-selector">
+        #for presets as preset (preset)
+          <button
+            type="button"
+            class=${() => selectedPreset() === preset ? 'preset-btn active' : 'preset-btn'}
+            on-click=${() => selectPreset(preset)}
+          >${presetNames[preset] || preset}</button>
+        #end
+        </div>
+        <PixuCompressor
+          :samples=${sampleImages}
+          :options=${() => presetOptions()}
+          on-compress=${(r) => { presetResult.set(r); presetProgress.set(1) }}
+          on-error=${handleError}
+          on-progress=${(p) => presetProgress.set(p)}
+        />
+        #if presetResult()
+          <div class="result-card">
+            <h3>${selectedPresetName} Preset</h3>
+            <div class="stats-inline">
+              <span><strong>Original:</strong> ${() => formatBytes(presetResult()?.originalSize || 0)}</span>
+              <span><strong>Compressed:</strong> ${() => formatBytes(presetResult()?.compressedSize || 0)}</span>
+              <span><strong>Savings:</strong> ${() => formatBytes((presetResult()?.originalSize || 0) - (presetResult()?.compressedSize || 0))}</span>
+            </div>
+            <button type="button" class="download-btn-small" on-click=${() => downloadImage(presetResult()?.file, `preset-${selectedPreset()}`)}>Download</button>
+          </div>
+        #end
+      </div>
+
+      <div class="section">
+        <h2>4. Image Filters</h2>
+        <p class="description">Apply visual effects with instant preview</p>
+        <div class="filter-grid">
+        #for filters as filter (filter)
+          <label class="filter-item">
+            <input
+              type="checkbox"
+              checked=${() => selectedFilters().includes(filter)}
+              on-change=${() => toggleFilter(filter)}
+            />
+            <span>${filterNames[filter] || filter}</span>
+          </label>
+        #end
+        </div>
+        #if selectedFilters().length > 0
+          <div class="filter-preview">
+            <p>Active Filters: ${activeFiltersLabel}</p>
+          </div>
+        #end
+        <PixuCompressor
+          :samples=${sampleImages}
+          :options=${() => filterOptions()}
+          on-compress=${(r) => { filterResult.set(r); filterProgress.set(1) }}
+          on-error=${handleError}
+          on-progress=${(p) => filterProgress.set(p)}
+        />
+        #if filterResult()
+          <div class="result-card">
+            <button type="button" class="download-btn" on-click=${() => downloadImage(filterResult()?.file, 'filtered')}>Download</button>
+          </div>
+        #end
+      </div>
+
+      <div class="section pix-section">
+        <h2>5. PIXU Format - Revolutionary Compression</h2>
+        <p class="description">Experience the best compression with Pixu proprietary PIXU format</p>
+        <div class="info-box pix-info">
+          <p><strong>PIXU Format</strong> — Reconstructive format under TECR: typically 30-60% smaller than JPEG at the same visual budget.</p>
+        </div>
+        <div class="controls">
+          <label>
+            Quality: ${pixQualityLabel}
+            <input type="range" min="0.1" max="1" step="0.05" value=${() => pixOptions().quality} on-input=${setPixQuality} />
+          </label>
+          <label>
+            Max Width
+            <input type="number" min="100" max="4000" value=${() => pixOptions().maxWidth} on-input=${setPixMaxWidth} />
+          </label>
+          <label>
+            Max Height
+            <input type="number" min="100" max="4000" value=${() => pixOptions().maxHeight} on-input=${setPixMaxHeight} />
+          </label>
+          <label>
+            <input type="checkbox" checked=${() => pixOptions().stripMetadata} on-change=${togglePixStrip} />
+            Strip Metadata
+          </label>
+          <label>
+            <input type="checkbox" checked=${() => pixOptions().enableSmartQuality} on-change=${togglePixSmart} />
+            Smart Quality
+          </label>
+        </div>
+        <PixuCompressor
+          :samples=${sampleImages}
+          :options=${() => pixOptions()}
+          on-compress=${(r) => { pixResult.set(r); pixProgress.set(1) }}
+          on-error=${handleError}
+          on-progress=${(p) => pixProgress.set(p)}
+        />
+        #if pixResult()
+          <div class="result-card">
+            <div class="stats-grid">
+              <div class="stat-box highlight-box">
+                <span class="stat-label">Original</span>
+                <span class="stat-value">${() => formatBytes(pixResult()?.originalSize || 0)}</span>
+              </div>
+              <div class="stat-box highlight-box">
+                <span class="stat-label">PIXU Compressed</span>
+                <span class="stat-value highlight">${() => formatBytes(pixResult()?.compressedSize || 0)}</span>
+              </div>
+              <div class="stat-box highlight-box">
+                <span class="stat-label">Ratio</span>
+                <span class="stat-value success">${() => `${((pixResult()?.compressionRatio || 0) * 100).toFixed(1)}%`}</span>
+              </div>
+            </div>
+            <button type="button" class="download-btn" on-click=${() => downloadImage(pixResult()?.file, 'pixu-compressed')}>Download PIXU</button>
+          </div>
+        #end
+      </div>
+
+      <div class="section">
+        <h2>6. Smart Quality Selection</h2>
+        <p class="description">Automatic quality optimization based on image content analysis</p>
+        <div class="info-box">
+          <p>Smart Quality analyzes content and selects quality for best compression while keeping visual fidelity.</p>
+        </div>
+        <PixuCompressor
+          :samples=${sampleImages}
+          :options=${{ enableSmartQuality: true }}
+          on-compress=${(r) => { smartQualityResult.set(r); smartQualityProgress.set(1) }}
+          on-error=${handleError}
+          on-progress=${(p) => smartQualityProgress.set(p)}
+        />
+        #if smartQualityResult()
+          <div class="result-card">
+            <div class="stats-inline">
+              <span><strong>Original:</strong> ${() => formatBytes(smartQualityResult()?.originalSize || 0)}</span>
+              <span><strong>Compressed:</strong> ${() => formatBytes(smartQualityResult()?.compressedSize || 0)}</span>
+              <span><strong>Optimization:</strong> ${() => `${((smartQualityResult()?.compressionRatio || 0) * 100).toFixed(1)}%`}</span>
+            </div>
+          </div>
+        #end
+      </div>
+
+      <div class="section">
+        <h2>7. Format Conversion</h2>
+        <p class="description">Convert between formats with size comparison</p>
+        <div class="controls">
+          <label>
+            Target Format
+            <select value=${conversionFormat} on-change=${setConversionFormat}>
+              <option value="image/jpeg">JPEG</option>
+              <option value="image/png">PNG</option>
+              <option value="image/webp">WebP</option>
+              <option value="image/pixu">PIXU (Best)</option>
+            </select>
+          </label>
+          <label>
+            <input type="checkbox" checked=${convertToJPEG} on-change=${toggleConvertToJPEG} />
+            Auto Convert PNG to JPEG
+          </label>
+        </div>
+        <PixuCompressor
+          :samples=${sampleImages}
+          :options=${() => conversionOptions()}
+          on-compress=${(r) => { conversionResult.set(r); conversionProgress.set(1) }}
+          on-error=${handleError}
+          on-progress=${(p) => conversionProgress.set(p)}
+        />
+        #if conversionResult()
+          <div class="result-card">
+            <div class="stats-inline">
+              <span><strong>Format:</strong> ${() => conversionResult()?.format || '—'}</span>
+              <span><strong>Size:</strong> ${() => formatBytes(conversionResult()?.compressedSize || 0)}</span>
+            </div>
+          </div>
+        #end
+      </div>
+
+      <div class="section">
+        <h2>8. PNG Optimization</h2>
+        <p class="description">Lossless PNG compression with color reduction</p>
+        <div class="controls">
+          <label>
+            <input type="checkbox" checked=${() => pngOptimization().enabled} on-change=${togglePngEnabled} />
+            Enable PNG Optimization
+          </label>
+          #if pngOptimization().enabled
+            <label>
+              <input type="checkbox" checked=${() => pngOptimization().reduceColors} on-change=${togglePngReduce} />
+              Reduce Colors
+            </label>
+          #end
+          #if pngOptimization().enabled && pngOptimization().reduceColors
+            <label>
+              Max Colors
+              <input type="number" min="2" max="256" value=${() => pngOptimization().maxColors} on-input=${setPngMaxColors} />
+            </label>
+          #end
+        </div>
+        <PixuCompressor
+          :samples=${sampleImages}
+          :options=${() => pngCompressOptions()}
+          on-compress=${(r) => { pngResult.set(r); pngProgress.set(1) }}
+          on-error=${handleError}
+          on-progress=${(p) => pngProgress.set(p)}
+        />
+        #if pngResult()
+          <div class="result-card">
+            <div class="stats-inline">
+              <span><strong>Original:</strong> ${() => formatBytes(pngResult()?.originalSize || 0)}</span>
+              <span><strong>Optimized:</strong> ${() => formatBytes(pngResult()?.compressedSize || 0)}</span>
+              <span><strong>Savings:</strong> ${() => formatBytes(pngSavings())}</span>
+            </div>
+          </div>
+        #end
+      </div>
+
+      <div class="section">
+        <h2>9. Smart Cropping</h2>
+        <p class="description">Intelligent image cropping with focus detection</p>
+        <div class="controls">
+          <label>
+            Crop Width
+            <input type="number" min="100" max="2000" value=${() => smartCrop().width} on-input=${setCropWidth} />
+          </label>
+          <label>
+            Crop Height
+            <input type="number" min="100" max="2000" value=${() => smartCrop().height} on-input=${setCropHeight} />
+          </label>
+          <label>
+            Focus
+            <select value=${() => smartCrop().focus} on-change=${setCropFocus}>
+              <option value="center">Center</option>
+              <option value="top">Top</option>
+              <option value="bottom">Bottom</option>
+              <option value="left">Left</option>
+              <option value="right">Right</option>
+            </select>
+          </label>
+        </div>
+        <PixuCompressor
+          :samples=${sampleImages}
+          :options=${() => smartCropOptions()}
+          on-compress=${(r) => { smartCropResult.set(r); smartCropProgress.set(1) }}
+          on-error=${handleError}
+          on-progress=${(p) => smartCropProgress.set(p)}
+        />
+        #if smartCropResult()
+          <div class="result-card">
+            <div class="stats-inline">
+              <span><strong>Dimensions:</strong> ${() => `${smartCropResult()?.width}x${smartCropResult()?.height}`}</span>
+              <span><strong>Size:</strong> ${() => formatBytes(smartCropResult()?.compressedSize || 0)}</span>
+            </div>
+          </div>
+        #end
+      </div>
+
+      <div class="section">
+        <h2>10. Watermark</h2>
+        <p class="description">Add text watermarks with customization</p>
+        <div class="controls">
+          <label>
+            Watermark Text
+            <input type="text" value=${watermarkText} placeholder="Enter text" on-input=${setWatermarkText} />
+          </label>
+          <label>
+            Position
+            <select value=${watermarkPosition} on-change=${setWatermarkPosition}>
+              <option value="top-left">Top Left</option>
+              <option value="top-right">Top Right</option>
+              <option value="bottom-left">Bottom Left</option>
+              <option value="bottom-right">Bottom Right</option>
+              <option value="center">Center</option>
+            </select>
+          </label>
+          <label>
+            Opacity: ${watermarkOpacityLabel}
+            <input type="range" min="0.1" max="1" step="0.1" value=${watermarkOpacity} on-input=${setWatermarkOpacity} />
+          </label>
+        </div>
+        <PixuCompressor
+          :samples=${sampleImages}
+          :options=${() => watermarkOptions()}
+          on-compress=${(r) => { watermarkResult.set(r); watermarkProgress.set(1) }}
+          on-error=${handleError}
+          on-progress=${(p) => watermarkProgress.set(p)}
+        />
+        #if watermarkResult() && watermarkText()
+          <div class="result-card">
+            <button type="button" class="download-btn-small" on-click=${() => downloadImage(watermarkResult()?.file, 'watermarked')}>Download</button>
+          </div>
+        #end
+      </div>
+
+      <div class="section">
+        <h2>11. Performance Monitoring</h2>
+        <p class="description">Track compression metrics and performance in real-time</p>
+        <PixuCompressor
+          :samples=${sampleImages}
+          :options=${{ quality: 0.8, monitorPerformance: true }}
+          on-compress=${(r) => { performanceResult.set(r); performanceProgress.set(1) }}
+          on-error=${handleError}
+          on-progress=${(p) => performanceProgress.set(p)}
+        />
+        #if performanceResult()
+          <div class="result-card">
+            <div class="stats-inline">
+              <span><strong>Original:</strong> ${() => formatBytes(performanceResult()?.originalSize || 0)}</span>
+              <span><strong>Compressed:</strong> ${() => formatBytes(performanceResult()?.compressedSize || 0)}</span>
+              <span><strong>Ratio:</strong> ${() => `${((performanceResult()?.compressionRatio || 0) * 100).toFixed(1)}%`}</span>
+            </div>
+          </div>
+        #end
+      </div>
+
+      <div class="section">
+        <h2>12. Batch Processing</h2>
+        <p class="description">Compress multiple images at once with progress tracking</p>
+        <div class="batch-controls">
+          <input type="file" multiple accept="image/*" id="batch-input" class="hidden-input" on-change=${handleBatchFiles} />
+          <label for="batch-input" class="file-input-label">Select Multiple Images</label>
+        </div>
+        #if batchProgress() > 0 && batchProgress() < 1
+          <div class="progress-bar">
+            <div class="progress-fill" style---width=${() => `${Math.round(batchProgress() * 100)}%`}></div>
+          </div>
+        #end
+        #if batchResults().length > 0
+          <div class="batch-results">
+            <h3>Batch Results (${() => batchResults().length} images)</h3>
+            <div class="batch-summary">
+              <div class="summary-item">
+                <span class="summary-label">Total Original</span>
+                <span class="summary-value">${() => formatBytes(batchTotalOriginal())}</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">Total Compressed</span>
+                <span class="summary-value highlight">${() => formatBytes(batchTotalCompressed())}</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">Total Savings</span>
+                <span class="summary-value success">${() => formatBytes(batchTotalOriginal() - batchTotalCompressed())}</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">Average Ratio</span>
+                <span class="summary-value">${() => `${(batchAverageRatio() * 100).toFixed(1)}%`}</span>
+              </div>
+            </div>
+          </div>
+        #end
+      </div>
+    </div>
+
+    #if error()
+      <div class="error-message">
+        <p>${error}</p>
+        <button type="button" on-click=${clearError}>Close</button>
+      </div>
     #end
-  </main>
+  </div>
 </view>
-
-export <style>
-.description {
-  margin: 0.75rem 0 1.25rem;
-  color: var(--pixu-muted);
-  font-size: 0.95rem;
-}
-</style>

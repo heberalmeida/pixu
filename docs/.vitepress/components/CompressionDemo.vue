@@ -100,19 +100,34 @@ async function loadPixu() {
 }
 
 async function runCompress(selected: File) {
-  file.value = selected
   loading.value = true
   error.value = null
   progress.value = 0
   result.value = null
 
-  if (originalUrl.value) URL.revokeObjectURL(originalUrl.value)
-  if (compressedUrl.value) URL.revokeObjectURL(compressedUrl.value)
-  originalUrl.value = URL.createObjectURL(selected)
+  if (originalUrl.value) {
+    URL.revokeObjectURL(originalUrl.value)
+    originalUrl.value = null
+  }
+  if (compressedUrl.value) {
+    URL.revokeObjectURL(compressedUrl.value)
+    compressedUrl.value = null
+  }
 
   try {
+    const buffer = await selected.arrayBuffer()
+    const type = selected.type || 'image/jpeg'
+    const previewBlob = new Blob([buffer.slice(0)], { type })
+    const fileForCompress = new File([buffer], selected.name, {
+      type,
+      lastModified: selected.lastModified,
+    })
+
+    file.value = fileForCompress
+    originalUrl.value = URL.createObjectURL(previewBlob)
+
     const { compress } = await loadPixu()
-    const compressionResult = await compress(selected, {
+    const compressionResult = await compress(fileForCompress, {
       ...defaultOptions,
       ...props.options,
       onProgress: (p: number) => {
@@ -163,11 +178,13 @@ const download = async () => {
 }
 
 const formatBytes = (bytes: number): string => {
-  if (!bytes) return '0 B'
+  if (!Number.isFinite(bytes) || bytes === 0) return '0 B'
+  const sign = bytes < 0 ? '-' : ''
+  const abs = Math.abs(bytes)
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return `${Math.round((bytes / Math.pow(k, i)) * 100) / 100} ${sizes[i]}`
+  const i = Math.min(sizes.length - 1, Math.floor(Math.log(abs) / Math.log(k)))
+  return `${sign}${Math.round((abs / Math.pow(k, i)) * 100) / 100} ${sizes[i]}`
 }
 
 onUnmounted(() => {

@@ -83,6 +83,7 @@ export interface CompressionResult {
   metadata?: {
     hasExif: boolean;
     orientation?: number;
+    quality?: number;
   };
 }
 

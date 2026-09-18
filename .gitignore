@@ -15,3 +15,14 @@ coverage/
 .env.local
 *.map
 ChatGPT Image*.png
+.gitacc.json
+
+# Local scratch / notes
+test.html
+VERIFICACAO_ALTERACOES.md
+EXAMPLES_SUMMARY.md
+CHANGELOG_COMPRESSION.md
+
+# Jacaré compiler output
+components/jacare/PixuCompressor.js
+examples/jacare/src/app.js
