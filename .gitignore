@@ -10,6 +10,9 @@ docs/.vitepress/dist/
 .idea/
 .vscode/
 .cursor/
+.cursorrules
+.cursorignore
+AGENTS.md
 *.tsbuildinfo
 coverage/
 .env
