@@ -39,7 +39,7 @@
           <h4>Compressed</h4>
           <img :src="sampleCompressedUrl" alt="Compressed" />
           <p class="image-info">{{ formatBytes(sampleResult.compressedSize) }}</p>
-          <button @click="downloadImage(sampleResult.file, sampleResult.label)" class="download-btn">Download</button>
+          <button @click="downloadImage(sampleResult.file, sampleResult.label, sampleResult.format)" class="download-btn">{{ downloadLabel(sampleResult.format) }}</button>
         </div>
       </div>
     </div>
@@ -75,7 +75,7 @@
             <h4>Compressed</h4>
             <img :src="basicCompressedUrl" alt="Compressed" />
             <p class="image-info">{{ formatBytes(basicResult.compressedSize) }} ({{ (basicResult.compressionRatio * 100).toFixed(1) }}% reduction)</p>
-            <button @click="downloadImage(basicResult.file, 'compressed')" class="download-btn">Download</button>
+            <button @click="downloadImage(basicResult.file, 'compressed', basicResult.format)" class="download-btn">{{ downloadLabel(basicResult.format) }}</button>
           </div>
         </div>
       </div>
@@ -159,7 +159,7 @@
             <div class="preview-item">
               <img :src="advancedCompressedUrl" alt="Compressed" />
               <p>Compressed</p>
-              <button @click="downloadImage(advancedResult.file, 'advanced')" class="download-btn-small">Download</button>
+              <button @click="downloadImage(advancedResult.file, 'advanced', advancedResult.format)" class="download-btn-small">{{ downloadLabel(advancedResult.format) }}</button>
             </div>
           </div>
         </div>
@@ -205,7 +205,7 @@
             </div>
             <div class="preview-item">
               <img :src="presetCompressedUrl" alt="Compressed" />
-              <button @click="downloadImage(presetResult.file, `preset-${selectedPreset}`)" class="download-btn-small">Download</button>
+              <button @click="downloadImage(presetResult.file, `preset-${selectedPreset}`, presetResult.format)" class="download-btn-small">{{ downloadLabel(presetResult.format) }}</button>
             </div>
           </div>
         </div>
@@ -242,7 +242,7 @@
           <div class="image-preview">
             <h4>With Filters</h4>
             <img :src="filterCompressedUrl" alt="Filtered" />
-            <button @click="downloadImage(filterResult.file, 'filtered')" class="download-btn">Download</button>
+            <button @click="downloadImage(filterResult.file, 'filtered', filterResult.format)" class="download-btn">{{ downloadLabel(filterResult.format) }}</button>
           </div>
         </div>
       </div>
@@ -323,7 +323,7 @@
                 <img :src="pixCompressedUrl" alt="PIXU Compressed" />
                 <p>PIXU Format ({{ (pixResult.compressionRatio * 100).toFixed(1) }}% smaller)</p>
                 <p class="image-info">{{ formatBytes(pixResult.compressedSize) }}</p>
-                <button @click="downloadImage(pixResult.file, 'pixu-compressed')" class="download-btn">Download PIXU</button>
+                <button @click="downloadImage(pixResult.file, 'pixu-compressed', pixResult.format)" class="download-btn">{{ downloadLabel(pixResult.format) }}</button>
               </div>
             </div>
           </div>
@@ -530,7 +530,7 @@
             <div class="preview-item">
               <img :src="watermarkCompressedUrl" alt="Watermarked" />
               <p>Watermarked Image</p>
-              <button @click="downloadImage(watermarkResult.file, 'watermarked')" class="download-btn-small">Download</button>
+              <button @click="downloadImage(watermarkResult.file, 'watermarked', watermarkResult.format)" class="download-btn-small">{{ downloadLabel(watermarkResult.format) }}</button>
             </div>
           </div>
         </div>
@@ -623,7 +623,7 @@
                 <span class="batch-size">{{ formatBytes(result.originalSize) }} → {{ formatBytes(result.compressedSize) }}</span>
                 <span class="batch-ratio success">{{ (result.compressionRatio * 100).toFixed(1) }}%</span>
               </div>
-              <button @click="downloadImage(result.file, `batch-${index}`)" class="download-btn-tiny">Download</button>
+              <button @click="downloadImage(result.file, `batch-${index}`, result.format)" class="download-btn-tiny">{{ downloadLabel(result.format) }}</button>
             </div>
           </div>
         </div>
@@ -641,7 +641,7 @@
 import { ref, computed } from 'vue';
 import PixuCompressor from '../../../components/vue/PixuCompressor.vue';
 import type { CompressionResult } from 'pixu';
-import { compress, compressBatch, PIXU_EXTENSION } from 'pixu';
+import { compress, compressBatch, buildDownloadName, getOutputExtension, createPreviewObjectURL } from 'pixu';
 import { sampleImages, fetchSampleFile } from '../../shared/samples';
 
 const sampleLoading = ref<string | null>(null);
@@ -805,35 +805,35 @@ const handleBasicCompress = async (result: CompressionResult) => {
   basicResult.value = result;
   basicProgress.value = 1;
   if (basicCompressedUrl.value) URL.revokeObjectURL(basicCompressedUrl.value);
-  if (result.file) basicCompressedUrl.value = URL.createObjectURL(result.file);
+  if (result.file) basicCompressedUrl.value = await createPreviewObjectURL(result.file, result.format);
 };
 
 const handleAdvancedCompress = async (result: CompressionResult) => {
   advancedResult.value = result;
   advancedProgress.value = 1;
   if (advancedCompressedUrl.value) URL.revokeObjectURL(advancedCompressedUrl.value);
-  if (result.file) advancedCompressedUrl.value = URL.createObjectURL(result.file);
+  if (result.file) advancedCompressedUrl.value = await createPreviewObjectURL(result.file, result.format);
 };
 
 const handlePresetCompress = async (result: CompressionResult) => {
   presetResult.value = result;
   presetProgress.value = 1;
   if (presetCompressedUrl.value) URL.revokeObjectURL(presetCompressedUrl.value);
-  if (result.file) presetCompressedUrl.value = URL.createObjectURL(result.file);
+  if (result.file) presetCompressedUrl.value = await createPreviewObjectURL(result.file, result.format);
 };
 
 const handleFilterCompress = async (result: CompressionResult) => {
   filterResult.value = result;
   filterProgress.value = 1;
   if (filterCompressedUrl.value) URL.revokeObjectURL(filterCompressedUrl.value);
-  if (result.file) filterCompressedUrl.value = URL.createObjectURL(result.file);
+  if (result.file) filterCompressedUrl.value = await createPreviewObjectURL(result.file, result.format);
 };
 
 const handlePixCompress = async (result: CompressionResult) => {
   pixResult.value = result;
   pixProgress.value = 1;
   if (pixCompressedUrl.value) URL.revokeObjectURL(pixCompressedUrl.value);
-  if (result.file) pixCompressedUrl.value = URL.createObjectURL(result.file);
+  if (result.file) pixCompressedUrl.value = await createPreviewObjectURL(result.file, result.format);
 };
 
 const handleSmartQualityCompress = (result: CompressionResult) => {
@@ -860,7 +860,7 @@ const handleWatermarkCompress = async (result: CompressionResult) => {
   watermarkResult.value = result;
   watermarkProgress.value = 1;
   if (result.file) {
-    watermarkCompressedUrl.value = URL.createObjectURL(result.file);
+    watermarkCompressedUrl.value = await createPreviewObjectURL(result.file, result.format);
   }
 };
 
@@ -914,7 +914,7 @@ const compressSample = async (sample: typeof sampleImages[0]) => {
       stripMetadata: true,
       enableSmartQuality: true,
     });
-    sampleCompressedUrl.value = URL.createObjectURL(result.file);
+    sampleCompressedUrl.value = await createPreviewObjectURL(result.file, result.format);
     sampleResult.value = { ...result, label: sample.label };
   } catch (err) {
     handleError(err instanceof Error ? err : new Error('Sample compression failed'));
@@ -923,16 +923,20 @@ const compressSample = async (sample: typeof sampleImages[0]) => {
   }
 };
 
-const downloadImage = (file: File | Blob, name: string) => {
+const downloadImage = (file: File | Blob, name: string, format?: string) => {
   const url = URL.createObjectURL(file);
   const a = document.createElement('a');
   a.href = url;
-  const ext = file.type === 'image/pixu' ? PIXU_EXTENSION : `.${file.type.split('/')[1] || 'jpg'}`;
-  a.download = `${name}-${Date.now()}${ext}`;
+  a.download = buildDownloadName(`${name}-${Date.now()}`, format || file.type);
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+};
+
+const downloadLabel = (format?: string) => {
+  const ext = getOutputExtension(format);
+  return `Download (${ext})`;
 };
 
 const formatBytes = (bytes: number): string => {

@@ -2,7 +2,7 @@ import React, { useState, useCallback, useMemo, ChangeEvent } from 'react';
 import PixuCompressor from '../../../components/react/PixuCompressor';
 import '../../../components/react/PixuCompressor.css';
 import type { CompressionResult } from 'pixu';
-import { compress, compressBatch, PIXU_EXTENSION } from 'pixu';
+import { compress, compressBatch, buildDownloadName, getOutputExtension, createPreviewObjectURL } from 'pixu';
 import { sampleImages, fetchSampleFile } from '../../shared/samples';
 
 const presets = ['web', 'print', 'social', 'thumbnail', 'email'] as const;
@@ -46,16 +46,20 @@ const formatBytes = (bytes: number): string => {
   return `${sign}${Math.round((abs / Math.pow(k, i)) * 100) / 100} ${sizes[i]}`;
 };
 
-const downloadImage = (file: File | Blob, name: string) => {
+const downloadImage = (file: File | Blob, name: string, format?: string) => {
   const url = URL.createObjectURL(file);
   const a = document.createElement('a');
   a.href = url;
-  const ext = file.type === 'image/pixu' ? PIXU_EXTENSION : `.${file.type.split('/')[1] || 'jpg'}`;
-  a.download = `${name}-${Date.now()}${ext}`;
+  a.download = buildDownloadName(`${name}-${Date.now()}`, format || file.type);
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+};
+
+const downloadLabel = (format?: string) => {
+  const ext = getOutputExtension(format);
+  return `Download (${ext})`;
 };
 
 const App: React.FC = () => {
@@ -207,46 +211,61 @@ const App: React.FC = () => {
   const handleBasicCompress = useCallback(async (result: CompressionResult) => {
     setBasicResult(result);
     setBasicProgress(1);
-    setBasicCompressedUrl((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return result.file ? URL.createObjectURL(result.file) : '';
-    });
+    if (result.file) {
+      const url = await createPreviewObjectURL(result.file, result.format);
+      setBasicCompressedUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return url;
+      });
+    }
   }, []);
 
   const handleAdvancedCompress = useCallback(async (result: CompressionResult) => {
     setAdvancedResult(result);
     setAdvancedProgress(1);
-    setAdvancedCompressedUrl((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return result.file ? URL.createObjectURL(result.file) : '';
-    });
+    if (result.file) {
+      const url = await createPreviewObjectURL(result.file, result.format);
+      setAdvancedCompressedUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return url;
+      });
+    }
   }, []);
 
   const handlePresetCompress = useCallback(async (result: CompressionResult) => {
     setPresetResult(result);
     setPresetProgress(1);
-    setPresetCompressedUrl((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return result.file ? URL.createObjectURL(result.file) : '';
-    });
+    if (result.file) {
+      const url = await createPreviewObjectURL(result.file, result.format);
+      setPresetCompressedUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return url;
+      });
+    }
   }, []);
 
   const handleFilterCompress = useCallback(async (result: CompressionResult) => {
     setFilterResult(result);
     setFilterProgress(1);
-    setFilterCompressedUrl((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return result.file ? URL.createObjectURL(result.file) : '';
-    });
+    if (result.file) {
+      const url = await createPreviewObjectURL(result.file, result.format);
+      setFilterCompressedUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return url;
+      });
+    }
   }, []);
 
   const handlePixCompress = useCallback(async (result: CompressionResult) => {
     setPixResult(result);
     setPixProgress(1);
-    setPixCompressedUrl((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return result.file ? URL.createObjectURL(result.file) : '';
-    });
+    if (result.file) {
+      const url = await createPreviewObjectURL(result.file, result.format);
+      setPixCompressedUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return url;
+      });
+    }
   }, []);
 
   const handleSmartQualityCompress = useCallback((result: CompressionResult) => {
@@ -273,7 +292,11 @@ const App: React.FC = () => {
     setWatermarkResult(result);
     setWatermarkProgress(1);
     if (result.file) {
-      setWatermarkCompressedUrl(URL.createObjectURL(result.file));
+      const url = await createPreviewObjectURL(result.file, result.format);
+      setWatermarkCompressedUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return url;
+      });
     }
   }, []);
 
@@ -330,7 +353,11 @@ const App: React.FC = () => {
         stripMetadata: true,
         enableSmartQuality: true,
       });
-      setSampleCompressedUrl(URL.createObjectURL(result.file));
+      const previewUrl = await createPreviewObjectURL(result.file, result.format);
+      setSampleCompressedUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return previewUrl;
+      });
       setSampleResult({ ...result, label: sample.label });
     } catch (err) {
       handleError(err instanceof Error ? err : new Error('Sample compression failed'));
@@ -390,10 +417,10 @@ const App: React.FC = () => {
               <img src={sampleCompressedUrl} alt="Compressed" />
               <p className="image-info">{formatBytes(sampleResult.compressedSize)}</p>
               <button
-                onClick={() => downloadImage(sampleResult.file, sampleResult.label)}
+                onClick={() => downloadImage(sampleResult.file, sampleResult.label, sampleResult.format)}
                 className="download-btn"
               >
-                Download
+                {downloadLabel(sampleResult.format)}
               </button>
             </div>
           </div>
@@ -443,8 +470,8 @@ const App: React.FC = () => {
                 <p className="image-info">
                   {formatBytes(basicResult.compressedSize)} ({(basicResult.compressionRatio * 100).toFixed(1)}% reduction)
                 </p>
-                <button onClick={() => downloadImage(basicResult.file, 'compressed')} className="download-btn">
-                  Download
+                <button onClick={() => downloadImage(basicResult.file, 'compressed', basicResult.format)} className="download-btn">
+                  {downloadLabel(basicResult.format)}
                 </button>
               </div>
             </div>
@@ -584,10 +611,10 @@ const App: React.FC = () => {
                   <img src={advancedCompressedUrl} alt="Compressed" />
                   <p>Compressed</p>
                   <button
-                    onClick={() => downloadImage(advancedResult.file, 'advanced')}
+                    onClick={() => downloadImage(advancedResult.file, 'advanced', advancedResult.format)}
                     className="download-btn-small"
                   >
-                    Download
+                    {downloadLabel(advancedResult.format)}
                   </button>
                 </div>
               </div>
@@ -649,10 +676,10 @@ const App: React.FC = () => {
                 <div className="preview-item">
                   <img src={presetCompressedUrl} alt="Compressed" />
                   <button
-                    onClick={() => downloadImage(presetResult.file, `preset-${selectedPreset}`)}
+                    onClick={() => downloadImage(presetResult.file, `preset-${selectedPreset}`, presetResult.format)}
                     className="download-btn-small"
                   >
-                    Download
+                    {downloadLabel(presetResult.format)}
                   </button>
                 </div>
               </div>
@@ -702,8 +729,8 @@ const App: React.FC = () => {
               <div className="image-preview">
                 <h4>With Filters</h4>
                 <img src={filterCompressedUrl} alt="Filtered" />
-                <button onClick={() => downloadImage(filterResult.file, 'filtered')} className="download-btn">
-                  Download
+                <button onClick={() => downloadImage(filterResult.file, 'filtered', filterResult.format)} className="download-btn">
+                  {downloadLabel(filterResult.format)}
                 </button>
               </div>
             </div>
@@ -830,10 +857,10 @@ const App: React.FC = () => {
                     <p>PIXU Format ({(pixResult.compressionRatio * 100).toFixed(1)}% smaller)</p>
                     <p className="image-info">{formatBytes(pixResult.compressedSize)}</p>
                     <button
-                      onClick={() => downloadImage(pixResult.file, 'pixu-compressed')}
+                      onClick={() => downloadImage(pixResult.file, 'pixu-compressed', pixResult.format)}
                       className="download-btn"
                     >
-                      Download PIXU
+                      {downloadLabel(pixResult.format)}
                     </button>
                   </div>
                 </div>
@@ -1135,10 +1162,10 @@ const App: React.FC = () => {
                   <img src={watermarkCompressedUrl} alt="Watermarked" />
                   <p>Watermarked Image</p>
                   <button
-                    onClick={() => downloadImage(watermarkResult.file, 'watermarked')}
+                    onClick={() => downloadImage(watermarkResult.file, 'watermarked', watermarkResult.format)}
                     className="download-btn-small"
                   >
-                    Download
+                    {downloadLabel(watermarkResult.format)}
                   </button>
                 </div>
               </div>
@@ -1267,10 +1294,10 @@ const App: React.FC = () => {
                       </span>
                     </div>
                     <button
-                      onClick={() => downloadImage(result.file, `batch-${index}`)}
+                      onClick={() => downloadImage(result.file, `batch-${index}`, result.format)}
                       className="download-btn-tiny"
                     >
-                      Download
+                      {downloadLabel(result.format)}
                     </button>
                   </div>
                 ))}

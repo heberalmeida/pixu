@@ -1,5 +1,5 @@
 import { pulse, derive } from '@jacare/core'
-import { compress, compressBatch, PIXU_EXTENSION } from 'pixu'
+import { compress, compressBatch, buildDownloadName, getOutputExtension, createPreviewObjectURL } from 'pixu'
 import PixuCompressor from '../../../components/jacare/PixuCompressor.jcr'
 
 const sampleImages = [
@@ -196,7 +196,7 @@ async function compressSample(sample) {
       stripMetadata: true,
       enableSmartQuality: true,
     })
-    sampleCompressedUrl.set(URL.createObjectURL(result.file))
+    sampleCompressedUrl.set(await createPreviewObjectURL(result.file, result.format))
     sampleResult.set({ ...result, label: sample.label })
   } catch (err) {
     handleError(err)
@@ -205,17 +205,20 @@ async function compressSample(sample) {
   }
 }
 
-function downloadImage(file, name) {
+function downloadImage(file, name, format) {
   if (!file) return
   const url = URL.createObjectURL(file)
   const a = document.createElement('a')
   a.href = url
-  const ext = file.type === 'image/pixu' ? PIXU_EXTENSION : `.${String(file.type).split('/')[1] || 'jpg'}`
-  a.download = `${name}-${Date.now()}${ext}`
+  a.download = buildDownloadName(`${name}-${Date.now()}`, format || file.type)
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
   URL.revokeObjectURL(url)
+}
+
+function downloadLabel(format) {
+  return `Download (${getOutputExtension(format)})`
 }
 
 function setBasicQuality(e) {
@@ -361,7 +364,7 @@ export <view>
             <h4>Compressed</h4>
             <img src=${sampleCompressedUrl} alt="Compressed" />
             <p class="image-info">${() => formatBytes(sampleResult()?.compressedSize || 0)}</p>
-            <button type="button" class="download-btn" on-click=${() => downloadImage(sampleResult()?.file, sampleResult()?.label || 'sample')}>Download</button>
+            <button type="button" class="download-btn" on-click=${() => downloadImage(sampleResult()?.file, sampleResult()?.label || 'sample', sampleResult()?.format)}>${() => downloadLabel(sampleResult()?.format)}</button>
           </div>
         </div>
       </div>
@@ -378,6 +381,7 @@ export <view>
           </label>
         </div>
         <PixuCompressor
+          :instanceId=${'basic'}
           :samples=${sampleImages}
           :options=${() => basicOptions()}
           on-compress=${(r) => { basicResult.set(r); basicProgress.set(1) }}
@@ -391,7 +395,7 @@ export <view>
               <span><strong>Compressed:</strong> ${() => formatBytes(basicResult()?.compressedSize || 0)}</span>
               <span><strong>Ratio:</strong> ${() => `${((basicResult()?.compressionRatio || 0) * 100).toFixed(1)}%`}</span>
             </div>
-            <button type="button" class="download-btn-small" on-click=${() => downloadImage(basicResult()?.file, 'basic')}>Download</button>
+            <button type="button" class="download-btn-small" on-click=${() => downloadImage(basicResult()?.file, 'basic', basicResult()?.format)}>${() => downloadLabel(basicResult()?.format)}</button>
           </div>
         #end
       </div>
@@ -432,6 +436,7 @@ export <view>
           </label>
         </div>
         <PixuCompressor
+          :instanceId=${'advanced'}
           :samples=${sampleImages}
           :options=${() => advancedOptions()}
           on-compress=${(r) => { advancedResult.set(r); advancedProgress.set(1) }}
@@ -458,7 +463,7 @@ export <view>
                 <span class="stat-value">${() => advancedResult()?.format || '—'}</span>
               </div>
             </div>
-            <button type="button" class="download-btn-small" on-click=${() => downloadImage(advancedResult()?.file, 'advanced')}>Download</button>
+            <button type="button" class="download-btn-small" on-click=${() => downloadImage(advancedResult()?.file, 'advanced', advancedResult()?.format)}>${() => downloadLabel(advancedResult()?.format)}</button>
           </div>
         #end
       </div>
@@ -476,6 +481,7 @@ export <view>
         #end
         </div>
         <PixuCompressor
+          :instanceId=${'preset'}
           :samples=${sampleImages}
           :options=${() => presetOptions()}
           on-compress=${(r) => { presetResult.set(r); presetProgress.set(1) }}
@@ -490,7 +496,7 @@ export <view>
               <span><strong>Compressed:</strong> ${() => formatBytes(presetResult()?.compressedSize || 0)}</span>
               <span><strong>Savings:</strong> ${() => formatBytes((presetResult()?.originalSize || 0) - (presetResult()?.compressedSize || 0))}</span>
             </div>
-            <button type="button" class="download-btn-small" on-click=${() => downloadImage(presetResult()?.file, `preset-${selectedPreset()}`)}>Download</button>
+            <button type="button" class="download-btn-small" on-click=${() => downloadImage(presetResult()?.file, `preset-${selectedPreset()}`, presetResult()?.format)}>${() => downloadLabel(presetResult()?.format)}</button>
           </div>
         #end
       </div>
@@ -516,6 +522,7 @@ export <view>
           </div>
         #end
         <PixuCompressor
+          :instanceId=${'filter'}
           :samples=${sampleImages}
           :options=${() => filterOptions()}
           on-compress=${(r) => { filterResult.set(r); filterProgress.set(1) }}
@@ -524,7 +531,7 @@ export <view>
         />
         #if filterResult()
           <div class="result-card">
-            <button type="button" class="download-btn" on-click=${() => downloadImage(filterResult()?.file, 'filtered')}>Download</button>
+            <button type="button" class="download-btn" on-click=${() => downloadImage(filterResult()?.file, 'filtered', filterResult()?.format)}>${() => downloadLabel(filterResult()?.format)}</button>
           </div>
         #end
       </div>
@@ -558,6 +565,7 @@ export <view>
           </label>
         </div>
         <PixuCompressor
+          :instanceId=${'pixu'}
           :samples=${sampleImages}
           :options=${() => pixOptions()}
           on-compress=${(r) => { pixResult.set(r); pixProgress.set(1) }}
@@ -580,7 +588,7 @@ export <view>
                 <span class="stat-value success">${() => `${((pixResult()?.compressionRatio || 0) * 100).toFixed(1)}%`}</span>
               </div>
             </div>
-            <button type="button" class="download-btn" on-click=${() => downloadImage(pixResult()?.file, 'pixu-compressed')}>Download PIXU</button>
+            <button type="button" class="download-btn" on-click=${() => downloadImage(pixResult()?.file, 'pixu-compressed', pixResult()?.format)}>${() => downloadLabel(pixResult()?.format)}</button>
           </div>
         #end
       </div>
@@ -592,6 +600,7 @@ export <view>
           <p>Smart Quality analyzes content and selects quality for best compression while keeping visual fidelity.</p>
         </div>
         <PixuCompressor
+          :instanceId=${'smart-quality'}
           :samples=${sampleImages}
           :options=${{ enableSmartQuality: true }}
           on-compress=${(r) => { smartQualityResult.set(r); smartQualityProgress.set(1) }}
@@ -628,6 +637,7 @@ export <view>
           </label>
         </div>
         <PixuCompressor
+          :instanceId=${'conversion'}
           :samples=${sampleImages}
           :options=${() => conversionOptions()}
           on-compress=${(r) => { conversionResult.set(r); conversionProgress.set(1) }}
@@ -666,6 +676,7 @@ export <view>
           #end
         </div>
         <PixuCompressor
+          :instanceId=${'png'}
           :samples=${sampleImages}
           :options=${() => pngCompressOptions()}
           on-compress=${(r) => { pngResult.set(r); pngProgress.set(1) }}
@@ -707,6 +718,7 @@ export <view>
           </label>
         </div>
         <PixuCompressor
+          :instanceId=${'smart-crop'}
           :samples=${sampleImages}
           :options=${() => smartCropOptions()}
           on-compress=${(r) => { smartCropResult.set(r); smartCropProgress.set(1) }}
@@ -747,6 +759,7 @@ export <view>
           </label>
         </div>
         <PixuCompressor
+          :instanceId=${'watermark'}
           :samples=${sampleImages}
           :options=${() => watermarkOptions()}
           on-compress=${(r) => { watermarkResult.set(r); watermarkProgress.set(1) }}
@@ -755,7 +768,7 @@ export <view>
         />
         #if watermarkResult() && watermarkText()
           <div class="result-card">
-            <button type="button" class="download-btn-small" on-click=${() => downloadImage(watermarkResult()?.file, 'watermarked')}>Download</button>
+            <button type="button" class="download-btn-small" on-click=${() => downloadImage(watermarkResult()?.file, 'watermarked', watermarkResult()?.format)}>${() => downloadLabel(watermarkResult()?.format)}</button>
           </div>
         #end
       </div>
@@ -764,6 +777,7 @@ export <view>
         <h2>11. Performance Monitoring</h2>
         <p class="description">Track compression metrics and performance in real-time</p>
         <PixuCompressor
+          :instanceId=${'performance'}
           :samples=${sampleImages}
           :options=${{ quality: 0.8, monitorPerformance: true }}
           on-compress=${(r) => { performanceResult.set(r); performanceProgress.set(1) }}
