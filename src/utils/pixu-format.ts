@@ -200,3 +200,93 @@ export function estimatePixuCompression(
 
 /** @deprecated Use estimatePixuCompression */
 export const estimatePixCompression = estimatePixuCompression;
+
+export type PixuPayloadMime = 'image/webp' | 'image/jpeg';
+
+export function detectPixuPayloadMime(
+  data: ArrayBuffer | Uint8Array
+): PixuPayloadMime | null {
+  const bytes = data instanceof Uint8Array ? data : new Uint8Array(data);
+  if (bytes.length >= 12) {
+    const riff =
+      bytes[0] === 0x52 &&
+      bytes[1] === 0x49 &&
+      bytes[2] === 0x46 &&
+      bytes[3] === 0x46;
+    const webp =
+      bytes[8] === 0x57 &&
+      bytes[9] === 0x45 &&
+      bytes[10] === 0x42 &&
+      bytes[11] === 0x50;
+    if (riff && webp) return 'image/webp';
+  }
+  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+    return 'image/jpeg';
+  }
+  return null;
+}
+
+export function isPixuBlob(file: Blob): boolean {
+  const type = (file.type || '').toLowerCase();
+  return type === PIXU_MIME_TYPE || type === 'image/pix' || type.endsWith('+pixu');
+}
+
+/**
+ * Convert a PIXU blob into a browser-displayable WebP/JPEG blob.
+ * Non-PIXU inputs are returned unchanged.
+ */
+export async function pixuToDisplayBlob(file: Blob): Promise<Blob> {
+  if (!isPixuBlob(file) && file.type && !file.type.startsWith('application/')) {
+    return file;
+  }
+
+  const buffer = await file.arrayBuffer();
+  const payloadMime = detectPixuPayloadMime(buffer);
+  if (!payloadMime) {
+    if (isPixuBlob(file) || !file.type) {
+      throw new Error('Invalid PIXU payload: expected WebP or JPEG bytes');
+    }
+    return file;
+  }
+
+  return new Blob([buffer], { type: payloadMime });
+}
+
+/**
+ * Object URL suitable for <img>, CSS background, or canvas drawImage.
+ * Caller must revoke the URL when done.
+ */
+export async function createPixuObjectURL(file: Blob): Promise<string> {
+  const display = await pixuToDisplayBlob(file);
+  return URL.createObjectURL(display);
+}
+
+export async function loadPixuImage(file: Blob): Promise<HTMLImageElement> {
+  const url = await createPixuObjectURL(file);
+  const image = new Image();
+  image.decoding = 'async';
+  await new Promise<void>((resolve, reject) => {
+    image.onload = () => resolve();
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Failed to decode PIXU image'));
+    };
+    image.src = url;
+  });
+  return image;
+}
+
+/**
+ * Object URL for <img> previews. PIXU is remapped to WebP/JPEG MIME so browsers can paint it.
+ * Keep the original File/Blob for downloads (save as .pixu).
+ */
+export async function createPreviewObjectURL(
+  file: Blob,
+  format?: string | null
+): Promise<string> {
+  const mime = (format || file.type || '').toLowerCase();
+  if (mime === PIXU_MIME_TYPE || mime === 'image/pix' || isPixuBlob(file)) {
+    return createPixuObjectURL(file);
+  }
+  return URL.createObjectURL(file);
+}

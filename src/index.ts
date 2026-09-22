@@ -25,12 +25,20 @@ export {
   PIXU_EXTENSION,
   estimatePixuCompression,
   normalizePixuFormat,
+  detectPixuPayloadMime,
+  isPixuBlob,
+  pixuToDisplayBlob,
+  createPixuObjectURL,
+  loadPixuImage,
+  createPreviewObjectURL,
   canvasToPix,
   isPixSupported,
   PIX_MIME_TYPE,
   PIX_EXTENSION,
   estimatePixCompression,
 } from './utils/pixu-format';
+export type { PixuPayloadMime } from './utils/pixu-format';
+export { getOutputExtension, buildDownloadName } from './utils/output-format';
 export type {
   CompressionOptions,
   CompressionResult,
