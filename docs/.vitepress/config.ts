@@ -6,7 +6,7 @@ export default defineConfig({
   title: 'Pixu',
   description:
     'Best perceptual image compression via Contextual Reconstructive Entropy — PIXU format for the web',
-  base: '/',
+  base: '/pixu/',
 
   markdown: {
     math: true,

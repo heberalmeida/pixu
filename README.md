@@ -4,8 +4,11 @@
 
 [![npm version](https://img.shields.io/npm/v/@pantanal/pixu.svg)](https://www.npmjs.com/package/@pantanal/pixu)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/@pantanal/pixu)](https://bundlephobia.com/package/@pantanal/pixu)
+[![docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://heberalmeida.github.io/pixu/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
+**Docs:** [https://heberalmeida.github.io/pixu/](https://heberalmeida.github.io/pixu/)
 
 [Features](#features) · [Installation](#installation) · [Quick Start](#quick-start) · [API](#api-reference) · [Examples](#examples) · [Docs](#documentation)
 

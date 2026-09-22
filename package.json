@@ -89,7 +89,7 @@
   "bugs": {
     "url": "https://github.com/heberalmeida/pixu/issues"
   },
-  "homepage": "https://github.com/heberalmeida/pixu#readme",
+  "homepage": "https://heberalmeida.github.io/pixu/",
   "devDependencies": {
     "@angular/common": "^17.3.12",
     "@angular/core": "^17.3.12",
