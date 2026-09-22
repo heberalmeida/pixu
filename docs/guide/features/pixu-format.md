@@ -1,6 +1,8 @@
 # PIXU Format — best compression under TECR
 
-PIXU (`image/pixu`, `.pixu`) is Pixu’s reconstructive image format. It is designed around **[Contextual Reconstructive Entropy (TECR)](/guide/theory/contextual-reconstructive-entropy)**: minimize shipped bytes given shared model knowledge and an acceptable perceptual error.
+PIXU (`format: 'image/pixu'`) is Pixu’s reconstructive **encode path**, designed around **[Contextual Reconstructive Entropy (TECR)](/guide/theory/contextual-reconstructive-entropy)**: minimize shipped bytes given shared model knowledge and an acceptable perceptual error.
+
+The output file is always a **browser-native** WebP or JPEG (`.webp` / `.jpg`) — never a proprietary extension.
 
 Shannon still bounds lossless universal compression. PIXU targets a different objective — **best \(C_{\text{file}}\) under \(\varepsilon\)** — and that is where it outperforms naive JPEG and WebP for web delivery.
 
@@ -15,7 +17,7 @@ L(x \mid M, C, \varepsilon)
 | \(M\) (model) | Adaptive encoder + WebP/JPEG reconstructive proxy |
 | \(C\) (context) | Content analysis, block variance, chroma / saturation |
 | \(\varepsilon\) (error) | Quality + Smart Quality perceptual budget |
-| \(C_{\text{file}}\) | The `.pixu` blob you transmit |
+| \(C_{\text{file}}\) | The WebP/JPEG blob you download or transmit |
 
 Pixels that are statistically “expensive” but perceptually cheap get fewer bits. Structure that the decoder and analysis already “know” is not re-sent blindly.
 
@@ -34,19 +36,20 @@ Exact gains depend on content class (photos, graphics, text-heavy UI). Enable Sm
 ### Best default (recommended)
 
 ```typescript
-import { compress, PIXU_EXTENSION, PIXU_MIME_TYPE } from 'pixu'
+import { compress, buildDownloadName, PIXU_MIME_TYPE } from 'pixu'
 
 const result = await compress(file, {
-  format: 'image/pixu',
-  enableSmartQuality: true, // builds context C
+  format: PIXU_MIME_TYPE, // TECR encode path
+  enableSmartQuality: true,
   stripMetadata: true,
 })
 
-const name = file.name.replace(/\.[^.]+$/, '') + PIXU_EXTENSION
-// result.format === PIXU_MIME_TYPE → "image/pixu"
+// result.format is 'image/webp' or 'image/jpeg'
+img.src = URL.createObjectURL(result.file)
+a.download = buildDownloadName('photo', result.format) // photo.webp or photo.jpg
 ```
 
-When `format` is `image/pixu`, Pixu treats contextual reconstruction as the primary path: adaptive quality, perceptual tuning, and (unless disabled) smart content priors.
+When `format` is `image/pixu`, Pixu treats contextual reconstruction as the primary path: adaptive quality, perceptual tuning, and (unless disabled) smart content priors. The saved file uses a known extension so `<img>` and OS viewers work without helpers.
 
 ### Explicit quality (fixed \(\varepsilon\))
 
@@ -62,35 +65,24 @@ const result = await compress(file, {
 
 ```typescript
 const result = await compress(file, {
-  format: 'auto', // prefers PIXU for JPEG/PNG sources
+  format: 'auto', // prefers the PIXU encode path for JPEG/PNG sources
   enableSmartQuality: true,
 })
 ```
 
 Try it in the [framework examples](/examples/) — click any sample photo.
 
-## Viewing PIXU
-
-`<img src="file.pixu">` does not work natively. Use preview helpers (or open the [View PIXU](/guide/features/pixu-viewer) page):
-
-```typescript
-import { createPreviewObjectURL, buildDownloadName } from 'pixu'
-
-const previewUrl = await createPreviewObjectURL(result.file, result.format)
-img.src = previewUrl // paints in the browser
-
-a.download = buildDownloadName('photo', result.format) // still saves .pixu
-```
-
 ## Constants
 
 | Export | Value |
 |--------|-------|
-| `PIXU_MIME_TYPE` | `image/pixu` |
-| `PIXU_EXTENSION` | `.pixu` |
+| `PIXU_MIME_TYPE` | `image/pixu` (encode option only) |
+| `buildDownloadName` / `getOutputExtension` | Map result MIME → `.webp` / `.jpg` / … |
 | `isPixuSupported()` | `true` |
 
-Legacy aliases `PIX_MIME_TYPE`, `PIX_EXTENSION`, and `isPixSupported` remain available but deprecated. MIME `image/pix` normalizes to `image/pixu`.
+`PIXU_EXTENSION` is deprecated — downloads must follow `result.format`, not a `.pixu` suffix.
+
+Legacy aliases `PIX_MIME_TYPE`, `PIX_EXTENSION`, and `isPixSupported` remain available but deprecated. MIME `image/pix` normalizes to `image/pixu` as an encode option.
 
 ## Comparison
 
@@ -105,26 +97,24 @@ Legacy aliases `PIX_MIME_TYPE`, `PIX_EXTENSION`, and `isPixSupported` remain ava
 
 1. **Context \(C\)** — Smart Quality / content analysis (photo, graphic, text, complexity)
 2. **Error \(\varepsilon\)** — quality budget, adapted per region statistics
-3. **Model \(M\)** — perceptual optimization + adaptive encode into reconstructive payload
-4. **File** — wrapped as `image/pixu` (`.pixu`) for delivery
-
-Browsers display via the internal WebP/JPEG reconstructive proxy; the MIME and extension stay PIXU for product identity and future TECR level-3 payloads.
+3. **Model \(M\)** — perceptual optimization + adaptive encode
+4. **File** — standard WebP or JPEG bytes with matching MIME and extension
 
 ## Best practices
 
-1. Prefer `format: 'image/pixu'` for web delivery when you control decode/display through Pixu or your CDN pipeline
+1. Prefer `format: 'image/pixu'` when you want the TECR encode path
 2. Keep `enableSmartQuality: true` so context \(C\) drives the budget
 3. Pair with `maxWidth` / `maxHeight` to cut spatial entropy before coding
-4. Keep a WebP/JPEG fallback only when you need raw native `<img>` without a PIXU-aware path
+4. Save with `buildDownloadName(name, result.format)` so the extension matches the payload
 
 ## Limitations
 
-- Decode today uses a WebP/JPEG proxy inside the PIXU container path
-- Tiny images (&lt; ~10KB) may see limited gain
-- TECR level 3 (generative / semantic latents) is not in the shipped codec yet — see the [theory guide](/guide/theory/contextual-reconstructive-entropy)
+- PIXU is an encode strategy, not a separate on-disk container
+- Gains vary by content; always measure on your corpus
+- See [TECR](/guide/theory/contextual-reconstructive-entropy) for the formal objective
 
-## Further reading
+## Related
 
-- [Contextual Reconstructive Entropy](/guide/theory/contextual-reconstructive-entropy)
-- [Smart Quality](/guide/features/smart-quality)
-- [Supported Formats](/guide/features/supported-formats)
+- [View / preview helpers](/guide/features/pixu-viewer)
+- [API: PIXU](/api/pixu-format)
+- [TECR](/guide/theory/contextual-reconstructive-entropy)

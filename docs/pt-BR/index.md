@@ -31,7 +31,7 @@ features:
   - title: Pronto para frameworks
     details: Componentes prontos para Vue 3, React, Angular, Svelte e Jacaré com imagens de exemplo reais.
   - title: TypeScript completo
-    details: API tipada, CompressionResult, SupportedFormat e export PIXU_EXTENSION.
+    details: API tipada, CompressionResult, SupportedFormat e helpers buildDownloadName.
 ---
 
 ## Início rápido
@@ -41,7 +41,7 @@ npm install pixu
 ```
 
 ```typescript
-import { compress, PIXU_EXTENSION } from 'pixu';
+import { compress, buildDownloadName } from 'pixu';
 
 const result = await compress(file, {
   format: 'image/pixu',
@@ -50,7 +50,7 @@ const result = await compress(file, {
 });
 
 console.log(result.compressionRatio);
-console.log(PIXU_EXTENSION); // ".pixu"
+console.log(buildDownloadName('photo', result.format)); // photo.webp ou photo.jpg
 ```
 
 ## Teoria

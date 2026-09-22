@@ -76,12 +76,13 @@ Pixu can output images in optimized formats:
    - Modern browser support
    - High quality
 
-### Proprietary Format
+### PIXU encode path
 
-5. **PIXU** (`image/pixu`, `.pixu`)
-   - Reconstructive format under [TECR](/guide/theory/contextual-reconstructive-entropy)
+5. **PIXU** (`format: 'image/pixu'`)
+   - Reconstructive encode under [TECR](/guide/theory/contextual-reconstructive-entropy)
    - Best \(C_{\text{file}}\) under perceptual \(\varepsilon\)
    - Typically 30–60% smaller than JPEG, 20–40% vs WebP
+   - Output is always native **WebP or JPEG** (`.webp` / `.jpg`)
    - Adaptive + Smart Quality context \(C\)
    - See [PIXU Format Guide](./pixu-format.md)
 

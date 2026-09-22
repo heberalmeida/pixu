@@ -79,7 +79,7 @@ As fotos de amostra ficam em `examples/shared/assets/` (também copiadas para `d
 ## Importando o Pixu
 
 ```typescript
-import { compress, PIXU_EXTENSION } from 'pixu'
+import { compress, buildDownloadName } from 'pixu'
 ```
 
 ## Receita de melhor compressão

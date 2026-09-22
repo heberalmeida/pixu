@@ -37,13 +37,13 @@ export <view>
 |---------|------|
 | `@jacare/core` | Signals (`pulse`, `derive`), DOM bindings |
 | `@jacare/vite-plugin` | Compiles `.jcr` templates at build time |
-| `pixu` | `compress`, `PIXU_EXTENSION` |
+| `pixu` | `compress`, `buildDownloadName` |
 
 ## Import Pixu
 
 ```javascript
 import { pulse, derive } from '@jacare/core'
-import { compress, PIXU_EXTENSION } from 'pixu'
+import { compress, buildDownloadName } from 'pixu'
 
 const quality = pulse(0.85)
 const format = pulse('image/pixu')
@@ -61,7 +61,7 @@ async function onFileChange(e) {
   })
 
   console.log(result.compressionRatio)
-  console.log(PIXU_EXTENSION) // ".pixu"
+  console.log(buildDownloadName('out', 'image/webp')) // "out.webp"
 }
 ```
 
@@ -76,7 +76,7 @@ export <view>
       <option value="auto">Auto (prefers PIX)</option>
       <option value="image/jpeg">JPEG</option>
       <option value="image/webp">WebP</option>
-      <option value="image/pixu">PIXU (.pixu)</option>
+      <option value="image/pixu">PIXU (Best)</option>
     </select>
     #if result()
       <button type="button" on-click=${downloadCompressed}>Download</button>

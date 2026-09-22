@@ -19,7 +19,7 @@ Open `http://localhost:3000`
 
 - Docs-style header, gallery, and section cards
 - Real sample photos
-- `import { compress, compressBatch, PIXU_EXTENSION } from 'pixu'`
+- `import { compress, compressBatch, buildDownloadName } from 'pixu'`
 - Presets, filters, smart quality, batch, watermark, and more
 
 [All framework examples →](/examples/)

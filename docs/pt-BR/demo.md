@@ -15,7 +15,7 @@ Demos interativas do Pixu com **imagens de exemplo reais**. A mesma linguagem vi
 - Clique em qualquer **foto de exemplo** (montanhas, retrato, cidade, floresta, comida, PNG)
 - Ou **envie** sua própria imagem
 - Original vs comprimido lado a lado
-- Baixe o resultado `.pixu` (ou outro formato)
+- Baixe o resultado `.webp` / `.jpg` (ou outro formato)
 
 ## Configurações recomendadas
 

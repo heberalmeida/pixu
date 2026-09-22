@@ -27,7 +27,7 @@ export function guideSidebar(prefix = ''): DefaultTheme.SidebarItem[] {
       items: [
         { text: prefix ? 'Formatos suportados' : 'Supported Formats', link: `${p}/guide/features/supported-formats` },
         { text: 'PIXU Format', link: `${p}/guide/features/pixu-format` },
-        { text: prefix ? 'Visualizar PIXU' : 'View PIXU', link: `${p}/guide/features/pixu-viewer` },
+        { text: prefix ? 'Encode PIXU' : 'PIXU encode', link: `${p}/guide/features/pixu-viewer` },
         { text: prefix ? 'Presets de compressão' : 'Compression Presets', link: `${p}/guide/features/presets` },
         { text: prefix ? 'Filtros de imagem' : 'Image Filters', link: `${p}/guide/features/filters` },
         { text: 'Smart Quality', link: `${p}/guide/features/smart-quality` },

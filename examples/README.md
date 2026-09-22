@@ -96,6 +96,6 @@ Click a sample to compress with `format: 'image/pixu'` and compare before/after.
 - Docs-style layout (shared with VitePress)
 - Direct `import { compress } from 'pixu'`
 - Framework components including Jacaré (`PixuCompressor.jcr`)
-- PIXU format (`.pixu`) in format selectors
+- PIXU encode path in format selectors (saves as `.webp` / `.jpg`)
 - Sample image gallery
 - Compression presets, filters, batch (Vue full demo)

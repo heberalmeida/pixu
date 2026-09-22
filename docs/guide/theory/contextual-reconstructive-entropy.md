@@ -41,7 +41,7 @@ $$
 
 | Term | Meaning in Pixu |
 |------|-----------------|
-| $C_{\text{file}}$ | Bytes in the `.pixu` (or other) output |
+| $C_{\text{file}}$ | Bytes in the output file (WebP/JPEG from the PIXU path, or other) |
 | $C_{\text{model}}$ | Codec + Pixu reconstructive pipeline (WebP/JPEG proxy, adaptive encoder) |
 | $C_{\text{context}}$ | Content analysis: photo vs graphic, complexity, edges, chroma |
 | $C_{\text{error}}$ | Allowed perceptual distortion $\varepsilon$ (quality / smart quality) |

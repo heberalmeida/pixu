@@ -1,31 +1,27 @@
-# View PIXU images
+# PIXU encode — native WebP/JPEG output
 
-Browsers do **not** render `image/pixu` natively. PIXU files are reconstructive payloads (WebP or JPEG bytes under a Pixu MIME type). Pixu exposes helpers so you can **preview** them in `<img>`, canvas, or CSS while still **saving** the original `.pixu` blob.
+`format: 'image/pixu'` selects the TECR encode path. The **file you get is always** `image/webp` or `image/jpeg` with a matching `.webp` / `.jpg` extension — ready for `<img>`, downloads, and CDNs.
 
-## Live viewer
-
-Compress to PIXU, preview in the browser, then download `.pixu`:
+## Live demo
 
 <CompressionDemo
   :options="{ format: 'image/pixu', enableSmartQuality: true, stripMetadata: true, quality: 0.85 }"
-  title="PIXU viewer"
-  subtitle="Preview uses createPreviewObjectURL — download keeps .pixu"
+  title="PIXU encode"
+  subtitle="TECR path — downloads as .webp or .jpg"
 />
 
 ## How it works
 
 | Step | What happens |
 |------|----------------|
-| Encode | `compress(..., { format: 'image/pixu' })` → `File` with type `image/pixu` |
-| Preview | `createPreviewObjectURL(file)` remaps payload MIME to `image/webp` or `image/jpeg` for `<img>` |
-| Save | Keep `result.file` and name it with `buildDownloadName(name, result.format)` → `.pixu` |
+| Encode | `compress(..., { format: 'image/pixu' })` uses adaptive / smart quality |
+| Result | `result.format` is `image/webp` or `image/jpeg` |
+| Display | `URL.createObjectURL(result.file)` works in `<img>` |
+| Save | `buildDownloadName(name, result.format)` → `.webp` or `.jpg` |
 
 ```typescript
 import {
   compress,
-  createPreviewObjectURL,
-  pixuToDisplayBlob,
-  loadPixuImage,
   buildDownloadName,
   PIXU_MIME_TYPE,
 } from 'pixu'
@@ -35,38 +31,26 @@ const result = await compress(file, {
   enableSmartQuality: true,
 })
 
-// Preview (revoke when done)
-const previewUrl = await createPreviewObjectURL(result.file, result.format)
-img.src = previewUrl
+img.src = URL.createObjectURL(result.file)
 
-// Or get a display Blob / HTMLImageElement
-const displayBlob = await pixuToDisplayBlob(result.file)
-const image = await loadPixuImage(result.file)
-
-// Download still saves PIXU
 const a = document.createElement('a')
 a.href = URL.createObjectURL(result.file)
-a.download = buildDownloadName('photo', result.format) // photo.pixu
+a.download = buildDownloadName('photo', result.format)
 a.click()
 ```
 
-## API
+## Legacy helpers
+
+If you still hold a blob typed as `image/pixu` (older builds), these remap the payload for display:
 
 | Helper | Role |
 |--------|------|
 | `createPreviewObjectURL(file, format?)` | Object URL safe for `<img>` |
-| `pixuToDisplayBlob(file)` | Same bytes, browser MIME (`image/webp` / `image/jpeg`) |
-| `createPixuObjectURL(file)` | Alias focused on PIXU → display URL |
+| `pixuToDisplayBlob(file)` | Same bytes, browser MIME |
 | `loadPixuImage(file)` | Decoded `HTMLImageElement` |
 | `detectPixuPayloadMime(buffer)` | Sniff WebP vs JPEG payload |
-| `isPixuBlob(file)` | MIME check |
 
-## Native support?
-
-There is no built-in browser codec for `image/pixu` yet. Viewing always goes through Pixu (or your own remapping of the payload). Serving `.pixu` to end users typically means:
-
-1. Decode on the client with these helpers, or
-2. Transcode to WebP/JPEG on the server for public CDN URLs, while keeping `.pixu` as the archival / app format.
+New compressions do not need these for normal preview or download.
 
 ## Related
 

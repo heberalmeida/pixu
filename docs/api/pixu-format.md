@@ -1,18 +1,20 @@
 # PIXU format
 
-Proprietary reconstructive format under TECR. Prefer `format: 'image/pixu'` on [`compress`](/api/compress).
+TECR encode path. Prefer `format: 'image/pixu'` on [`compress`](/api/compress). The **output file** is always WebP or JPEG with a known extension.
 
 ## Constants
 
 ```typescript
 import {
-  PIXU_MIME_TYPE,   // 'image/pixu'
-  PIXU_EXTENSION,   // '.pixu'
+  PIXU_MIME_TYPE,   // 'image/pixu' — encode option only
   isPixuSupported,
+  buildDownloadName,
 } from 'pixu'
 
-isPixuSupported() // true in supported environments
+isPixuSupported() // true
 ```
+
+`PIXU_EXTENSION` is deprecated (alias of `.webp`). Prefer `buildDownloadName(name, result.format)`.
 
 Deprecated aliases still exported: `PIX_MIME_TYPE`, `PIX_EXTENSION`, `isPixSupported`, `canvasToPix`, `estimatePixCompression`.
 
@@ -30,7 +32,7 @@ function canvasToPixu(
 ): Promise<Blob>
 ```
 
-Default `quality` is `0.85`. `adaptive` defaults to `true`.
+Returns a Blob typed as `image/webp` (or `image/jpeg` fallback). Default `quality` is `0.85`. `adaptive` defaults to `true`.
 
 ## estimatePixuCompression
 
@@ -56,14 +58,16 @@ Maps legacy `'image/pix'` → `'image/pixu'`.
 ## Example
 
 ```typescript
-import { compress, PIXU_MIME_TYPE, PIXU_EXTENSION } from 'pixu'
+import { compress, PIXU_MIME_TYPE, buildDownloadName } from 'pixu'
 
 const result = await compress(file, {
   format: PIXU_MIME_TYPE,
   enableSmartQuality: true,
 })
 
-a.download = `photo${PIXU_EXTENSION}`
+// result.format === 'image/webp' | 'image/jpeg'
+a.download = buildDownloadName('photo', result.format)
+img.src = URL.createObjectURL(result.file)
 ```
 
 ## Download helpers
@@ -71,14 +75,15 @@ a.download = `photo${PIXU_EXTENSION}`
 ```typescript
 import { getOutputExtension, buildDownloadName } from 'pixu'
 
-getOutputExtension('image/pixu')  // '.pixu'
+getOutputExtension('image/webp')  // '.webp'
 getOutputExtension('image/jpeg')  // '.jpg'
-buildDownloadName('photo', 'image/webp')  // 'photo.webp'
+getOutputExtension('image/pixu')  // '.webp' (encode option → default container)
+buildDownloadName('photo', result.format)  // matches payload
 ```
 
-Use these when saving `CompressionResult.file` so the browser downloads the correct extension.
+## Legacy preview helpers
 
-## Preview / decode
+For older blobs still typed as `image/pixu`:
 
 ```typescript
 import {
@@ -87,19 +92,12 @@ import {
   loadPixuImage,
   detectPixuPayloadMime,
 } from 'pixu'
-
-const url = await createPreviewObjectURL(result.file, result.format)
-img.src = url
-
-const display = await pixuToDisplayBlob(result.file) // image/webp or image/jpeg
-const image = await loadPixuImage(result.file)
 ```
 
-See [View PIXU](/guide/features/pixu-viewer).
+See [PIXU encode](/guide/features/pixu-viewer).
 
 ## Related
 
 - Guide: [PIXU Format](/guide/features/pixu-format)
-- Guide: [View PIXU](/guide/features/pixu-viewer)
+- Guide: [PIXU encode](/guide/features/pixu-viewer)
 - Theory: [TECR](/guide/theory/contextual-reconstructive-entropy)
-

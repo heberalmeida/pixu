@@ -224,14 +224,14 @@ type SupportedFormat =
 
 | Value | Extension | Notes |
 |-------|-----------|-------|
-| `image/pixu` | `.pixu` | Best perceptual compression (TECR) |
+| `image/pixu` | `.webp` / `.jpg` | Caminho de encode TECR; saída nativa WebP ou JPEG |
 | `image/webp` | `.webp` | Broad modern support |
 | `image/avif` | `.avif` | Strong standard codec |
 | `image/jpeg` | `.jpg` | Universal |
 | `image/png` | `.png` | Transparency / graphics |
 | `auto` | — | Prefers PIXU → WebP → JPEG |
 
-Constants: [`PIXU_MIME_TYPE`](/pt-BR/api/pixu-format), `PIXU_EXTENSION`.
+Constants: [`PIXU_MIME_TYPE`](/pt-BR/api/pixu-format), `buildDownloadName`.
 
 ---
 

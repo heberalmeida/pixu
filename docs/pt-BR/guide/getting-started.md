@@ -55,7 +55,7 @@ const result = await compress(file, {
 
 | Formato | MIME | Extensão | Melhor para |
 |--------|------|-----------|----------|
-| PIXU | `image/pixu` | `.pixu` | Melhor $C_{\text{file}}$ sob $\varepsilon$ perceptual (TECR) |
+| PIXU | `image/pixu` | `.webp` / `.jpg` | Caminho TECR; saída nativa WebP ou JPEG |
 | WebP | `image/webp` | `.webp` | Navegadores modernos |
 | AVIF | `image/avif` | `.avif` | Pipelines nativos AVIF |
 | JPEG | `image/jpeg` | `.jpg` | Compatibilidade universal |
@@ -63,10 +63,11 @@ const result = await compress(file, {
 | Auto | `auto` | — | O Pixu escolhe PIX quando possível |
 
 ```typescript
-import { compress, PIXU_EXTENSION, PIXU_MIME_TYPE } from 'pixu';
+import { compress, PIXU_MIME_TYPE, buildDownloadName } from 'pixu';
 
-console.log(PIXU_MIME_TYPE);  // "image/pixu"
-console.log(PIXU_EXTENSION);  // ".pixu"
+const result = await compress(file, { format: PIXU_MIME_TYPE });
+console.log(result.format); // "image/webp" ou "image/jpeg"
+console.log(buildDownloadName('out', result.format));
 ```
 
 Saiba mais: [Formato PIXU](/pt-BR/guide/features/pixu-format) · [Formatos suportados](/pt-BR/guide/features/supported-formats)

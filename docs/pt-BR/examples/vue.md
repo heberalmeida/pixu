@@ -19,7 +19,7 @@ Abra `http://localhost:3000`
 
 - Cabeçalho no estilo da docs, galeria e cards de seção
 - Fotos de amostra reais
-- `import { compress, compressBatch, PIXU_EXTENSION } from 'pixu'`
+- `import { compress, compressBatch, buildDownloadName } from 'pixu'`
 - Presets, filtros, smart quality, lote, watermark e mais
 
 [Todos os exemplos por framework →](/pt-BR/examples/)

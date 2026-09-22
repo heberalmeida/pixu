@@ -19,7 +19,7 @@ Pixu is a zero-dependency TypeScript library for **best perceptual compression**
 L(x \mid M, C, \varepsilon)
 \]
 
-This does **not** claim to break Shannon’s lossless bound. It targets a better problem for images: smaller \(C_{\text{file}}\) at the same visual budget — via the **PIXU** format (`.pixu`).
+This does **not** claim to break Shannon’s lossless bound. It targets a better problem for images: smaller \(C_{\text{file}}\) at the same visual budget — via the **PIXU** encode path (native WebP/JPEG output).
 
 ### Why Pixu?
 
@@ -29,7 +29,7 @@ This does **not** claim to break Shannon’s lossless bound. It targets a better
 - **Flexible** — Plugins, presets, filters, batch and stream APIs
 - **Lightweight** — Zero runtime dependencies (~15KB gzipped)
 - **Typed** — Full TypeScript definitions
-- **PIXU format** — Reconstructive `image/pixu` — typically 30–60% smaller than JPEG, 20–40% vs WebP at the same visual budget
+- **PIXU encode** — Reconstructive `image/pixu` path — typically 30–60% smaller than JPEG, 20–40% vs WebP; downloads as `.webp` or `.jpg`
 
 ---
 
@@ -37,7 +37,7 @@ This does **not** claim to break Shannon’s lossless bound. It targets a better
 
 ### Core
 
-- JPEG, PNG, WebP, AVIF, and **PIXU** (`image/pixu`, `.pixu`)
+- JPEG, PNG, WebP, AVIF, and **PIXU** encode (`format: 'image/pixu'` → `.webp` / `.jpg`)
 - Resize modes: `contain`, `cover`, `fit`, `fill`
 - Quality, target-size, and adaptive modes
 - EXIF stripping and orientation correction
@@ -85,7 +85,7 @@ pnpm add pixu
 ### Best compression (recommended)
 
 ```typescript
-import { compress, PIXU_EXTENSION } from 'pixu';
+import { compress, buildDownloadName } from 'pixu';
 
 const result = await compress(file, {
   format: 'image/pixu',
@@ -96,7 +96,7 @@ const result = await compress(file, {
 });
 
 console.log(result.compressionRatio);
-console.log(PIXU_EXTENSION); // ".pixu"
+console.log(buildDownloadName('photo', result.format)); // photo.webp or photo.jpg
 ```
 
 ### Basic usage

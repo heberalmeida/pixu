@@ -22,8 +22,8 @@ hero:
 features:
   - title: Contextual Reconstructive Entropy
     details: Optimize L(x|M,C,ε) — ship fewer bytes given shared model, content context, and perceptual error. Shannon still holds; the problem we solve is better.
-  - title: PIXU Format
-    details: image/pixu reconstructive path — typically 30–60% smaller than JPEG and 20–40% vs WebP at the same visual budget.
+  - title: PIXU Encode
+    details: image/pixu TECR path — typically 30–60% smaller than JPEG and 20–40% vs WebP; saves as .webp or .jpg.
   - title: Smart Context (C)
     details: Smart Quality classifies photo, graphic, and text so bitrate follows structure, not a blind constant.
   - title: Zero Dependencies
@@ -31,7 +31,7 @@ features:
   - title: Framework Ready
     details: Drop-in components for Vue 3, React, Angular, Svelte, and Jacaré with real sample images.
   - title: Full TypeScript
-    details: Typed API, CompressionResult, SupportedFormat, and PIXU_EXTENSION export.
+    details: Typed API, CompressionResult, SupportedFormat, and buildDownloadName helpers.
 ---
 
 ## Quick Start
@@ -41,7 +41,7 @@ npm install pixu
 ```
 
 ```typescript
-import { compress, PIXU_EXTENSION } from 'pixu';
+import { compress, buildDownloadName } from 'pixu';
 
 const result = await compress(file, {
   format: 'image/pixu',
@@ -50,7 +50,7 @@ const result = await compress(file, {
 });
 
 console.log(result.compressionRatio);
-console.log(PIXU_EXTENSION); // ".pixu"
+console.log(buildDownloadName('photo', result.format)); // photo.webp or photo.jpg
 ```
 
 ## Theory

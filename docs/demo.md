@@ -15,7 +15,7 @@ Interactive Pixu demos with **real sample images**. Same visual language as the 
 - Click any **sample photo** (mountains, portrait, city, forest, food, PNG)
 - Or **upload** your own image
 - Side-by-side original vs compressed
-- Download the `.pixu` (or other format) result
+- Download the `.webp` / `.jpg` (or other format) result
 
 ## Recommended settings
 

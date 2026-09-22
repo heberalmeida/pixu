@@ -20,7 +20,7 @@ export default defineConfig({
       },
     },
     optimizeDeps: {
-      include: ['pixu'],
+      exclude: ['pixu'],
     },
     ssr: {
       noExternal: [],

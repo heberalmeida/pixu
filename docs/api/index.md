@@ -43,7 +43,7 @@ import {
   canvasToPixu,
   isPixuSupported,
   PIXU_MIME_TYPE,
-  PIXU_EXTENSION,
+  buildDownloadName,
   estimatePixuCompression,
 } from 'pixu'
 ```
@@ -77,7 +77,7 @@ import {
 | [PNG optimization](/api/png-optimization-api) | `optimizePNG` |
 | [Format conversion](/api/format-conversion-api) | `convertFormat`, transparency helpers |
 | [PIXU format](/api/pixu-format) | Encode / constants / estimates / preview |
-| [View PIXU](/guide/features/pixu-viewer) | Preview `.pixu` in the browser |
+| [PIXU encode](/guide/features/pixu-viewer) | TECR path — native `.webp` / `.jpg` output |
 | `getOutputExtension` / `buildDownloadName` | Map MIME → file extension for downloads |
 | [Responsive](/api/responsive) | `generateResponsiveImages`, srcset helpers |
 | [Optimization hints](/api/optimization-hints) | Hints and savings estimates |

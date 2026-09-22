@@ -182,7 +182,6 @@ const downloadButtonLabel = computed(() => {
   if (!result.value?.format) return 'Download'
   // sync fallback until module loads; button only shown when result exists
   const format = result.value.format
-  if (format === 'image/pixu') return 'Download (.pixu)'
   if (format === 'image/jpeg') return 'Download (.jpg)'
   if (format === 'image/png') return 'Download (.png)'
   if (format === 'image/webp') return 'Download (.webp)'

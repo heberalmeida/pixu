@@ -78,7 +78,7 @@ O Pixu pode gerar imagens em formatos otimizados:
 
 ### Formato Proprietário
 
-5. **PIXU** (`image/pixu`, `.pixu`)
+5. **PIXU** (`format: 'image/pixu'` → `.webp` / `.jpg`)
    - Formato reconstrutivo sob [TECR](/pt-BR/guide/theory/contextual-reconstructive-entropy)
    - Melhor $C_{\text{file}}$ sob $\varepsilon$ perceptual
    - Tipicamente 30–60% menor que JPEG, 20–40% vs WebP

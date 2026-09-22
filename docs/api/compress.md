@@ -90,7 +90,7 @@ console.log(result.compressedSize, result.format, result.compressionRatio)
 ### PIXU + smart quality
 
 ```typescript
-import { compress, PIXU_MIME_TYPE, PIXU_EXTENSION } from 'pixu'
+import { compress, PIXU_MIME_TYPE, buildDownloadName } from 'pixu'
 
 const result = await compress(file, {
   format: PIXU_MIME_TYPE,
@@ -98,7 +98,7 @@ const result = await compress(file, {
   stripMetadata: true,
 })
 
-const name = `out${result.format === PIXU_MIME_TYPE ? PIXU_EXTENSION : '.jpg'}`
+const name = buildDownloadName('out', result.format)
 ```
 
 ### Watermark

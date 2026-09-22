@@ -79,7 +79,7 @@ Sample photos live in `examples/shared/assets/` (also copied to `docs/public/` f
 ## Importing Pixu
 
 ```typescript
-import { compress, PIXU_EXTENSION } from 'pixu'
+import { compress, buildDownloadName } from 'pixu'
 ```
 
 ## Best compression recipe

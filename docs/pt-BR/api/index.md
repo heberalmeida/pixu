@@ -43,7 +43,7 @@ import {
   canvasToPixu,
   isPixuSupported,
   PIXU_MIME_TYPE,
-  PIXU_EXTENSION,
+  buildDownloadName,
   estimatePixuCompression,
 } from 'pixu'
 ```
@@ -77,7 +77,7 @@ import {
 | [PNG optimization](/pt-BR/api/png-optimization-api) | `optimizePNG` |
 | [Format conversion](/pt-BR/api/format-conversion-api) | `convertFormat` e helpers de transparência |
 | [PIXU format](/pt-BR/api/pixu-format) | Encode / constantes / estimativas / preview |
-| [Visualizar PIXU](/pt-BR/guide/features/pixu-viewer) | Prévia de `.pixu` no browser |
+| [Encode PIXU](/pt-BR/guide/features/pixu-viewer) | Caminho TECR — saída nativa `.webp` / `.jpg` |
 | [Responsive](/pt-BR/api/responsive) | `generateResponsiveImages`, helpers de srcset |
 | [Optimization hints](/pt-BR/api/optimization-hints) | Dicas e estimativa de ganho |
 | [Color space](/pt-BR/api/color-space) | Helpers sRGB / wide-gamut |
