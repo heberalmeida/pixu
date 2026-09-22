@@ -55,7 +55,7 @@ console.log(PIXU_EXTENSION); // ".pixu"
 
 ## Theory
 
-Pixu minimizes shipped bytes under [Contextual Reconstructive Entropy](/guide/theory/contextual-reconstructive-entropy) — \(L(x \mid M, C, \varepsilon)\) — not a claim to beat Shannon losslessly.
+Pixu minimizes shipped bytes under [Contextual Reconstructive Entropy](/guide/theory/contextual-reconstructive-entropy) — $L(x \mid M, C, \varepsilon)$ — not a claim to beat Shannon losslessly.
 ## Try It Live
 
 Pick a sample photo or upload your own — same layout as the framework examples.
