@@ -69,6 +69,19 @@ const result = await compress(file, {
 
 Experimente nos [exemplos de frameworks](/pt-BR/examples/) — clique em qualquer foto de amostra.
 
+## Visualizar PIXU
+
+`<img src="file.pixu">` não funciona de forma nativa. Use os helpers de preview (ou abra [Visualizar PIXU](/pt-BR/guide/features/pixu-viewer)):
+
+```typescript
+import { createPreviewObjectURL, buildDownloadName } from 'pixu'
+
+const previewUrl = await createPreviewObjectURL(result.file, result.format)
+img.src = previewUrl // renderiza no browser
+
+a.download = buildDownloadName('photo', result.format) // ainda salva .pixu
+```
+
 ## Constantes
 
 | Export | Valor |

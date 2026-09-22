@@ -27,6 +27,7 @@ export function guideSidebar(prefix = ''): DefaultTheme.SidebarItem[] {
       items: [
         { text: prefix ? 'Formatos suportados' : 'Supported Formats', link: `${p}/guide/features/supported-formats` },
         { text: 'PIXU Format', link: `${p}/guide/features/pixu-format` },
+        { text: prefix ? 'Visualizar PIXU' : 'View PIXU', link: `${p}/guide/features/pixu-viewer` },
         { text: prefix ? 'Presets de compressão' : 'Compression Presets', link: `${p}/guide/features/presets` },
         { text: prefix ? 'Filtros de imagem' : 'Image Filters', link: `${p}/guide/features/filters` },
         { text: 'Smart Quality', link: `${p}/guide/features/smart-quality` },
@@ -65,16 +66,40 @@ export function guideSidebar(prefix = ''): DefaultTheme.SidebarItem[] {
 
 export function apiSidebar(prefix = ''): DefaultTheme.SidebarItem[] {
   const p = prefix
+  const t = (en: string, pt: string) => (prefix ? pt : en)
   return [
     {
-      text: prefix ? 'Referência da API' : 'API Reference',
+      text: t('API Reference', 'Referência da API'),
       items: [
+        { text: t('Overview', 'Visão geral'), link: `${p}/api/` },
         { text: 'compress', link: `${p}/api/compress` },
         { text: 'compressBatch', link: `${p}/api/compress-batch` },
         { text: 'compressStream', link: `${p}/api/compress-stream` },
+        { text: 'PixuCompressor', link: `${p}/api/pixu-compressor` },
+        { text: 'AdvancedBatchProcessor', link: `${p}/api/advanced-batch` },
         { text: 'validateImage', link: `${p}/api/validate-image` },
         { text: 'analyzeImage', link: `${p}/api/analyze-image` },
-        { text: prefix ? 'Tipos' : 'Types', link: `${p}/api/types` },
+        { text: t('Types', 'Tipos'), link: `${p}/api/types` },
+      ],
+    },
+    {
+      text: t('Helpers', 'Helpers'),
+      items: [
+        { text: 'Presets', link: `${p}/api/presets` },
+        { text: 'Filters', link: `${p}/api/filters` },
+        { text: 'Watermark', link: `${p}/api/watermark-api` },
+        { text: 'Smart crop', link: `${p}/api/smart-crop-api` },
+        { text: 'PNG optimize', link: `${p}/api/png-optimization-api` },
+        { text: 'Format conversion', link: `${p}/api/format-conversion-api` },
+        { text: 'Smart quality', link: `${p}/api/smart-quality` },
+        { text: 'PIXU format', link: `${p}/api/pixu-format` },
+        { text: 'Optimization hints', link: `${p}/api/optimization-hints` },
+        { text: 'Responsive', link: `${p}/api/responsive` },
+        { text: 'Color space', link: `${p}/api/color-space` },
+        { text: 'Progressive JPEG', link: `${p}/api/progressive-jpeg` },
+        { text: 'Performance', link: `${p}/api/performance-api` },
+        { text: 'Memory', link: `${p}/api/memory` },
+        { text: 'Plugins', link: `${p}/api/plugins` },
       ],
     },
   ]
@@ -114,7 +139,7 @@ export function nav(prefix = ''): DefaultTheme.NavItem[] {
     { text: prefix ? 'Início' : 'Home', link: `${p}/` },
     { text: 'Demo', link: `${p}/demo` },
     { text: prefix ? 'Guia' : 'Guide', link: `${p}/guide/getting-started` },
-    { text: 'API', link: `${p}/api/compress` },
+    { text: 'API', link: `${p}/api/` },
     { text: prefix ? 'Exemplos' : 'Examples', link: `${p}/examples/` },
     { text: 'GitHub', link: 'https://github.com/heberalmeida/pixu' },
   ]

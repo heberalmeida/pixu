@@ -1,11 +1,11 @@
 # compressStream
 
-Comprime imagens de forma assíncrona usando generators.
+Comprime arquivos como async generator — processe cada resultado antes do próximo.
 
 ## Assinatura
 
 ```typescript
-function* compressStream(
+function compressStream(
   files: AsyncIterable<File | Blob> | Iterable<File | Blob>,
   options?: StreamCompressionOptions
 ): AsyncGenerator<CompressionResult, void, unknown>
@@ -13,56 +13,87 @@ function* compressStream(
 
 ## Parâmetros
 
-### files
+### `files`
 
-Tipo: `AsyncIterable<File | Blob> | Iterable<File | Blob>`
+| | |
+|-|-|
+| **Type** | `AsyncIterable<File \| Blob> \| Iterable<File \| Blob>` |
 
-Iterable ou async iterable de arquivos de imagem.
+Sync arrays, generators, or async iterables (e.g. streaming uploads).
 
-### options
+### `options`
 
-Tipo: `StreamCompressionOptions`
+| | |
+|-|-|
+| **Type** | [`StreamCompressionOptions`](/pt-BR/api/types#streamcompressionoptions) |
 
-Opções de compressão em stream que estendem CompressionOptions com:
-- `chunkSize?: number` - Tamanho dos chunks a processar
-- `onChunk?: (chunk: Blob, index: number) => void`
+Extends [`CompressionOptions`](/pt-BR/api/types#compressionoptions) with:
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `chunkSize` | `number` | Reserved for chunked pipelines |
+| `onChunk` | `(chunk: Blob, index: number) => void` | Called after each successful compression |
 
 ## Retorno
 
-Tipo: `AsyncGenerator<CompressionResult, void, unknown>`
+`AsyncGenerator<CompressionResult>` — `for await` each result in order.
 
-Async generator que emite resultados de compressão.
+## Exemplos
 
-## Exemplo
-
-```typescript
-import { compressStream } from 'pixu';
-
-async function processFiles(files: File[]) {
-  for await (const result of compressStream(files, {
-    quality: 0.8,
-    onChunk: (chunk, index) => {
-      console.log(`Chunk ${index} processed`);
-    },
-  })) {
-    console.log('Compressed:', result);
-    await uploadToServer(result.file);
-  }
-}
-```
-
-## Com Async Iterable
+### Array of files
 
 ```typescript
-async function* fileGenerator() {
-  for (const file of files) {
-    yield file;
-  }
-}
+import { compressStream } from 'pixu'
 
-for await (const result of compressStream(fileGenerator(), {
+for await (const result of compressStream(files, {
   quality: 0.8,
+  maxWidth: 1600,
+  onChunk: (blob, index) => {
+    console.log('done', index, blob.size)
+  },
 })) {
-  processResult(result);
+  await upload(result.file)
 }
 ```
+
+### Async generator source
+
+```typescript
+async function* fromUrls(urls: string[]) {
+  for (const url of urls) {
+    const res = await fetch(url)
+    yield await res.blob()
+  }
+}
+
+for await (const result of compressStream(fromUrls(urls), {
+  format: 'image/webp',
+  quality: 0.75,
+})) {
+  console.log(result.compressionRatio)
+}
+```
+
+### Backpressure-friendly pipeline
+
+```typescript
+async function pipeline(files: File[]) {
+  const gen = compressStream(files, { quality: 0.8 })
+  for await (const result of gen) {
+    await slowNetworkUpload(result.file) // waits before next compress
+  }
+}
+```
+
+## Quando usar
+
+| API | Best for |
+|-----|----------|
+| `compressBatch` | Parallel throughput, known file list |
+| `compressStream` | Sequential processing, memory-sensitive, async sources |
+| `AdvancedBatchProcessor` | Retries, pause/cancel, priority queues |
+
+## Relacionado
+
+- [compressBatch](/pt-BR/api/compress-batch)
+- [Memory helpers](/pt-BR/api/memory) — `shouldUseStreaming`

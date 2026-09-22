@@ -1,6 +1,6 @@
 # analyzeImage
 
-Analisa o conteúdo da imagem e fornece recomendações de otimização.
+Analisa pixels do canvas e retorna classificação de conteúdo e recomendações de compressão.
 
 ## Assinatura
 
@@ -13,57 +13,63 @@ function analyzeImage(
 
 ## Parâmetros
 
-### canvas
-
-Tipo: `HTMLCanvasElement`
-
-Elemento canvas com a imagem desenhada.
-
-### originalSize
-
-Tipo: `number` (opcional)
-
-Tamanho original do arquivo em bytes.
+| Name | Type | Description |
+|------|------|-------------|
+| `canvas` | `HTMLCanvasElement` | Image already drawn |
+| `originalSize` | `number?` | Original file size in bytes (improves estimates) |
 
 ## Retorno
 
-Tipo: `Promise<ImageAnalysisResult>`
+```typescript
+interface ImageAnalysisResult {
+  quality: 'low' | 'medium' | 'high' | 'very-high'
+  compressionLevel: number
+  contentType: 'photo' | 'graphic' | 'text' | 'mixed'
+  hasText: boolean
+  complexity: 'low' | 'medium' | 'high'
+  colorCount: number
+  hasTransparency: boolean
+  recommendedFormat: 'image/jpeg' | 'image/png' | 'image/webp' | 'image/avif'
+  recommendedQuality: number
+  estimatedSizeReduction: number
+  suggestions: string[]
+}
+```
 
-Resultado da análise contendo:
-- `quality: 'low' | 'medium' | 'high' | 'very-high'`
-- `compressionLevel: number`
-- `contentType: 'photo' | 'graphic' | 'text' | 'mixed'`
-- `hasText: boolean`
-- `complexity: 'low' | 'medium' | 'high'`
-- `colorCount: number`
-- `hasTransparency: boolean`
-- `recommendedFormat: string`
-- `recommendedQuality: number`
-- `estimatedSizeReduction: number`
-- `suggestions: string[]`
+| Field | Description |
+|-------|-------------|
+| `contentType` | Dominant content class |
+| `recommendedFormat` | Suggested MIME |
+| `recommendedQuality` | Suggested `quality` (0–1) |
+| `estimatedSizeReduction` | Expected savings ratio (0–1) |
+| `suggestions` | Human-readable tips |
+| `hasTransparency` | Alpha present |
+| `complexity` | Detail / noise estimate |
 
-## Exemplo
+## Example
 
 ```typescript
-import { analyzeImage } from 'pixu';
+import { analyzeImage, compress } from 'pixu'
 
-const img = new Image();
-img.src = URL.createObjectURL(file);
+async function analyzeThenCompress(file: File) {
+  const bitmap = await createImageBitmap(file)
+  const canvas = document.createElement('canvas')
+  canvas.width = bitmap.width
+  canvas.height = bitmap.height
+  canvas.getContext('2d')!.drawImage(bitmap, 0, 0)
+  bitmap.close()
 
-await new Promise((resolve) => {
-  img.onload = resolve;
-});
+  const analysis = await analyzeImage(canvas, file.size)
 
-const canvas = document.createElement('canvas');
-canvas.width = img.naturalWidth;
-canvas.height = img.naturalHeight;
-const ctx = canvas.getContext('2d');
-ctx.drawImage(img, 0, 0);
-
-const analysis = await analyzeImage(canvas, file.size);
-
-console.log('Content type:', analysis.contentType);
-console.log('Recommended format:', analysis.recommendedFormat);
-console.log('Recommended quality:', analysis.recommendedQuality);
-console.log('Suggestions:', analysis.suggestions);
+  return compress(file, {
+    format: analysis.recommendedFormat,
+    quality: analysis.recommendedQuality,
+  })
+}
 ```
+
+## Relacionado
+
+- [Smart quality](/pt-BR/api/smart-quality) — `analyzeImageContent` / `getSmartQuality`
+- [Optimization hints](/pt-BR/api/optimization-hints)
+- Guide: [Image analysis](/pt-BR/guide/features/image-analysis)

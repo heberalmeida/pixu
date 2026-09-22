@@ -1,6 +1,6 @@
 # compressBatch
 
-Compress multiple images with concurrency control.
+Compress multiple images with bounded concurrency.
 
 ## Signature
 
@@ -13,48 +13,78 @@ function compressBatch(
 
 ## Parameters
 
-### files
+### `files`
 
-Type: `(File | Blob)[]`
+| | |
+|-|-|
+| **Type** | `(File \| Blob)[]` |
+| **Required** | Yes |
 
-Array of image files to compress.
+Ordered list of images. Results keep the same order.
 
-### options
+### `options`
 
-Type: `BatchCompressionOptions`
+| | |
+|-|-|
+| **Type** | [`BatchCompressionOptions`](/api/types#batchcompressionoptions) |
 
-Batch compression options extending CompressionOptions with:
-- `concurrency?: number` - Number of concurrent compressions (default: 3)
-- `onItemComplete?: (result: CompressionResult, index: number) => void`
-- `onItemError?: (error: Error, index: number) => void`
+Extends [`CompressionOptions`](/api/types#compressionoptions) with:
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `concurrency` | `number` | `3` | Max parallel compressions |
+| `onItemComplete` | `(result, index) => void` | — | Fired when one file succeeds |
+| `onItemError` | `(error, index) => void` | — | Fired when one file fails |
+
+All single-file options (`quality`, `format`, `watermark`, …) apply to every item.
 
 ## Returns
 
-Type: `Promise<CompressionResult[]>`
+`Promise<CompressionResult[]>` — one result per input, same index order.
 
-Array of compression results in the same order as input files.
+When `onItemError` is provided, failed items may be omitted from the array (or handled only via the callback, depending on failure path). Prefer checking `onItemError` for robust UIs.
 
-## Example
+## Error handling
+
+- **Without `onItemError`**: the first failure rejects the whole promise.
+- **With `onItemError`**: failures are reported per item; successful items still resolve.
+
+## Examples
+
+### Gallery upload
 
 ```typescript
-import { compressBatch } from 'pixu';
+import { compressBatch } from 'pixu'
 
-const files = Array.from(fileInput.files);
+const files = Array.from(input.files ?? [])
 
 const results = await compressBatch(files, {
   quality: 0.8,
   maxWidth: 1920,
-  concurrency: 3,
+  format: 'auto',
+  concurrency: 4,
   onItemComplete: (result, index) => {
-    console.log(`File ${index + 1} completed`);
+    console.log(`#${index}`, result.compressedSize)
   },
   onItemError: (error, index) => {
-    console.error(`File ${index + 1} failed:`, error);
+    console.error(`#${index}`, error.message)
   },
-});
+})
 ```
 
-## Error Handling
+### PIXU batch
 
-If any file fails and no `onItemError` is provided, the promise will reject. With `onItemError`, errors are handled per item and the promise resolves with results for successful compressions.
+```typescript
+const results = await compressBatch(files, {
+  format: 'image/pixu',
+  enableSmartQuality: true,
+  stripMetadata: true,
+  concurrency: 2,
+})
+```
 
+## Related
+
+- [AdvancedBatchProcessor](/api/advanced-batch) — retries, priority, pause/cancel
+- [compressStream](/api/compress-stream) — one-at-a-time async iteration
+- [compress](/api/compress) — single file

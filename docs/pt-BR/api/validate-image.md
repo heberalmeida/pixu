@@ -1,63 +1,89 @@
 # validateImage
 
-Valida um arquivo de imagem antes da compressão.
+Valida uma imagem antes da compressão — formato, dimensões e integridade básica.
 
 ## Assinatura
 
 ```typescript
-function validateImage(
-  file: File | Blob
-): Promise<ImageValidationResult>
+function validateImage(file: File | Blob): Promise<ImageValidationResult>
+
+function isValidImage(file: File | Blob): Promise<boolean>
 ```
 
 ## Parâmetros
 
-### file
+### `file`
 
-Tipo: `File | Blob`
-
-O arquivo de imagem a validar.
+`File | Blob` — candidate image.
 
 ## Retorno
 
-Tipo: `Promise<ImageValidationResult>`
-
-Resultado da validação com:
-- `isValid: boolean`
-- `errors: string[]`
-- `warnings: string[]`
-- `actualFormat?: string`
-- `declaredFormat?: string`
-- `dimensions?: { width: number; height: number }`
-- `fileSize?: number`
-
-## Exemplo
+### `ImageValidationResult`
 
 ```typescript
-import { validateImage } from 'pixu';
-
-const validation = await validateImage(file);
-
-if (validation.isValid) {
-  console.log('Image is valid');
-  console.log('Dimensions:', validation.dimensions);
-  console.log('Format:', validation.actualFormat);
-} else {
-  console.error('Validation errors:', validation.errors);
-}
-
-if (validation.warnings.length > 0) {
-  console.warn('Warnings:', validation.warnings);
+interface ImageValidationResult {
+  isValid: boolean
+  errors: string[]
+  warnings: string[]
+  actualFormat?: string
+  declaredFormat?: string
+  dimensions?: { width: number; height: number }
+  fileSize?: number
 }
 ```
 
-## Atalho
+| Field | Description |
+|-------|-------------|
+| `isValid` | `true` when there are no hard errors |
+| `errors` | Blocking issues (corrupt, not an image, …) |
+| `warnings` | Soft issues (MIME mismatch, huge dimensions, …) |
+| `actualFormat` | Detected MIME / codec |
+| `declaredFormat` | `file.type` when available |
+| `dimensions` | Natural width/height when decodable |
+| `fileSize` | Byte length |
+
+`isValidImage(file)` is equivalent to `(await validateImage(file)).isValid`.
+
+## Exemplos
+
+### Gate compression
 
 ```typescript
-import { isValidImage } from 'pixu';
+import { validateImage, compress } from 'pixu'
 
-const isValid = await isValidImage(file);
-if (isValid) {
-  const result = await compress(file);
+const validation = await validateImage(file)
+
+if (!validation.isValid) {
+  throw new Error(validation.errors.join('; '))
+}
+
+for (const warning of validation.warnings) {
+  console.warn(warning)
+}
+
+const result = await compress(file, { quality: 0.8 })
+```
+
+### Shorthand
+
+```typescript
+import { isValidImage, compress } from 'pixu'
+
+if (await isValidImage(file)) {
+  await compress(file)
 }
 ```
+
+### Via compress options
+
+```typescript
+await compress(file, {
+  validateImage: true,
+  quality: 0.8,
+})
+```
+
+## Relacionado
+
+- [analyzeImage](/pt-BR/api/analyze-image) — content recommendations
+- [compress](/pt-BR/api/compress)
