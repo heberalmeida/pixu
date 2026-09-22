@@ -1,5 +1,6 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import type { CompressionOptions, CompressionResult } from 'pixu';
+import { buildDownloadName, getOutputExtension, createPreviewObjectURL } from 'pixu';
 
 interface SampleImageOption {
   id: string;
@@ -64,7 +65,9 @@ const PixuCompressor: React.FC<PixuCompressorProps> = ({
       },
     });
     setResult(compressionResult);
-    setCompressedUrl(URL.createObjectURL(compressionResult.file));
+    setCompressedUrl(
+      await createPreviewObjectURL(compressionResult.file, compressionResult.format)
+    );
     onCompress?.(compressionResult);
   }, [options, onCompress, onProgress]);
 
@@ -181,14 +184,20 @@ const PixuCompressor: React.FC<PixuCompressorProps> = ({
 
   const downloadFile = useCallback(() => {
     if (!result || !compressedUrl) return;
-    
+
     const link = document.createElement('a');
     link.href = compressedUrl;
-    link.download = `compressed-${file?.name || 'image'}`;
+    const base = (file?.name || 'image').replace(/\.[^.]+$/, '');
+    link.download = buildDownloadName(`compressed-${base}`, result.format);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   }, [result, compressedUrl, file]);
+
+  const downloadLabel = useMemo(() => {
+    if (!result?.format) return 'Download Compressed';
+    return `Download (${getOutputExtension(result.format)})`;
+  }, [result]);
 
   const reset = useCallback(() => {
     fileRef.current = null;
@@ -326,7 +335,7 @@ const PixuCompressor: React.FC<PixuCompressorProps> = ({
             </div>
             <div className="actions">
               <button onClick={downloadFile} className="btn btn-primary">
-                Download Compressed
+                {downloadLabel}
               </button>
               <button onClick={reset} className="btn btn-secondary">
                 Compress Another

@@ -60,13 +60,13 @@
         <p><strong>Format:</strong> {{ result.format }}</p>
         <p><strong>Dimensions:</strong> {{ result.width }}×{{ result.height }}</p>
       </div>
-      <button type="button" class="download-btn" @click="download">Download</button>
+      <button type="button" class="download-btn" @click="download">{{ downloadButtonLabel }}</button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onUnmounted } from 'vue'
+import { ref, computed, onUnmounted } from 'vue'
 import { docSampleImages, fetchDocSample, type DocSampleImage } from '../samples'
 
 const props = withDefaults(defineProps<{
@@ -126,7 +126,7 @@ async function runCompress(selected: File) {
     file.value = fileForCompress
     originalUrl.value = URL.createObjectURL(previewBlob)
 
-    const { compress } = await loadPixu()
+    const { compress, createPreviewObjectURL } = await loadPixu()
     const compressionResult = await compress(fileForCompress, {
       ...defaultOptions,
       ...props.options,
@@ -135,7 +135,11 @@ async function runCompress(selected: File) {
       },
     })
     result.value = compressionResult
-    compressedUrl.value = URL.createObjectURL(compressionResult.file)
+    if (compressedUrl.value) URL.revokeObjectURL(compressedUrl.value)
+    compressedUrl.value = await createPreviewObjectURL(
+      compressionResult.file,
+      compressionResult.format
+    )
   } catch (err) {
     console.error('Compression error:', err)
     error.value = err instanceof Error
@@ -165,17 +169,27 @@ const compressSample = async (sample: DocSampleImage) => {
 
 const download = async () => {
   if (!result.value || !compressedUrl.value) return
-  const { PIXU_EXTENSION } = await loadPixu()
-  const ext = result.value.format === 'image/pixu'
-    ? PIXU_EXTENSION
-    : `.${String(result.value.format).split('/')[1] || 'jpg'}`
+  const { buildDownloadName } = await loadPixu()
   const a = document.createElement('a')
   a.href = compressedUrl.value
-  a.download = `compressed${ext}`
+  a.download = buildDownloadName('compressed', result.value.format)
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
 }
+
+const downloadButtonLabel = computed(() => {
+  if (!result.value?.format) return 'Download'
+  // sync fallback until module loads; button only shown when result exists
+  const format = result.value.format
+  if (format === 'image/pixu') return 'Download (.pixu)'
+  if (format === 'image/jpeg') return 'Download (.jpg)'
+  if (format === 'image/png') return 'Download (.png)'
+  if (format === 'image/webp') return 'Download (.webp)'
+  if (format === 'image/avif') return 'Download (.avif)'
+  const sub = String(format).split('/')[1] || 'bin'
+  return `Download (.${sub === 'jpeg' ? 'jpg' : sub})`
+})
 
 const formatBytes = (bytes: number): string => {
   if (!Number.isFinite(bytes) || bytes === 0) return '0 B'

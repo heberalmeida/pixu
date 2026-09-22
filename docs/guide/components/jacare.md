@@ -35,6 +35,7 @@ function onError(error) {
 
 export <view>
   <PixuCompressor
+    :instanceId=${'demo'}
     :options=${options}
     on-compress=${onCompress}
     on-error=${onError}
@@ -81,6 +82,12 @@ export <view>
 Type: `boolean` · Default: `true`
 
 When `false`, selecting a file only previews it (no compress until you wire your own flow).
+
+### instanceId
+
+Type: `string` · Default: `'default'`
+
+Unique id per mounted compressor. Required when several `PixuCompressor` instances share a page so each keeps its own file/result state.
 
 ## Emits
 

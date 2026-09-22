@@ -82,7 +82,7 @@
           </div>
         </div>
         <div class="actions">
-          <button @click="downloadFile" class="btn btn-primary">Download Compressed</button>
+          <button @click="downloadFile" class="btn btn-primary">{{ downloadLabel }}</button>
           <button @click="reset" class="btn btn-secondary">Compress Another</button>
         </div>
       </div>
@@ -98,6 +98,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue';
 import type { CompressionOptions, CompressionResult } from 'pixu';
+import { buildDownloadName, getOutputExtension, createPreviewObjectURL } from 'pixu';
 
 interface SampleImageOption {
   id: string;
@@ -134,6 +135,16 @@ const originalSize = computed(() => file.value?.size || 0);
 const qualityPercent = computed(() => {
   const q = result.value?.metadata?.quality;
   return q == null ? '—' : `${Math.round(q * 100)}%`;
+});
+
+const downloadExt = computed(() => {
+  if (!result.value?.format) return '';
+  return getOutputExtension(result.value.format);
+});
+
+const downloadLabel = computed(() => {
+  const ext = downloadExt.value;
+  return ext ? `Download (${ext})` : 'Download Compressed';
 });
 
 const triggerFileInput = () => {
@@ -178,7 +189,10 @@ const runCompress = async (fileForCompress: File) => {
     },
   });
   result.value = compressionResult;
-  compressedUrl.value = URL.createObjectURL(compressionResult.file);
+  compressedUrl.value = await createPreviewObjectURL(
+    compressionResult.file,
+    compressionResult.format
+  );
   emit('compress', compressionResult);
 };
 
@@ -253,10 +267,11 @@ watch(
 
 const downloadFile = () => {
   if (!result.value) return;
-  
+
   const link = document.createElement('a');
   link.href = compressedUrl.value || '';
-  link.download = `compressed-${file.value?.name || 'image'}`;
+  const base = (file.value?.name || 'image').replace(/\.[^.]+$/, '');
+  link.download = buildDownloadName(`compressed-${base}`, result.value.format);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

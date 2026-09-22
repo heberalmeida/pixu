@@ -1,87 +1,17 @@
 import { pulse, derive } from '@jacare/core'
-import { compress, PIXU_EXTENSION } from 'pixu'
+import { compress, getOutputExtension, buildDownloadName, createPreviewObjectURL } from 'pixu'
 
 export <contract>
   props: {
     options: { type: 'object', default: {} }
     samples: { type: 'any', default: [] }
     autoCompress: { type: 'boolean', default: true }
+    instanceId: { type: 'string', default: 'default' }
   }
   emits: ['compress', 'error', 'progress', 'source']
 </contract>
 
-const file = pulse(null)
-const loading = pulse(false)
-const progress = pulse(0)
-const error = pulse(null)
-const result = pulse(null)
-const originalUrl = pulse(null)
-const compressedUrl = pulse(null)
-
-const optionsProp = pulse({})
-const samplesProp = pulse([])
-const autoCompressProp = pulse(true)
-const emitRef = { current: null }
-let optionsKey = ''
-
-function emit(name, ...payload) {
-  const handler = emitRef.current
-  if (typeof handler === 'function') handler(name, ...payload)
-}
-
-function bindProps(nextSamples, nextOptions, nextAuto, mountEmit) {
-  samplesProp.set(Array.isArray(nextSamples) ? nextSamples : [])
-  optionsProp.set(nextOptions && typeof nextOptions === 'object' ? nextOptions : {})
-  autoCompressProp.set(nextAuto !== false)
-  emitRef.current = typeof mountEmit === 'function' ? mountEmit : null
-  const nextKey = JSON.stringify(optionsProp() || {})
-  if (nextKey !== optionsKey) {
-    const hadKey = optionsKey !== ''
-    optionsKey = nextKey
-    if (hadKey && file() && autoCompressProp() !== false && !loading()) {
-      void recompress()
-    }
-  }
-  return ''
-}
-
-const progressPct = derive(() => `${Math.round(progress() * 100)}%`)
-const progressLabel = derive(() => `Compressing... ${Math.round(progress() * 100)}%`)
-const ratioLabel = derive(() => {
-  const r = result()
-  return r ? `${(r.compressionRatio * 100).toFixed(1)}%` : '—'
-})
-const savedLabel = derive(() => {
-  const r = result()
-  const f = file()
-  if (!r || !f) return '—'
-  return formatBytes(f.size - r.compressedSize)
-})
-const formatLabel = derive(() => {
-  const r = result()
-  return r ? r.format : '—'
-})
-const qualityLabel = derive(() => {
-  const r = result()
-  const q = r?.metadata?.quality
-  return q != null ? `${Math.round(q * 100)}%` : '—'
-})
-const originalSizeLabel = derive(() => {
-  const f = file()
-  return f ? formatBytes(f.size) : '—'
-})
-const compressedSizeLabel = derive(() => {
-  const r = result()
-  return r ? formatBytes(r.compressedSize) : '—'
-})
-const compressedDims = derive(() => {
-  const r = result()
-  return r ? `${r.width}x${r.height}` : ''
-})
-const hasSamples = derive(() => {
-  const list = samplesProp()
-  return Array.isArray(list) && list.length > 0
-})
+const instances = new Map()
 
 function formatBytes(bytes) {
   if (!Number.isFinite(bytes) || bytes === 0) return '0 B'
@@ -93,36 +23,141 @@ function formatBytes(bytes) {
   return `${sign}${Math.round((abs / Math.pow(k, i)) * 100) / 100} ${sizes[i]}`
 }
 
-function revokeUrls() {
-  const prevOriginal = originalUrl()
-  const prevCompressed = compressedUrl()
+function getInstance(id) {
+  const key = id || 'default'
+  let inst = instances.get(key)
+  if (inst) return inst
+
+  const file = pulse(null)
+  const loading = pulse(false)
+  const progress = pulse(0)
+  const error = pulse(null)
+  const result = pulse(null)
+  const originalUrl = pulse(null)
+  const compressedUrl = pulse(null)
+  const optionsProp = pulse({})
+  const samplesProp = pulse([])
+  const autoCompressProp = pulse(true)
+
+  inst = {
+    file,
+    loading,
+    progress,
+    error,
+    result,
+    originalUrl,
+    compressedUrl,
+    optionsProp,
+    samplesProp,
+    autoCompressProp,
+    optionsKey: '',
+    emitHandler: null,
+    inputId: `pixu-jacare-file-${key}`,
+    progressPct: derive(() => `${Math.round(progress() * 100)}%`),
+    progressLabel: derive(() => `Compressing... ${Math.round(progress() * 100)}%`),
+    ratioLabel: derive(() => {
+      const r = result()
+      return r ? `${(r.compressionRatio * 100).toFixed(1)}%` : '—'
+    }),
+    savedLabel: derive(() => {
+      const r = result()
+      const f = file()
+      if (!r || !f) return '—'
+      return formatBytes(f.size - r.compressedSize)
+    }),
+    formatLabel: derive(() => {
+      const r = result()
+      return r ? r.format : '—'
+    }),
+    downloadExtLabel: derive(() => {
+      const r = result()
+      if (!r?.format) return ''
+      return getOutputExtension(r.format)
+    }),
+    qualityLabel: derive(() => {
+      const r = result()
+      const q = r?.metadata?.quality
+      return q != null ? `${Math.round(q * 100)}%` : '—'
+    }),
+    originalSizeLabel: derive(() => {
+      const f = file()
+      return f ? formatBytes(f.size) : '—'
+    }),
+    compressedSizeLabel: derive(() => {
+      const r = result()
+      return r ? formatBytes(r.compressedSize) : '—'
+    }),
+    compressedDims: derive(() => {
+      const r = result()
+      return r ? `${r.width}x${r.height}` : ''
+    }),
+    hasSamples: derive(() => {
+      const list = samplesProp()
+      return Array.isArray(list) && list.length > 0
+    }),
+  }
+
+  instances.set(key, inst)
+  return inst
+}
+
+function S(id) {
+  return getInstance(id)
+}
+
+function emitOf(id, name, ...payload) {
+  const handler = getInstance(id).emitHandler
+  if (typeof handler === 'function') handler(name, ...payload)
+}
+
+function bindProps(id, nextSamples, nextOptions, nextAuto, mountEmit) {
+  const s = getInstance(id)
+  s.samplesProp.set(Array.isArray(nextSamples) ? nextSamples : [])
+  s.optionsProp.set(nextOptions && typeof nextOptions === 'object' ? nextOptions : {})
+  s.autoCompressProp.set(nextAuto !== false)
+  s.emitHandler = typeof mountEmit === 'function' ? mountEmit : null
+  const nextKey = JSON.stringify(s.optionsProp() || {})
+  if (nextKey !== s.optionsKey) {
+    const hadKey = s.optionsKey !== ''
+    s.optionsKey = nextKey
+    if (hadKey && s.file() && s.autoCompressProp() !== false && !s.loading()) {
+      void recompress(id)
+    }
+  }
+  return ''
+}
+
+function revokeUrls(id) {
+  const s = getInstance(id)
+  const prevOriginal = s.originalUrl()
+  const prevCompressed = s.compressedUrl()
   if (prevOriginal) URL.revokeObjectURL(prevOriginal)
   if (prevCompressed) URL.revokeObjectURL(prevCompressed)
-  originalUrl.set(null)
-  compressedUrl.set(null)
+  s.originalUrl.set(null)
+  s.compressedUrl.set(null)
 }
 
-function openFilePicker() {
-  document.getElementById('pixu-jacare-file')?.click()
+function openFilePicker(id) {
+  document.getElementById(getInstance(id).inputId)?.click()
 }
 
-function onUploadClick(e) {
+function onUploadClick(e, id) {
   if (e.target.closest?.('.sample-gallery')) return
-  openFilePicker()
+  openFilePicker(id)
 }
 
-async function onFileChange(e) {
+async function onFileChange(e, id) {
   const selected = e.target.files?.[0]
   if (!selected) return
-  await processFile(selected)
+  await processFile(selected, id)
   e.target.value = ''
 }
 
-async function onDrop(e) {
+async function onDrop(e, id) {
   e.preventDefault()
   const dropped = e.dataTransfer?.files?.[0]
   if (dropped && dropped.type.startsWith('image/')) {
-    await processFile(dropped)
+    await processFile(dropped, id)
   }
 }
 
@@ -130,60 +165,65 @@ function onDragOver(e) {
   e.preventDefault()
 }
 
-async function loadSample(e, sample) {
+async function loadSample(e, sample, id) {
   e.stopPropagation()
   const res = await fetch(sample.url)
   if (!res.ok) {
     const err = new Error(`Failed to load ${sample.label}`)
-    error.set(err.message)
-    emit('error', err)
+    getInstance(id).error.set(err.message)
+    emitOf(id, 'error', err)
     return
   }
   const blob = await res.blob()
   const selected = new File([blob], sample.file, { type: blob.type || 'image/jpeg' })
-  await processFile(selected)
+  await processFile(selected, id)
 }
 
-async function runCompress(fileForCompress) {
-  if (compressedUrl()) {
-    URL.revokeObjectURL(compressedUrl())
-    compressedUrl.set(null)
+async function runCompress(fileForCompress, id) {
+  const s = getInstance(id)
+  if (s.compressedUrl()) {
+    URL.revokeObjectURL(s.compressedUrl())
+    s.compressedUrl.set(null)
   }
   const compressionResult = await compress(fileForCompress, {
-    ...(optionsProp() || {}),
+    ...(s.optionsProp() || {}),
     onProgress: (p) => {
-      progress.set(p)
-      emit('progress', p)
+      s.progress.set(p)
+      emitOf(id, 'progress', p)
     },
   })
-  result.set(compressionResult)
-  compressedUrl.set(URL.createObjectURL(compressionResult.file))
-  emit('compress', compressionResult)
+  s.result.set(compressionResult)
+  s.compressedUrl.set(
+    await createPreviewObjectURL(compressionResult.file, compressionResult.format)
+  )
+  emitOf(id, 'compress', compressionResult)
 }
 
-async function recompress() {
-  const current = file()
+async function recompress(id) {
+  const s = getInstance(id)
+  const current = s.file()
   if (!current) return
-  loading.set(true)
-  error.set(null)
-  progress.set(0)
+  s.loading.set(true)
+  s.error.set(null)
+  s.progress.set(0)
   try {
-    await runCompress(current)
+    await runCompress(current, id)
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Compression failed'
-    error.set(message)
-    emit('error', err instanceof Error ? err : new Error(message))
+    s.error.set(message)
+    emitOf(id, 'error', err instanceof Error ? err : new Error(message))
   } finally {
-    loading.set(false)
+    s.loading.set(false)
   }
 }
 
-async function processFile(selected) {
-  loading.set(true)
-  error.set(null)
-  progress.set(0)
-  result.set(null)
-  revokeUrls()
+async function processFile(selected, id) {
+  const s = getInstance(id)
+  s.loading.set(true)
+  s.error.set(null)
+  s.progress.set(0)
+  s.result.set(null)
+  revokeUrls(id)
 
   try {
     const buffer = await selected.arrayBuffer()
@@ -195,56 +235,57 @@ async function processFile(selected) {
       lastModified: selected.lastModified,
     })
 
-    file.set(fileForCompress)
-    originalUrl.set(URL.createObjectURL(previewBlob))
-    emit('source', {
+    s.file.set(fileForCompress)
+    s.originalUrl.set(URL.createObjectURL(previewBlob))
+    emitOf(id, 'source', {
       file: fileForCompress,
       url: URL.createObjectURL(appPreviewBlob),
     })
 
-    if (autoCompressProp() === false) {
-      loading.set(false)
+    if (s.autoCompressProp() === false) {
+      s.loading.set(false)
       return
     }
 
-    await runCompress(fileForCompress)
+    await runCompress(fileForCompress, id)
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Compression failed'
-    error.set(message)
-    emit('error', err instanceof Error ? err : new Error(message))
+    s.error.set(message)
+    emitOf(id, 'error', err instanceof Error ? err : new Error(message))
   } finally {
-    loading.set(false)
+    s.loading.set(false)
   }
 }
 
-function downloadFile() {
-  const r = result()
-  const url = compressedUrl()
-  const f = file()
+function downloadFile(id) {
+  const s = getInstance(id)
+  const r = s.result()
+  const url = s.compressedUrl()
+  const f = s.file()
   if (!r || !url) return
-  const ext = r.format === 'image/pixu' ? PIXU_EXTENSION : `.${String(r.format).split('/')[1] || 'jpg'}`
   const base = (f?.name || 'image').replace(/\.[^.]+$/, '')
   const a = document.createElement('a')
   a.href = url
-  a.download = `compressed-${base}${ext}`
+  a.download = buildDownloadName(`compressed-${base}`, r.format || f?.type)
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
 }
 
-function reset() {
-  file.set(null)
-  result.set(null)
-  error.set(null)
-  progress.set(0)
-  revokeUrls()
+function reset(id) {
+  const s = getInstance(id)
+  s.file.set(null)
+  s.result.set(null)
+  s.error.set(null)
+  s.progress.set(0)
+  revokeUrls(id)
 }
 
 export <view>
-  <div class="pixu-compressor" data-bind=${() => bindProps(samples, options, autoCompress, emit)}>
-    #if !file()
-      <div class="upload-area" on-click=${onUploadClick} on-dragover=${onDragOver} on-drop=${onDrop}>
-        <input id="pixu-jacare-file" class="file-input" type="file" accept="image/*" on-change=${onFileChange} />
+  <div class="pixu-compressor" data-bind=${() => bindProps(instanceId, samples, options, autoCompress, emit)}>
+    #if !S(instanceId).file()
+      <div class="upload-area" on-click=${(e) => onUploadClick(e, instanceId)} on-dragover=${onDragOver} on-drop=${(e) => onDrop(e, instanceId)}>
+        <input id=${() => S(instanceId).inputId} class="file-input" type="file" accept="image/*" on-change=${(e) => onFileChange(e, instanceId)} />
         <div class="upload-content">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -254,12 +295,12 @@ export <view>
           <p class="upload-text">Click or drag image here to compress</p>
           <p class="upload-hint">Supports JPEG, PNG, WEBP, AVIF, PIXU</p>
         </div>
-        #if hasSamples()
+        #if S(instanceId).hasSamples()
           <div class="sample-gallery">
             <p class="sample-label">Or try a real sample</p>
             <div class="sample-grid">
-            #for samplesProp() as sample (sample.id)
-              <button type="button" class="sample-card" on-click=${(e) => loadSample(e, sample)}>
+            #for S(instanceId).samplesProp() as sample (sample.id)
+              <button type="button" class="sample-card" on-click=${(e) => loadSample(e, sample, instanceId)}>
                 <img src=${sample.url} alt=${sample.label} />
                 <span>${sample.label}</span>
               </button>
@@ -273,63 +314,63 @@ export <view>
         <div class="image-preview-section">
           <div class="image-preview">
             <h4>Original</h4>
-            <img src=${originalUrl} alt="Original" />
+            <img src=${() => S(instanceId).originalUrl()} alt="Original" />
             <div class="image-info">
-              <span>${originalSizeLabel}</span>
+              <span>${() => S(instanceId).originalSizeLabel()}</span>
             </div>
           </div>
-          #if result()
+          #if S(instanceId).result()
             <div class="image-preview">
               <h4>Compressed</h4>
-              <img src=${compressedUrl} alt="Compressed" />
+              <img src=${() => S(instanceId).compressedUrl()} alt="Compressed" />
               <div class="image-info">
-                <span>${compressedSizeLabel}</span>
-                <span>${compressedDims}</span>
+                <span>${() => S(instanceId).compressedSizeLabel()}</span>
+                <span>${() => S(instanceId).compressedDims()}</span>
               </div>
             </div>
           #end
         </div>
 
-        #if loading()
+        #if S(instanceId).loading()
           <div class="progress-section">
             <div class="progress-track">
-              <div class="progress-bar" style---pct=${progressPct}></div>
+              <div class="progress-bar" style---pct=${() => S(instanceId).progressPct()}></div>
             </div>
-            <p class="progress-text">${progressLabel}</p>
+            <p class="progress-text">${() => S(instanceId).progressLabel()}</p>
           </div>
         #end
 
-        #if result()
+        #if S(instanceId).result()
           <div class="result-section">
             <div class="stats-grid">
               <div class="stat-item">
                 <span class="stat-label">Compression Ratio</span>
-                <span class="stat-value">${ratioLabel}</span>
+                <span class="stat-value">${() => S(instanceId).ratioLabel()}</span>
               </div>
               <div class="stat-item">
                 <span class="stat-label">Size Reduction</span>
-                <span class="stat-value">${savedLabel}</span>
+                <span class="stat-value">${() => S(instanceId).savedLabel()}</span>
               </div>
               <div class="stat-item">
                 <span class="stat-label">Format</span>
-                <span class="stat-value">${formatLabel}</span>
+                <span class="stat-value">${() => S(instanceId).formatLabel()}</span>
               </div>
               <div class="stat-item">
                 <span class="stat-label">Quality</span>
-                <span class="stat-value">${qualityLabel}</span>
+                <span class="stat-value">${() => S(instanceId).qualityLabel()}</span>
               </div>
             </div>
             <div class="actions">
-              <button type="button" class="btn btn-primary" on-click=${downloadFile}>Download Compressed</button>
-              <button type="button" class="btn btn-secondary" on-click=${reset}>Compress Another</button>
+              <button type="button" class="btn btn-primary" on-click=${() => downloadFile(instanceId)}>Download ${() => S(instanceId).downloadExtLabel() || ''}</button>
+              <button type="button" class="btn btn-secondary" on-click=${() => reset(instanceId)}>Compress Another</button>
             </div>
           </div>
         #end
 
-        #if error()
+        #if S(instanceId).error()
           <div class="error-section">
-            <p class="error-message">${error}</p>
-            <button type="button" class="btn btn-secondary" on-click=${reset}>Try Again</button>
+            <p class="error-message">${() => S(instanceId).error()}</p>
+            <button type="button" class="btn btn-secondary" on-click=${() => reset(instanceId)}>Try Again</button>
           </div>
         #end
       </div>

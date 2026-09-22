@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy, createEventDispatcher } from 'svelte';
   import type { CompressionOptions, CompressionResult } from 'pixu';
+  import { buildDownloadName, getOutputExtension, createPreviewObjectURL } from 'pixu';
 
   export let options: CompressionOptions = {};
   export let autoCompress: boolean = true;
@@ -92,7 +93,10 @@
       },
     });
     result = compressionResult;
-    compressedUrl = URL.createObjectURL(compressionResult.file);
+    compressedUrl = await createPreviewObjectURL(
+      compressionResult.file,
+      compressionResult.format
+    );
     dispatch('compress', compressionResult);
   }
 
@@ -168,14 +172,19 @@
 
   function downloadFile() {
     if (!result || !compressedUrl) return;
-    
+
     const link = document.createElement('a');
     link.href = compressedUrl;
-    link.download = `compressed-${file?.name || 'image'}`;
+    const base = (file?.name || 'image').replace(/\.[^.]+$/, '');
+    link.download = buildDownloadName(`compressed-${base}`, result.format);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   }
+
+  $: downloadLabel = result?.format
+    ? `Download (${getOutputExtension(result.format)})`
+    : 'Download Compressed';
 
   function reset() {
     file = null;
@@ -292,7 +301,7 @@
             </div>
           </div>
           <div class="actions">
-            <button on:click={downloadFile} class="btn btn-primary">Download Compressed</button>
+            <button on:click={downloadFile} class="btn btn-primary">{downloadLabel}</button>
             <button on:click={reset} class="btn btn-secondary">Compress Another</button>
           </div>
         </div>

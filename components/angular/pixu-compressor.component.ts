@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import type { CompressionOptions, CompressionResult } from 'pixu';
+import { buildDownloadName, getOutputExtension, createPreviewObjectURL } from 'pixu';
 
 @Component({
   selector: 'pixu-compressor',
@@ -87,7 +88,7 @@ import type { CompressionOptions, CompressionResult } from 'pixu';
             </div>
           </div>
           <div class="actions">
-            <button (click)="downloadFile()" class="btn btn-primary">Download Compressed</button>
+            <button (click)="downloadFile()" class="btn btn-primary">{{ downloadLabel }}</button>
             <button (click)="reset()" class="btn btn-secondary">Compress Another</button>
           </div>
         </div>
@@ -379,6 +380,11 @@ export class PixuCompressorComponent implements OnInit, OnDestroy, OnChanges {
     return `${Math.round(q * 100)}%`;
   }
 
+  get downloadLabel(): string {
+    if (!this.result?.format) return 'Download Compressed';
+    return `Download (${getOutputExtension(this.result.format)})`;
+  }
+
   async ngOnInit() {
     this.optionsKey = JSON.stringify(this.options ?? {});
     try {
@@ -457,7 +463,10 @@ export class PixuCompressorComponent implements OnInit, OnDestroy, OnChanges {
       },
     });
     this.result = compressionResult;
-    this.compressedUrl = URL.createObjectURL(compressionResult.file);
+    this.compressedUrl = await createPreviewObjectURL(
+      compressionResult.file,
+      compressionResult.format
+    );
     this.compress.emit(compressionResult);
   }
 
@@ -527,10 +536,11 @@ export class PixuCompressorComponent implements OnInit, OnDestroy, OnChanges {
 
   downloadFile() {
     if (!this.result || !this.compressedUrl) return;
-    
+
     const link = document.createElement('a');
     link.href = this.compressedUrl;
-    link.download = `compressed-${this.file?.name || 'image'}`;
+    const base = (this.file?.name || 'image').replace(/\.[^.]+$/, '');
+    link.download = buildDownloadName(`compressed-${base}`, this.result.format);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
