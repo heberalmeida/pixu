@@ -9,6 +9,7 @@ docs/.vitepress/dist/
 **/.DS_Store
 .idea/
 .vscode/
+.cursor/
 *.tsbuildinfo
 coverage/
 .env
