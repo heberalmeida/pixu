@@ -2,7 +2,8 @@ import React, { useState, useCallback, useMemo, ChangeEvent } from 'react';
 import PixuCompressor from '../../../components/react/PixuCompressor';
 import '../../../components/react/PixuCompressor.css';
 import type { CompressionResult } from 'pixu';
-import { compress, compressBatch, buildDownloadName, getOutputExtension, createPreviewObjectURL } from 'pixu';
+import { compress, compressBatch, downloadImageAs, createPreviewObjectURL } from 'pixu';
+import type { DownloadImageFormat } from 'pixu';
 import { sampleImages, fetchSampleFile } from '../../shared/samples';
 
 const presets = ['web', 'print', 'social', 'thumbnail', 'email'] as const;
@@ -46,20 +47,8 @@ const formatBytes = (bytes: number): string => {
   return `${sign}${Math.round((abs / Math.pow(k, i)) * 100) / 100} ${sizes[i]}`;
 };
 
-const downloadImage = (file: File | Blob, name: string, format?: string) => {
-  const url = URL.createObjectURL(file);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = buildDownloadName(`${name}-${Date.now()}`, format || file.type);
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-};
-
-const downloadLabel = (format?: string) => {
-  const ext = getOutputExtension(format);
-  return `Download (${ext})`;
+const downloadAs = async (file: File | Blob, name: string, format: DownloadImageFormat) => {
+  await downloadImageAs(file, `${name}-${Date.now()}`, format);
 };
 
 const App: React.FC = () => {
@@ -416,12 +405,10 @@ const App: React.FC = () => {
               <h4>Compressed</h4>
               <img src={sampleCompressedUrl} alt="Compressed" />
               <p className="image-info">{formatBytes(sampleResult.compressedSize)}</p>
-              <button
-                onClick={() => downloadImage(sampleResult.file, sampleResult.label, sampleResult.format)}
-                className="download-btn"
-              >
-                {downloadLabel(sampleResult.format)}
-              </button>
+              <div className="download-pair">
+                <button type="button" onClick={() => downloadAs(sampleResult.file, sampleResult.label, 'image/webp')} className="download-btn">Download (.webp)</button>
+                <button type="button" onClick={() => downloadAs(sampleResult.file, sampleResult.label, 'image/jpeg')} className="download-btn">Download (.jpg)</button>
+              </div>
             </div>
           </div>
         </div>
@@ -470,9 +457,10 @@ const App: React.FC = () => {
                 <p className="image-info">
                   {formatBytes(basicResult.compressedSize)} ({(basicResult.compressionRatio * 100).toFixed(1)}% reduction)
                 </p>
-                <button onClick={() => downloadImage(basicResult.file, 'compressed', basicResult.format)} className="download-btn">
-                  {downloadLabel(basicResult.format)}
-                </button>
+                <div className="download-pair">
+                  <button type="button" onClick={() => downloadAs(basicResult.file, 'compressed', 'image/webp')} className="download-btn">Download (.webp)</button>
+                  <button type="button" onClick={() => downloadAs(basicResult.file, 'compressed', 'image/jpeg')} className="download-btn">Download (.jpg)</button>
+                </div>
               </div>
             </div>
           )}
@@ -610,12 +598,10 @@ const App: React.FC = () => {
                 <div className="preview-item">
                   <img src={advancedCompressedUrl} alt="Compressed" />
                   <p>Compressed</p>
-                  <button
-                    onClick={() => downloadImage(advancedResult.file, 'advanced', advancedResult.format)}
-                    className="download-btn-small"
-                  >
-                    {downloadLabel(advancedResult.format)}
-                  </button>
+                  <div className="download-pair">
+                    <button type="button" onClick={() => downloadAs(advancedResult.file, 'advanced', 'image/webp')} className="download-btn-small">Download (.webp)</button>
+                    <button type="button" onClick={() => downloadAs(advancedResult.file, 'advanced', 'image/jpeg')} className="download-btn-small">Download (.jpg)</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -675,12 +661,10 @@ const App: React.FC = () => {
                 </div>
                 <div className="preview-item">
                   <img src={presetCompressedUrl} alt="Compressed" />
-                  <button
-                    onClick={() => downloadImage(presetResult.file, `preset-${selectedPreset}`, presetResult.format)}
-                    className="download-btn-small"
-                  >
-                    {downloadLabel(presetResult.format)}
-                  </button>
+                  <div className="download-pair">
+                    <button type="button" onClick={() => downloadAs(presetResult.file, `preset-${selectedPreset}`, 'image/webp')} className="download-btn-small">Download (.webp)</button>
+                    <button type="button" onClick={() => downloadAs(presetResult.file, `preset-${selectedPreset}`, 'image/jpeg')} className="download-btn-small">Download (.jpg)</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -729,9 +713,10 @@ const App: React.FC = () => {
               <div className="image-preview">
                 <h4>With Filters</h4>
                 <img src={filterCompressedUrl} alt="Filtered" />
-                <button onClick={() => downloadImage(filterResult.file, 'filtered', filterResult.format)} className="download-btn">
-                  {downloadLabel(filterResult.format)}
-                </button>
+                <div className="download-pair">
+                  <button type="button" onClick={() => downloadAs(filterResult.file, 'filtered', 'image/webp')} className="download-btn">Download (.webp)</button>
+                  <button type="button" onClick={() => downloadAs(filterResult.file, 'filtered', 'image/jpeg')} className="download-btn">Download (.jpg)</button>
+                </div>
               </div>
             </div>
           )}
@@ -856,12 +841,10 @@ const App: React.FC = () => {
                     <img src={pixCompressedUrl} alt="PIXU Compressed" />
                     <p>PIXU Format ({(pixResult.compressionRatio * 100).toFixed(1)}% smaller)</p>
                     <p className="image-info">{formatBytes(pixResult.compressedSize)}</p>
-                    <button
-                      onClick={() => downloadImage(pixResult.file, 'pixu-compressed', pixResult.format)}
-                      className="download-btn"
-                    >
-                      {downloadLabel(pixResult.format)}
-                    </button>
+                    <div className="download-pair">
+                      <button type="button" onClick={() => downloadAs(pixResult.file, 'pixu-compressed', 'image/webp')} className="download-btn">Download (.webp)</button>
+                      <button type="button" onClick={() => downloadAs(pixResult.file, 'pixu-compressed', 'image/jpeg')} className="download-btn">Download (.jpg)</button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1161,12 +1144,10 @@ const App: React.FC = () => {
                 <div className="preview-item">
                   <img src={watermarkCompressedUrl} alt="Watermarked" />
                   <p>Watermarked Image</p>
-                  <button
-                    onClick={() => downloadImage(watermarkResult.file, 'watermarked', watermarkResult.format)}
-                    className="download-btn-small"
-                  >
-                    {downloadLabel(watermarkResult.format)}
-                  </button>
+                  <div className="download-pair">
+                    <button type="button" onClick={() => downloadAs(watermarkResult.file, 'watermarked', 'image/webp')} className="download-btn-small">Download (.webp)</button>
+                    <button type="button" onClick={() => downloadAs(watermarkResult.file, 'watermarked', 'image/jpeg')} className="download-btn-small">Download (.jpg)</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1293,12 +1274,10 @@ const App: React.FC = () => {
                         {(result.compressionRatio * 100).toFixed(1)}%
                       </span>
                     </div>
-                    <button
-                      onClick={() => downloadImage(result.file, `batch-${index}`, result.format)}
-                      className="download-btn-tiny"
-                    >
-                      {downloadLabel(result.format)}
-                    </button>
+                    <div className="download-pair">
+                      <button type="button" onClick={() => downloadAs(result.file, `batch-${index}`, 'image/webp')} className="download-btn-tiny">.webp</button>
+                      <button type="button" onClick={() => downloadAs(result.file, `batch-${index}`, 'image/jpeg')} className="download-btn-tiny">.jpg</button>
+                    </div>
                   </div>
                 ))}
               </div>

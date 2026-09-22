@@ -1,5 +1,5 @@
 import { pulse, derive } from '@jacare/core'
-import { compress, getOutputExtension, buildDownloadName, createPreviewObjectURL } from 'pixu'
+import { compress, downloadImageAs, createPreviewObjectURL } from 'pixu'
 
 export <contract>
   props: {
@@ -68,11 +68,6 @@ function getInstance(id) {
     formatLabel: derive(() => {
       const r = result()
       return r ? r.format : '—'
-    }),
-    downloadExtLabel: derive(() => {
-      const r = result()
-      if (!r?.format) return ''
-      return getOutputExtension(r.format)
     }),
     qualityLabel: derive(() => {
       const r = result()
@@ -257,19 +252,19 @@ async function processFile(selected, id) {
   }
 }
 
-function downloadFile(id) {
+async function downloadAs(id, format) {
   const s = getInstance(id)
   const r = s.result()
-  const url = s.compressedUrl()
   const f = s.file()
-  if (!r || !url) return
+  if (!r) return
   const base = (f?.name || 'image').replace(/\.[^.]+$/, '')
-  const a = document.createElement('a')
-  a.href = url
-  a.download = buildDownloadName(`compressed-${base}`, r.format || f?.type)
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
+  try {
+    await downloadImageAs(r.file, `compressed-${base}`, format)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Download failed'
+    s.error.set(message)
+    emitOf(id, 'error', err instanceof Error ? err : new Error(message))
+  }
 }
 
 function reset(id) {
@@ -361,7 +356,8 @@ export <view>
               </div>
             </div>
             <div class="actions">
-              <button type="button" class="btn btn-primary" on-click=${() => downloadFile(instanceId)}>Download ${() => S(instanceId).downloadExtLabel() || ''}</button>
+              <button type="button" class="btn btn-primary" on-click=${() => downloadAs(instanceId, 'image/webp')}>Download (.webp)</button>
+              <button type="button" class="btn btn-primary" on-click=${() => downloadAs(instanceId, 'image/jpeg')}>Download (.jpg)</button>
               <button type="button" class="btn btn-secondary" on-click=${() => reset(instanceId)}>Compress Another</button>
             </div>
           </div>
@@ -602,10 +598,19 @@ export <style>
   color: #fff;
 }
 
+.btn-primary:hover {
+  background: var(--vp-c-brand-2, #6a32d9);
+  color: #fff;
+}
+
 .btn-secondary {
   background: var(--vp-c-bg-soft, var(--pixu-bg-soft, #f6f6f7));
   color: var(--vp-c-text-1, var(--pixu-text, #213547));
   border: 1px solid var(--vp-c-divider, var(--pixu-border, #e2e2e3));
+}
+
+.btn-secondary:hover {
+  background: var(--vp-c-bg, #ffffff);
 }
 
 .error-section {

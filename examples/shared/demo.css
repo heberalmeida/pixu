@@ -293,35 +293,47 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+.download-pair {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 .download-btn,
 .download-btn-small,
 .download-btn-tiny {
-  padding: 0.75rem 1.5rem;
-  background: var(--pixu-gradient);
-  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: none;
   border-radius: 8px;
-  cursor: pointer;
+  background: var(--pixu-purple, #7b3fef);
+  color: #fff;
   font-weight: 600;
-  transition: all 0.3s;
-  margin-top: 0.5rem;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 
 .download-btn-small {
-  padding: 0.5rem 1rem;
+  padding: 0.4rem 0.75rem;
   font-size: 0.85rem;
 }
 
 .download-btn-tiny {
-  padding: 0.25rem 0.75rem;
+  padding: 0.25rem 0.5rem;
   font-size: 0.75rem;
 }
 
 .download-btn:hover,
 .download-btn-small:hover,
 .download-btn-tiny:hover {
+  background: #6a32d9;
+  color: #fff;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.download-btn {
+  padding: 0.75rem 1.5rem;
 }
 
 .info-box {

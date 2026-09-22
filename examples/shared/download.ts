@@ -29,6 +29,15 @@ export function downloadCompressed(
   URL.revokeObjectURL(url)
 }
 
+export async function downloadAsWebpOrJpeg(
+  file: File | Blob,
+  name: string,
+  format: 'image/webp' | 'image/jpeg'
+): Promise<void> {
+  const { downloadImageAs } = await import('pixu')
+  await downloadImageAs(file, name, format)
+}
+
 export function formatLabel(format?: string | null): string {
   return extensionForFormat(format).replace(/^\./, '').toUpperCase()
 }

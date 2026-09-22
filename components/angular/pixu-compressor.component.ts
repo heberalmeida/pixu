@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import type { CompressionOptions, CompressionResult } from 'pixu';
-import { buildDownloadName, getOutputExtension, createPreviewObjectURL } from 'pixu';
+import type { CompressionOptions, CompressionResult, DownloadImageFormat } from 'pixu';
+import { downloadImageAs, createPreviewObjectURL } from 'pixu';
 
 @Component({
   selector: 'pixu-compressor',
@@ -87,10 +87,11 @@ import { buildDownloadName, getOutputExtension, createPreviewObjectURL } from 'p
               <span class="stat-value">{{ qualityLabel }}</span>
             </div>
           </div>
-          <div class="actions">
-            <button (click)="downloadFile()" class="btn btn-primary">{{ downloadLabel }}</button>
-            <button (click)="reset()" class="btn btn-secondary">Compress Another</button>
-          </div>
+            <div class="actions">
+              <button type="button" (click)="downloadAs('image/webp')" class="btn btn-primary" [disabled]="downloading">Download (.webp)</button>
+              <button type="button" (click)="downloadAs('image/jpeg')" class="btn btn-primary" [disabled]="downloading">Download (.jpg)</button>
+              <button type="button" (click)="reset()" class="btn btn-secondary">Compress Another</button>
+            </div>
         </div>
 
         <div *ngIf="errorMessage" class="error-section">
@@ -305,22 +306,28 @@ import { buildDownloadName, getOutputExtension, createPreviewObjectURL } from 'p
     }
 
     .btn-primary {
-      background: #3b82f6;
-      color: white;
+      background: var(--vp-c-brand-1, #7b3fef);
+      color: #fff;
     }
 
-    .btn-primary:hover {
-      background: #2563eb;
+    .btn-primary:hover:not(:disabled) {
+      background: var(--vp-c-brand-2, #6a32d9);
+      color: #fff;
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.65;
+      cursor: wait;
     }
 
     .btn-secondary {
-      background: #f9fafb;
-      color: #111827;
-      border: 1px solid #e5e7eb;
+      background: var(--vp-c-bg-soft, #f6f6f7);
+      color: var(--vp-c-text-1, #213547);
+      border: 1px solid var(--vp-c-divider, #e2e2e3);
     }
 
     .btn-secondary:hover {
-      background: #f3f4f6;
+      background: var(--vp-c-bg, #ffffff);
     }
 
     .error-section {
@@ -369,6 +376,7 @@ export class PixuCompressorComponent implements OnInit, OnDestroy, OnChanges {
   compressedUrl: string | null = null;
   originalSize: number = 0;
   originalDimensions: string = '';
+  downloading = false;
   Math = Math;
 
   private compressFn: any = null;
@@ -378,11 +386,6 @@ export class PixuCompressorComponent implements OnInit, OnDestroy, OnChanges {
     const q = this.result?.metadata?.quality;
     if (q == null) return '—';
     return `${Math.round(q * 100)}%`;
-  }
-
-  get downloadLabel(): string {
-    if (!this.result?.format) return 'Download Compressed';
-    return `Download (${getOutputExtension(this.result.format)})`;
   }
 
   async ngOnInit() {
@@ -534,16 +537,19 @@ export class PixuCompressorComponent implements OnInit, OnDestroy, OnChanges {
     }
   }
 
-  downloadFile() {
-    if (!this.result || !this.compressedUrl) return;
-
-    const link = document.createElement('a');
-    link.href = this.compressedUrl;
-    const base = (this.file?.name || 'image').replace(/\.[^.]+$/, '');
-    link.download = buildDownloadName(`compressed-${base}`, this.result.format);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  async downloadAs(format: DownloadImageFormat) {
+    if (!this.result || this.downloading) return;
+    this.downloading = true;
+    try {
+      const base = (this.file?.name || 'image').replace(/\.[^.]+$/, '');
+      await downloadImageAs(this.result.file, `compressed-${base}`, format);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Download failed';
+      this.errorMessage = errorMessage;
+      this.error.emit(err instanceof Error ? err : new Error(errorMessage));
+    } finally {
+      this.downloading = false;
+    }
   }
 
   reset() {

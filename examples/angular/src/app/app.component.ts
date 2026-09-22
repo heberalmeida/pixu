@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PixuCompressorComponent } from '../../../../components/angular/pixu-compressor.component';
 import type { CompressionOptions, CompressionResult, ImageFilter, SupportedFormat } from 'pixu';
-import { compress, compressBatch, buildDownloadName, getOutputExtension, createPreviewObjectURL } from 'pixu';
+import { compress, compressBatch, downloadImageAs, createPreviewObjectURL } from 'pixu';
+import type { DownloadImageFormat } from 'pixu';
 import { angularSampleImages, fetchSampleFile } from '../../../shared/samples';
 
 type ResultWithMetrics = CompressionResult & {
@@ -58,7 +59,10 @@ type ResultWithMetrics = CompressionResult & {
             <h4>Compressed</h4>
             <img [src]="sampleCompressedUrl" alt="Compressed" />
             <p class="image-info">{{ formatBytes(sampleResult.compressedSize) }}</p>
-            <button (click)="downloadImage(sampleResult.file, sampleResult.label, sampleResult.format)" class="download-btn">{{ downloadLabel(sampleResult.format) }}</button>
+            <div class="download-pair">
+              <button type="button" (click)="downloadAs(sampleResult.file, sampleResult.label, 'image/webp')" class="download-btn">Download (.webp)</button>
+              <button type="button" (click)="downloadAs(sampleResult.file, sampleResult.label, 'image/jpeg')" class="download-btn">Download (.jpg)</button>
+            </div>
           </div>
         </div>
       </div>
@@ -94,7 +98,10 @@ type ResultWithMetrics = CompressionResult & {
               <h4>Compressed</h4>
               <img [src]="basicCompressedUrl" alt="Compressed" />
               <p class="image-info">{{ formatBytes(basicResult.compressedSize) }} ({{ (basicResult.compressionRatio * 100).toFixed(1) }}% reduction)</p>
-              <button (click)="downloadImage(basicResult.file, 'compressed', basicResult.format)" class="download-btn">{{ downloadLabel(basicResult.format) }}</button>
+              <div class="download-pair">
+                <button type="button" (click)="downloadAs(basicResult.file, 'compressed', 'image/webp')" class="download-btn">Download (.webp)</button>
+                <button type="button" (click)="downloadAs(basicResult.file, 'compressed', 'image/jpeg')" class="download-btn">Download (.jpg)</button>
+              </div>
             </div>
           </div>
         </div>
@@ -178,7 +185,10 @@ type ResultWithMetrics = CompressionResult & {
               <div class="preview-item">
                 <img [src]="advancedCompressedUrl" alt="Compressed" />
                 <p>Compressed</p>
-                <button (click)="downloadImage(advancedResult.file, 'advanced', advancedResult.format)" class="download-btn-small">{{ downloadLabel(advancedResult.format) }}</button>
+                <div class="download-pair">
+                  <button type="button" (click)="downloadAs(advancedResult.file, 'advanced', 'image/webp')" class="download-btn-small">Download (.webp)</button>
+                  <button type="button" (click)="downloadAs(advancedResult.file, 'advanced', 'image/jpeg')" class="download-btn-small">Download (.jpg)</button>
+                </div>
               </div>
             </div>
           </div>
@@ -224,7 +234,10 @@ type ResultWithMetrics = CompressionResult & {
               </div>
               <div class="preview-item">
                 <img [src]="presetCompressedUrl" alt="Compressed" />
-                <button (click)="downloadImage(presetResult.file, 'preset-' + selectedPreset, presetResult.format)" class="download-btn-small">{{ downloadLabel(presetResult.format) }}</button>
+                <div class="download-pair">
+                  <button type="button" (click)="downloadAs(presetResult.file, 'preset-' + selectedPreset, 'image/webp')" class="download-btn-small">Download (.webp)</button>
+                  <button type="button" (click)="downloadAs(presetResult.file, 'preset-' + selectedPreset, 'image/jpeg')" class="download-btn-small">Download (.jpg)</button>
+                </div>
               </div>
             </div>
           </div>
@@ -265,7 +278,10 @@ type ResultWithMetrics = CompressionResult & {
             <div class="image-preview">
               <h4>With Filters</h4>
               <img [src]="filterCompressedUrl" alt="Filtered" />
-              <button (click)="downloadImage(filterResult.file, 'filtered', filterResult.format)" class="download-btn">{{ downloadLabel(filterResult.format) }}</button>
+              <div class="download-pair">
+                <button type="button" (click)="downloadAs(filterResult.file, 'filtered', 'image/webp')" class="download-btn">Download (.webp)</button>
+                <button type="button" (click)="downloadAs(filterResult.file, 'filtered', 'image/jpeg')" class="download-btn">Download (.jpg)</button>
+              </div>
             </div>
           </div>
         </div>
@@ -346,7 +362,10 @@ type ResultWithMetrics = CompressionResult & {
                   <img [src]="pixCompressedUrl" alt="PIXU Compressed" />
                   <p>PIXU Format ({{ (pixResult.compressionRatio * 100).toFixed(1) }}% smaller)</p>
                   <p class="image-info">{{ formatBytes(pixResult.compressedSize) }}</p>
-                  <button (click)="downloadImage(pixResult.file, 'pixu-compressed', pixResult.format)" class="download-btn">{{ downloadLabel(pixResult.format) }}</button>
+                  <div class="download-pair">
+                    <button type="button" (click)="downloadAs(pixResult.file, 'pixu-compressed', 'image/webp')" class="download-btn">Download (.webp)</button>
+                    <button type="button" (click)="downloadAs(pixResult.file, 'pixu-compressed', 'image/jpeg')" class="download-btn">Download (.jpg)</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -546,7 +565,10 @@ type ResultWithMetrics = CompressionResult & {
               <div class="preview-item">
                 <img [src]="watermarkCompressedUrl" alt="Watermarked" />
                 <p>Watermarked Image</p>
-                <button (click)="downloadImage(watermarkResult.file, 'watermarked', watermarkResult.format)" class="download-btn-small">{{ downloadLabel(watermarkResult.format) }}</button>
+                <div class="download-pair">
+                  <button type="button" (click)="downloadAs(watermarkResult.file, 'watermarked', 'image/webp')" class="download-btn-small">Download (.webp)</button>
+                  <button type="button" (click)="downloadAs(watermarkResult.file, 'watermarked', 'image/jpeg')" class="download-btn-small">Download (.jpg)</button>
+                </div>
               </div>
             </div>
           </div>
@@ -638,7 +660,10 @@ type ResultWithMetrics = CompressionResult & {
                   <span class="batch-size">{{ formatBytes(result.originalSize) }} → {{ formatBytes(result.compressedSize) }}</span>
                   <span class="batch-ratio success">{{ (result.compressionRatio * 100).toFixed(1) }}%</span>
                 </div>
-                <button type="button" (click)="downloadImage(result.file, 'batch-' + i, result.format)" class="download-btn-tiny">{{ downloadLabel(result.format) }}</button>
+                <div class="download-pair">
+                  <button type="button" (click)="downloadAs(result.file, 'batch-' + i, 'image/webp')" class="download-btn-tiny">.webp</button>
+                  <button type="button" (click)="downloadAs(result.file, 'batch-' + i, 'image/jpeg')" class="download-btn-tiny">.jpg</button>
+                </div>
               </div>
             </div>
           </div>
@@ -1004,19 +1029,8 @@ export class AppComponent {
     }, 5000);
   }
 
-  downloadImage(file: File | Blob, name: string, format?: string) {
-    const url = URL.createObjectURL(file);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = buildDownloadName(`${name}-${Date.now()}`, format || file.type);
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }
-
-  downloadLabel(format?: string) {
-    return `Download (${getOutputExtension(format)})`;
+  async downloadAs(file: File | Blob, name: string, format: DownloadImageFormat) {
+    await downloadImageAs(file, `${name}-${Date.now()}`, format);
   }
 
   formatBytes(bytes: number): string {

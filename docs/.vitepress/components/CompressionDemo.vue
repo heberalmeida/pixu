@@ -60,13 +60,16 @@
         <p><strong>Format:</strong> {{ result.format }}</p>
         <p><strong>Dimensions:</strong> {{ result.width }}×{{ result.height }}</p>
       </div>
-      <button type="button" class="download-btn" @click="download">{{ downloadButtonLabel }}</button>
+      <div class="download-actions">
+        <button type="button" class="download-btn" :disabled="downloading" @click="downloadAs('image/webp')">Download (.webp)</button>
+        <button type="button" class="download-btn" :disabled="downloading" @click="downloadAs('image/jpeg')">Download (.jpg)</button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue'
+import { ref, onUnmounted } from 'vue'
 import { docSampleImages, fetchDocSample, type DocSampleImage } from '../samples'
 
 const props = withDefaults(defineProps<{
@@ -86,6 +89,7 @@ const error = ref<string | null>(null)
 const result = ref<any>(null)
 const originalUrl = ref<string | null>(null)
 const compressedUrl = ref<string | null>(null)
+const downloading = ref(false)
 const samples = docSampleImages
 
 const defaultOptions = {
@@ -167,28 +171,18 @@ const compressSample = async (sample: DocSampleImage) => {
   }
 }
 
-const download = async () => {
-  if (!result.value || !compressedUrl.value) return
-  const { buildDownloadName } = await loadPixu()
-  const a = document.createElement('a')
-  a.href = compressedUrl.value
-  a.download = buildDownloadName('compressed', result.value.format)
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
+const downloadAs = async (format: 'image/webp' | 'image/jpeg') => {
+  if (!result.value || downloading.value) return
+  downloading.value = true
+  try {
+    const { downloadImageAs } = await loadPixu()
+    await downloadImageAs(result.value.file, 'compressed', format)
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Download failed'
+  } finally {
+    downloading.value = false
+  }
 }
-
-const downloadButtonLabel = computed(() => {
-  if (!result.value?.format) return 'Download'
-  // sync fallback until module loads; button only shown when result exists
-  const format = result.value.format
-  if (format === 'image/jpeg') return 'Download (.jpg)'
-  if (format === 'image/png') return 'Download (.png)'
-  if (format === 'image/webp') return 'Download (.webp)'
-  if (format === 'image/avif') return 'Download (.avif)'
-  const sub = String(format).split('/')[1] || 'bin'
-  return `Download (.${sub === 'jpeg' ? 'jpg' : sub})`
-})
 
 const formatBytes = (bytes: number): string => {
   if (!Number.isFinite(bytes) || bytes === 0) return '0 B'
@@ -282,15 +276,31 @@ onUnmounted(() => {
   margin: 0.4rem 0;
 }
 
-.download-btn {
+.download-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
   margin-top: 0.85rem;
+}
+
+.download-btn {
   padding: 0.55rem 1.1rem;
   border: none;
   border-radius: 8px;
-  background: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-1, #7b3fef);
   color: #fff;
   font-weight: 600;
   cursor: pointer;
+}
+
+.download-btn:hover:not(:disabled) {
+  background: var(--vp-c-brand-2, #6a32d9);
+  color: #fff;
+}
+
+.download-btn:disabled {
+  opacity: 0.65;
+  cursor: wait;
 }
 
 @media (max-width: 640px) {

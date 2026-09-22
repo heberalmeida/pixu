@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy, createEventDispatcher } from 'svelte';
-  import type { CompressionOptions, CompressionResult } from 'pixu';
-  import { buildDownloadName, getOutputExtension, createPreviewObjectURL } from 'pixu';
+  import type { CompressionOptions, CompressionResult, DownloadImageFormat } from 'pixu';
+  import { downloadImageAs, createPreviewObjectURL } from 'pixu';
 
   export let options: CompressionOptions = {};
   export let autoCompress: boolean = true;
@@ -21,6 +21,7 @@
   let result: CompressionResult | null = null;
   let originalUrl: string | null = null;
   let compressedUrl: string | null = null;
+  let downloading: boolean = false;
   let originalSize: number = 0;
   let originalDimensions: string = '';
   let fileInput: HTMLInputElement;
@@ -170,21 +171,20 @@
     }
   }
 
-  function downloadFile() {
-    if (!result || !compressedUrl) return;
-
-    const link = document.createElement('a');
-    link.href = compressedUrl;
-    const base = (file?.name || 'image').replace(/\.[^.]+$/, '');
-    link.download = buildDownloadName(`compressed-${base}`, result.format);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  async function downloadAs(format: DownloadImageFormat) {
+    if (!result || downloading) return;
+    downloading = true;
+    try {
+      const base = (file?.name || 'image').replace(/\.[^.]+$/, '');
+      await downloadImageAs(result.file, `compressed-${base}`, format);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Download failed';
+      error = errorMessage;
+      dispatch('error', err instanceof Error ? err : new Error(errorMessage));
+    } finally {
+      downloading = false;
+    }
   }
-
-  $: downloadLabel = result?.format
-    ? `Download (${getOutputExtension(result.format)})`
-    : 'Download Compressed';
 
   function reset() {
     file = null;
@@ -301,8 +301,9 @@
             </div>
           </div>
           <div class="actions">
-            <button on:click={downloadFile} class="btn btn-primary">{downloadLabel}</button>
-            <button on:click={reset} class="btn btn-secondary">Compress Another</button>
+            <button type="button" on:click={() => downloadAs('image/webp')} class="btn btn-primary" disabled={downloading}>Download (.webp)</button>
+            <button type="button" on:click={() => downloadAs('image/jpeg')} class="btn btn-primary" disabled={downloading}>Download (.jpg)</button>
+            <button type="button" on:click={reset} class="btn btn-secondary">Compress Another</button>
           </div>
         </div>
       {/if}
@@ -517,22 +518,28 @@
   }
 
   .btn-primary {
-    background: #3b82f6;
-    color: white;
+    background: var(--vp-c-brand-1, #7b3fef);
+    color: #fff;
   }
 
-  .btn-primary:hover {
-    background: #2563eb;
+  .btn-primary:hover:not(:disabled) {
+    background: var(--vp-c-brand-2, #6a32d9);
+    color: #fff;
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.65;
+    cursor: wait;
   }
 
   .btn-secondary {
-    background: #f9fafb;
-    color: #111827;
-    border: 1px solid #e5e7eb;
+    background: var(--vp-c-bg-soft, #f6f6f7);
+    color: var(--vp-c-text-1, #213547);
+    border: 1px solid var(--vp-c-divider, #e2e2e3);
   }
 
   .btn-secondary:hover {
-    background: #f3f4f6;
+    background: var(--vp-c-bg, #ffffff);
   }
 
   .error-section {

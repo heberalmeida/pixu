@@ -82,8 +82,19 @@
           </div>
         </div>
         <div class="actions">
-          <button @click="downloadFile" class="btn btn-primary">{{ downloadLabel }}</button>
-          <button @click="reset" class="btn btn-secondary">Compress Another</button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            :disabled="downloading"
+            @click="downloadAs('image/webp')"
+          >Download (.webp)</button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            :disabled="downloading"
+            @click="downloadAs('image/jpeg')"
+          >Download (.jpg)</button>
+          <button type="button" @click="reset" class="btn btn-secondary">Compress Another</button>
         </div>
       </div>
 
@@ -98,7 +109,8 @@
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue';
 import type { CompressionOptions, CompressionResult } from 'pixu';
-import { buildDownloadName, getOutputExtension, createPreviewObjectURL } from 'pixu';
+import { downloadImageAs, createPreviewObjectURL } from 'pixu';
+import type { DownloadImageFormat } from 'pixu';
 
 interface SampleImageOption {
   id: string;
@@ -130,21 +142,12 @@ const error = ref<string | null>(null);
 const result = ref<CompressionResult | null>(null);
 const originalUrl = ref<string | null>(null);
 const compressedUrl = ref<string | null>(null);
+const downloading = ref(false);
 
 const originalSize = computed(() => file.value?.size || 0);
 const qualityPercent = computed(() => {
   const q = result.value?.metadata?.quality;
   return q == null ? '—' : `${Math.round(q * 100)}%`;
-});
-
-const downloadExt = computed(() => {
-  if (!result.value?.format) return '';
-  return getOutputExtension(result.value.format);
-});
-
-const downloadLabel = computed(() => {
-  const ext = downloadExt.value;
-  return ext ? `Download (${ext})` : 'Download Compressed';
 });
 
 const triggerFileInput = () => {
@@ -265,16 +268,19 @@ watch(
   }
 );
 
-const downloadFile = () => {
-  if (!result.value) return;
-
-  const link = document.createElement('a');
-  link.href = compressedUrl.value || '';
-  const base = (file.value?.name || 'image').replace(/\.[^.]+$/, '');
-  link.download = buildDownloadName(`compressed-${base}`, result.value.format);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+const downloadAs = async (format: DownloadImageFormat) => {
+  if (!result.value || downloading.value) return;
+  downloading.value = true;
+  try {
+    const base = (file.value?.name || 'image').replace(/\.[^.]+$/, '');
+    await downloadImageAs(result.value.file, `compressed-${base}`, format);
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Download failed';
+    error.value = errorMessage;
+    emit('error', err instanceof Error ? err : new Error(errorMessage));
+  } finally {
+    downloading.value = false;
+  }
 };
 
 const reset = () => {
@@ -330,8 +336,8 @@ onUnmounted(() => {
 }
 
 .upload-area:hover {
-  border-color: var(--vp-c-brand);
-  background: var(--vp-c-bg);
+  border-color: var(--vp-c-brand-1, #7b3fef);
+  background: var(--vp-c-bg, #ffffff);
 }
 
 .upload-content {
@@ -392,7 +398,7 @@ onUnmounted(() => {
 }
 
 .sample-card:hover {
-  border-color: var(--vp-c-brand, #00ccff);
+  border-color: var(--vp-c-brand-1, #7b3fef);
   transform: translateY(-2px);
 }
 
@@ -498,7 +504,7 @@ onUnmounted(() => {
 .stat-value {
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--vp-c-brand);
+  color: var(--vp-c-brand-1, #7b3fef);
 }
 
 .stat-value.success {
@@ -511,7 +517,8 @@ onUnmounted(() => {
 
 .actions {
   display: flex;
-  gap: 1rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
   justify-content: center;
 }
 
@@ -526,22 +533,28 @@ onUnmounted(() => {
 }
 
 .btn-primary {
-  background: var(--vp-c-brand);
-  color: white;
+  background: var(--vp-c-brand-1, #7b3fef);
+  color: #fff;
 }
 
-.btn-primary:hover {
-  background: var(--vp-c-brand-dark);
+.btn-primary:hover:not(:disabled) {
+  background: var(--vp-c-brand-2, #6a32d9);
+  color: #fff;
+}
+
+.btn-primary:disabled {
+  opacity: 0.65;
+  cursor: wait;
 }
 
 .btn-secondary {
-  background: var(--vp-c-bg-soft);
-  color: var(--vp-c-text-1);
-  border: 1px solid var(--vp-c-divider);
+  background: var(--vp-c-bg-soft, #f6f6f7);
+  color: var(--vp-c-text-1, #213547);
+  border: 1px solid var(--vp-c-divider, #e2e2e3);
 }
 
 .btn-secondary:hover {
-  background: var(--vp-c-bg);
+  background: var(--vp-c-bg, #ffffff);
 }
 
 .error-section {
