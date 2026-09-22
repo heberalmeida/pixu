@@ -95,7 +95,7 @@ const smartCrop = pulse({
 const smartCropResult = pulse(null)
 const smartCropProgress = pulse(0)
 
-const watermarkText = pulse('')
+const watermarkText = pulse('Pixu')
 const watermarkPosition = pulse('bottom-right')
 const watermarkOpacity = pulse(0.7)
 const watermarkResult = pulse(null)

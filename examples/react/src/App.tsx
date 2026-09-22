@@ -95,7 +95,7 @@ const App: React.FC = () => {
     height: 600,
     focus: 'center' as const,
   });
-  const [watermarkText, setWatermarkText] = useState('');
+  const [watermarkText, setWatermarkText] = useState('Pixu');
   const [watermarkPosition, setWatermarkPosition] = useState('bottom-right');
   const [watermarkOpacity, setWatermarkOpacity] = useState(0.7);
 

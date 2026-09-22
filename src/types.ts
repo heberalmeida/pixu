@@ -60,6 +60,10 @@ export interface CompressionOptions {
     fontFamily?: string;
     color?: string;
     padding?: number;
+    scale?: number;
+    rotation?: number;
+    stroke?: boolean;
+    strokeColor?: string;
   };
   preserveEXIF?: {
     preserve?: string[];

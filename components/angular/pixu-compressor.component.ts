@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import type { CompressionOptions, CompressionResult } from 'pixu';
 
@@ -350,7 +350,7 @@ import type { CompressionOptions, CompressionResult } from 'pixu';
     }
   `]
 })
-export class PixuCompressorComponent implements OnInit, OnDestroy {
+export class PixuCompressorComponent implements OnInit, OnDestroy, OnChanges {
   @Input() options: CompressionOptions = {};
   @Input() autoCompress: boolean = true;
   @Input() samples: { id: string; label: string; url: string; file: string }[] = [];
@@ -371,6 +371,7 @@ export class PixuCompressorComponent implements OnInit, OnDestroy {
   Math = Math;
 
   private compressFn: any = null;
+  private optionsKey = '';
 
   get qualityLabel(): string {
     const q = this.result?.metadata?.quality;
@@ -379,6 +380,7 @@ export class PixuCompressorComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
+    this.optionsKey = JSON.stringify(this.options ?? {});
     try {
       const module = await import('pixu');
       this.compressFn = module.compress;
@@ -429,6 +431,52 @@ export class PixuCompressorComponent implements OnInit, OnDestroy {
     await this.processFile(file);
   }
 
+  ngOnChanges(changes: SimpleChanges) {
+    if (!changes['options'] || changes['options'].firstChange) return;
+    const nextKey = JSON.stringify(this.options ?? {});
+    if (nextKey === this.optionsKey) return;
+    this.optionsKey = nextKey;
+    if (!this.file || !this.autoCompress || this.loading) return;
+    void this.recompress();
+  }
+
+  private async runCompress(fileForCompress: File) {
+    if (!this.compressFn) {
+      const module = await import('pixu');
+      this.compressFn = module.compress;
+    }
+    if (this.compressedUrl) {
+      URL.revokeObjectURL(this.compressedUrl);
+      this.compressedUrl = null;
+    }
+    const compressionResult = await this.compressFn(fileForCompress, {
+      ...this.options,
+      onProgress: (p: number) => {
+        this.progressValue = p;
+        this.progress.emit(p);
+      },
+    });
+    this.result = compressionResult;
+    this.compressedUrl = URL.createObjectURL(compressionResult.file);
+    this.compress.emit(compressionResult);
+  }
+
+  private async recompress() {
+    if (!this.file) return;
+    this.loading = true;
+    this.errorMessage = null;
+    this.progressValue = 0;
+    try {
+      await this.runCompress(this.file);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Compression failed';
+      this.errorMessage = errorMessage;
+      this.error.emit(err instanceof Error ? err : new Error(errorMessage));
+    } finally {
+      this.loading = false;
+    }
+  }
+
   async processFile(selectedFile: File) {
     this.loading = true;
     this.errorMessage = null;
@@ -467,22 +515,7 @@ export class PixuCompressorComponent implements OnInit, OnDestroy {
         return;
       }
 
-      if (!this.compressFn) {
-        const module = await import('pixu');
-        this.compressFn = module.compress;
-      }
-
-      const compressionResult = await this.compressFn(fileForCompress, {
-        ...this.options,
-        onProgress: (p: number) => {
-          this.progressValue = p;
-          this.progress.emit(p);
-        },
-      });
-
-      this.result = compressionResult;
-      this.compressedUrl = URL.createObjectURL(compressionResult.file);
-      this.compress.emit(compressionResult);
+      await this.runCompress(fileForCompress);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Compression failed';
       this.errorMessage = errorMessage;

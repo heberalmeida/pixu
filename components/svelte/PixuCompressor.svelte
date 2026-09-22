@@ -75,6 +75,27 @@
     await processFile(file);
   }
 
+  async function runCompress(fileForCompress: File) {
+    if (!compressFn) {
+      const module = await import('pixu');
+      compressFn = module.compress;
+    }
+    if (compressedUrl) {
+      URL.revokeObjectURL(compressedUrl);
+      compressedUrl = null;
+    }
+    const compressionResult = await compressFn(fileForCompress, {
+      ...options,
+      onProgress: (p: number) => {
+        progress = p;
+        dispatch('progress', p);
+      },
+    });
+    result = compressionResult;
+    compressedUrl = URL.createObjectURL(compressionResult.file);
+    dispatch('compress', compressionResult);
+  }
+
   async function processFile(selectedFile: File) {
     loading = true;
     error = null;
@@ -113,28 +134,35 @@
         return;
       }
 
-      if (!compressFn) {
-        const module = await import('pixu');
-        compressFn = module.compress;
-      }
-
-      const compressionResult = await compressFn(fileForCompress, {
-        ...options,
-        onProgress: (p: number) => {
-          progress = p;
-          dispatch('progress', p);
-        },
-      });
-
-      result = compressionResult;
-      compressedUrl = URL.createObjectURL(compressionResult.file);
-      dispatch('compress', compressionResult);
+      await runCompress(fileForCompress);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Compression failed';
       error = errorMessage;
       dispatch('error', err instanceof Error ? err : new Error(errorMessage));
     } finally {
       loading = false;
+    }
+  }
+
+  let optionsKey = JSON.stringify(options ?? {});
+  $: {
+    const nextKey = JSON.stringify(options ?? {});
+    if (nextKey !== optionsKey) {
+      optionsKey = nextKey;
+      if (file && autoCompress && !loading) {
+        loading = true;
+        error = null;
+        progress = 0;
+        runCompress(file)
+          .catch((err) => {
+            const errorMessage = err instanceof Error ? err.message : 'Compression failed';
+            error = errorMessage;
+            dispatch('error', err instanceof Error ? err : new Error(errorMessage));
+          })
+          .finally(() => {
+            loading = false;
+          });
+      }
     }
   }
 

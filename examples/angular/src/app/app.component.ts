@@ -721,7 +721,7 @@ export class AppComponent {
     focus: 'center' as const,
   };
 
-  watermarkText = '';
+  watermarkText = 'Pixu';
   watermarkPosition: NonNullable<CompressionOptions['watermark']>['position'] = 'bottom-right';
   watermarkOpacity = 0.7;
 

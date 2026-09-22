@@ -46,20 +46,42 @@ const PixuCompressor: React.FC<PixuCompressorProps> = ({
     return `${sign}${Math.round((abs / Math.pow(k, i)) * 100) / 100} ${sizes[i]}`;
   }, []);
 
+  const fileRef = useRef<File | null>(null);
+  const optionsKeyRef = useRef('');
+  const skipOptionsEffect = useRef(true);
+
+  const runCompress = useCallback(async (fileForCompress: File) => {
+    const { compress } = await import('pixu');
+    setCompressedUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    const compressionResult = await compress(fileForCompress, {
+      ...options,
+      onProgress: (p: number) => {
+        setProgress(p);
+        onProgress?.(p);
+      },
+    });
+    setResult(compressionResult);
+    setCompressedUrl(URL.createObjectURL(compressionResult.file));
+    onCompress?.(compressionResult);
+  }, [options, onCompress, onProgress]);
+
   const processFile = useCallback(async (selectedFile: File) => {
     setLoading(true);
     setError(null);
     setProgress(0);
     setResult(null);
 
-    if (originalUrl) {
-      URL.revokeObjectURL(originalUrl);
-      setOriginalUrl(null);
-    }
-    if (compressedUrl) {
-      URL.revokeObjectURL(compressedUrl);
-      setCompressedUrl(null);
-    }
+    setOriginalUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    setCompressedUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
 
     try {
       const buffer = await selectedFile.arrayBuffer();
@@ -71,6 +93,7 @@ const PixuCompressor: React.FC<PixuCompressorProps> = ({
         lastModified: selectedFile.lastModified,
       });
 
+      fileRef.current = fileForCompress;
       setFile(fileForCompress);
       setOriginalUrl(URL.createObjectURL(previewBlob));
       onSource?.({
@@ -83,19 +106,7 @@ const PixuCompressor: React.FC<PixuCompressorProps> = ({
         return;
       }
 
-      const { compress } = await import('pixu');
-
-      const compressionResult = await compress(fileForCompress, {
-        ...options,
-        onProgress: (p: number) => {
-          setProgress(p);
-          onProgress?.(p);
-        },
-      });
-
-      setResult(compressionResult);
-      setCompressedUrl(URL.createObjectURL(compressionResult.file));
-      onCompress?.(compressionResult);
+      await runCompress(fileForCompress);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Compression failed';
       setError(errorMessage);
@@ -103,7 +114,39 @@ const PixuCompressor: React.FC<PixuCompressorProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [options, autoCompress, onCompress, onError, onProgress, onSource, originalUrl, compressedUrl]);
+  }, [autoCompress, onError, onSource, runCompress]);
+
+  useEffect(() => {
+    const key = JSON.stringify(options ?? {});
+    if (skipOptionsEffect.current) {
+      skipOptionsEffect.current = false;
+      optionsKeyRef.current = key;
+      return;
+    }
+    if (key === optionsKeyRef.current) return;
+    optionsKeyRef.current = key;
+    const current = fileRef.current;
+    if (!current || !autoCompress) return;
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setError(null);
+      setProgress(0);
+      try {
+        if (!cancelled) await runCompress(current);
+      } catch (err) {
+        if (cancelled) return;
+        const errorMessage = err instanceof Error ? err.message : 'Compression failed';
+        setError(errorMessage);
+        onError?.(err instanceof Error ? err : new Error(errorMessage));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [options, autoCompress, runCompress, onError]);
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -148,6 +191,7 @@ const PixuCompressor: React.FC<PixuCompressorProps> = ({
   }, [result, compressedUrl, file]);
 
   const reset = useCallback(() => {
+    fileRef.current = null;
     setFile(null);
     setResult(null);
     setError(null);

@@ -80,7 +80,7 @@
     focus: 'center' as const,
   };
 
-  let watermarkText = '';
+  let watermarkText = 'Pixu';
   let watermarkPosition = 'bottom-right';
   let watermarkOpacity = 0.7;
 

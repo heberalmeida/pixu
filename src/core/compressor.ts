@@ -592,8 +592,16 @@ export class PixuCompressor {
           }
         }
 
-        // Never return a file larger than the source when strict
-        if (resultCompressedSize >= originalSize && strict) {
+        // Never fall back to the untouched source when the canvas was mutated
+        // (watermark, filters, crop, etc.) — that would drop those effects.
+        const canvasMutated =
+          Boolean(options.watermark?.text?.trim()) ||
+          Boolean(options.watermark?.image) ||
+          Boolean(options.filters && options.filters.length > 0) ||
+          Boolean(options.smartCrop?.enabled) ||
+          Boolean(options.optimizePNG?.enabled);
+
+        if (resultCompressedSize >= originalSize && strict && !canvasMutated) {
           resultFile = file instanceof File ? file : new File([file], fileName, { type: fileType });
           resultCompressedSize = originalSize;
           resultFormat = fileType;

@@ -22,6 +22,7 @@ const optionsProp = pulse({})
 const samplesProp = pulse([])
 const autoCompressProp = pulse(true)
 const emitRef = { current: null }
+let optionsKey = ''
 
 function emit(name, ...payload) {
   const handler = emitRef.current
@@ -33,6 +34,14 @@ function bindProps(nextSamples, nextOptions, nextAuto, mountEmit) {
   optionsProp.set(nextOptions && typeof nextOptions === 'object' ? nextOptions : {})
   autoCompressProp.set(nextAuto !== false)
   emitRef.current = typeof mountEmit === 'function' ? mountEmit : null
+  const nextKey = JSON.stringify(optionsProp() || {})
+  if (nextKey !== optionsKey) {
+    const hadKey = optionsKey !== ''
+    optionsKey = nextKey
+    if (hadKey && file() && autoCompressProp() !== false && !loading()) {
+      void recompress()
+    }
+  }
   return ''
 }
 
@@ -135,6 +144,40 @@ async function loadSample(e, sample) {
   await processFile(selected)
 }
 
+async function runCompress(fileForCompress) {
+  if (compressedUrl()) {
+    URL.revokeObjectURL(compressedUrl())
+    compressedUrl.set(null)
+  }
+  const compressionResult = await compress(fileForCompress, {
+    ...(optionsProp() || {}),
+    onProgress: (p) => {
+      progress.set(p)
+      emit('progress', p)
+    },
+  })
+  result.set(compressionResult)
+  compressedUrl.set(URL.createObjectURL(compressionResult.file))
+  emit('compress', compressionResult)
+}
+
+async function recompress() {
+  const current = file()
+  if (!current) return
+  loading.set(true)
+  error.set(null)
+  progress.set(0)
+  try {
+    await runCompress(current)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Compression failed'
+    error.set(message)
+    emit('error', err instanceof Error ? err : new Error(message))
+  } finally {
+    loading.set(false)
+  }
+}
+
 async function processFile(selected) {
   loading.set(true)
   error.set(null)
@@ -164,16 +207,7 @@ async function processFile(selected) {
       return
     }
 
-    const compressionResult = await compress(fileForCompress, {
-      ...(optionsProp() || {}),
-      onProgress: (p) => {
-        progress.set(p)
-        emit('progress', p)
-      },
-    })
-    result.set(compressionResult)
-    compressedUrl.set(URL.createObjectURL(compressionResult.file))
-    emit('compress', compressionResult)
+    await runCompress(fileForCompress)
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Compression failed'
     error.set(message)

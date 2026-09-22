@@ -6,20 +6,18 @@ Add watermarks to images with intelligent positioning.
 
 Add text watermark:
 
-<CompressionDemo :options="{ quality: 0.8, watermark: { text: 'Copyright 2025', position: 'bottom-right', opacity: 0.7, fontSize: 16, color: '#ffffff', padding: 10 } }" />
+<CompressionDemo :options="{ quality: 0.8, watermark: { text: 'Copyright 2026', position: 'bottom-right', opacity: 0.85, color: '#ffffff' } }" />
 
-<VueDemo :options="{ quality: 0.8, watermark: { text: 'Copyright 2025', position: 'bottom-right', opacity: 0.7, fontSize: 16, color: '#ffffff', padding: 10 } }" />
+<VueDemo :options="{ quality: 0.8, watermark: { text: 'Copyright 2026', position: 'bottom-right', opacity: 0.85, color: '#ffffff' } }" />
 
 ```typescript
 const result = await compress(file, {
   quality: 0.8,
   watermark: {
-    text: 'Copyright 2025',
+    text: 'Copyright 2026',
     position: 'bottom-right',
-    opacity: 0.7,
-    fontSize: 16,
+    opacity: 0.85,
     color: '#ffffff',
-    padding: 10,
   },
 });
 ```
@@ -62,12 +60,14 @@ watermark: {
   image?: HTMLImageElement | HTMLCanvasElement;
   position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center';
   opacity?: number;
-  fontSize?: number;
+  fontSize?: number; // omit for auto scale based on image size
   fontFamily?: string;
   color?: string;
   padding?: number;
   scale?: number;
   rotation?: number;
+  stroke?: boolean;
+  strokeColor?: string;
 }
 ```
 

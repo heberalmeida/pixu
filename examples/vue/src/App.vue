@@ -723,7 +723,7 @@ const smartCrop = ref({
   focus: 'center' as const,
 });
 
-const watermarkText = ref('');
+const watermarkText = ref('Pixu');
 const watermarkPosition = ref('bottom-right');
 const watermarkOpacity = ref(0.7);
 

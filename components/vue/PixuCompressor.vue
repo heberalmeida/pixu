@@ -96,7 +96,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue';
+import { ref, computed, watch, onUnmounted } from 'vue';
 import type { CompressionOptions, CompressionResult } from 'pixu';
 
 interface SampleImageOption {
@@ -164,6 +164,24 @@ const loadSample = async (sample: SampleImageOption) => {
   await processFile(sampleFile);
 };
 
+const runCompress = async (fileForCompress: File) => {
+  const { compress } = await import('pixu');
+  if (compressedUrl.value) {
+    URL.revokeObjectURL(compressedUrl.value);
+    compressedUrl.value = null;
+  }
+  const compressionResult = await compress(fileForCompress, {
+    ...props.options,
+    onProgress: (p: number) => {
+      progress.value = p;
+      emit('progress', p);
+    },
+  });
+  result.value = compressionResult;
+  compressedUrl.value = URL.createObjectURL(compressionResult.file);
+  emit('compress', compressionResult);
+};
+
 const processFile = async (selectedFile: File) => {
   loading.value = true;
   error.value = null;
@@ -201,18 +219,7 @@ const processFile = async (selectedFile: File) => {
       return;
     }
 
-    const { compress } = await import('pixu');
-    const compressionResult = await compress(fileForCompress, {
-      ...props.options,
-      onProgress: (p: number) => {
-        progress.value = p;
-        emit('progress', p);
-      },
-    });
-
-    result.value = compressionResult;
-    compressedUrl.value = URL.createObjectURL(compressionResult.file);
-    emit('compress', compressionResult);
+    await runCompress(fileForCompress);
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Compression failed';
     error.value = errorMessage;
@@ -221,6 +228,28 @@ const processFile = async (selectedFile: File) => {
     loading.value = false;
   }
 };
+
+let lastOptionsKey = JSON.stringify(props.options ?? {});
+watch(
+  () => JSON.stringify(props.options ?? {}),
+  async (nextKey) => {
+    if (nextKey === lastOptionsKey) return;
+    lastOptionsKey = nextKey;
+    if (!file.value || !props.autoCompress || loading.value) return;
+    loading.value = true;
+    error.value = null;
+    progress.value = 0;
+    try {
+      await runCompress(file.value);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Compression failed';
+      error.value = errorMessage;
+      emit('error', err instanceof Error ? err : new Error(errorMessage));
+    } finally {
+      loading.value = false;
+    }
+  }
+);
 
 const downloadFile = () => {
   if (!result.value) return;
