@@ -1,6 +1,6 @@
 export function extensionForFormat(format?: string | null): string {
   const type = String(format || 'image/jpeg').toLowerCase()
-  if (type === 'image/pixu' || type === 'image/pix') return '.pixu'
+  if (type === 'image/pixu' || type === 'image/pix') return '.webp'
   if (type === 'image/jpeg' || type === 'image/jpg') return '.jpg'
   if (type === 'image/png') return '.png'
   if (type === 'image/webp') return '.webp'

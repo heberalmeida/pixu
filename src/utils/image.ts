@@ -19,8 +19,8 @@ export function getImageExtension(mimeType: string): string {
     'image/png': '.png',
     'image/webp': '.webp',
     'image/avif': '.avif',
-    'image/pixu': '.pixu',
-    'image/pix': '.pixu',
+    'image/pixu': '.webp',
+    'image/pix': '.webp',
     'image/gif': '.gif',
     'image/bmp': '.bmp',
   };

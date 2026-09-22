@@ -1,8 +1,8 @@
-import { PIXU_EXTENSION, PIXU_MIME_TYPE } from './pixu-format';
+import { PIXU_MIME_TYPE } from './pixu-format';
 
 const EXTENSION_BY_FORMAT: Record<string, string> = {
-  [PIXU_MIME_TYPE]: PIXU_EXTENSION,
-  'image/pix': PIXU_EXTENSION,
+  [PIXU_MIME_TYPE]: '.webp',
+  'image/pix': '.webp',
   'image/jpeg': '.jpg',
   'image/jpg': '.jpg',
   'image/png': '.png',

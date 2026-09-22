@@ -487,14 +487,12 @@ export class PixuCompressor {
 
       if (useDualPass && options.targetSize) {
         if (encodeFormat === PIXU_MIME_TYPE) {
-          // Use PIX for dual pass
           blob = await canvasToPixu(canvas, quality, { adaptive: true });
         } else {
           blob = await this.dualPassCompression(canvas, encodeFormat, quality, originalSize, options.targetSize);
         }
       } else {
         if (encodeFormat === PIXU_MIME_TYPE) {
-          // Use PIX format with advanced compression
           blob = await canvasToPixu(canvas, quality, {
             progressive: options.enableProgressive !== false,
             adaptive: true,
@@ -505,13 +503,16 @@ export class PixuCompressor {
         }
       }
 
+      if (encodeFormat === PIXU_MIME_TYPE) {
+        format = blob.type === 'image/jpeg' ? 'image/jpeg' : 'image/webp';
+      }
+
       if (options.onProgress) {
         options.onProgress(1.0);
       }
 
       const fileName = file instanceof File ? file.name : 'image';
       const extension = getImageExtension(format);
-      // Ensure format is normalized (jpeg not jpg)
       const finalFormat = format === 'image/jpg' ? 'image/jpeg' : format;
       const finalFile = new File([blob], fileName.replace(/\.[^.]+$/, extension), {
         type: finalFormat,
@@ -560,23 +561,20 @@ export class PixuCompressor {
                   : await canvasToBlob(canvas, candidateFormat, candidateQuality);
 
               if (candidateBlob.size < resultCompressedSize) {
-                const candidateExtension =
+                const resolvedFormat =
                   candidateFormat === PIXU_MIME_TYPE
-                    ? '.pixu'
-                    : candidateFormat === 'image/jpeg'
-                      ? '.jpg'
-                      : candidateFormat === 'image/webp'
-                        ? '.webp'
-                        : candidateFormat === 'image/png'
-                          ? '.png'
-                          : '.jpg';
+                    ? candidateBlob.type === 'image/jpeg'
+                      ? 'image/jpeg'
+                      : 'image/webp'
+                    : candidateFormat;
+                const candidateExtension = getImageExtension(resolvedFormat);
                 resultFile = new File(
                   [candidateBlob],
                   fileName.replace(/\.[^.]+$/, candidateExtension),
-                  { type: candidateFormat, lastModified: Date.now() }
+                  { type: resolvedFormat, lastModified: Date.now() }
                 );
                 resultCompressedSize = candidateBlob.size;
-                resultFormat = candidateFormat;
+                resultFormat = resolvedFormat;
                 usedQuality = candidateQuality;
               }
 

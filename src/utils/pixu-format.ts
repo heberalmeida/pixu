@@ -1,11 +1,13 @@
 import { createCanvas, canvasToBlob } from './canvas';
 
 export const PIXU_MIME_TYPE = 'image/pixu';
-export const PIXU_EXTENSION = '.pixu';
+
+/** @deprecated PIXU encodes to WebP/JPEG — use buildDownloadName(result.format) */
+export const PIXU_EXTENSION = '.webp';
 
 /** @deprecated Use PIXU_MIME_TYPE */
 export const PIX_MIME_TYPE = PIXU_MIME_TYPE;
-/** @deprecated Use PIXU_EXTENSION */
+/** @deprecated Use getOutputExtension / buildDownloadName with the result MIME */
 export const PIX_EXTENSION = PIXU_EXTENSION;
 
 export function isPixuSupported(): boolean {
@@ -56,12 +58,10 @@ export async function canvasToPixu(
   const pixuQuality = Math.max(0.5, Math.min(0.95, optimizedQuality));
 
   try {
-    const blob = await canvasToBlob(canvas, 'image/webp', pixuQuality);
-    return new Blob([blob], { type: PIXU_MIME_TYPE });
+    return await canvasToBlob(canvas, 'image/webp', pixuQuality);
   } catch {
     const jpegQuality = Math.max(0.6, pixuQuality);
-    const blob = await canvasToBlob(canvas, 'image/jpeg', jpegQuality);
-    return new Blob([blob], { type: PIXU_MIME_TYPE });
+    return await canvasToBlob(canvas, 'image/jpeg', jpegQuality);
   }
 }
 
@@ -278,7 +278,7 @@ export async function loadPixuImage(file: Blob): Promise<HTMLImageElement> {
 
 /**
  * Object URL for <img> previews. PIXU is remapped to WebP/JPEG MIME so browsers can paint it.
- * Keep the original File/Blob for downloads (save as .pixu).
+ * Keep the original File/Blob for downloads (extension from result.format).
  */
 export async function createPreviewObjectURL(
   file: Blob,
