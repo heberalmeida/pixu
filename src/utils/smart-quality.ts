@@ -31,9 +31,7 @@ export async function analyzeImageContent(
   // Analyze color distribution
   let uniqueColors = 0;
   const colorMap = new Map<string, number>();
-  let totalBrightness = 0;
   let edgeCount = 0;
-  let smoothAreas = 0;
 
   // Sample pixels (every 10th pixel for performance)
   const sampleRate = 10;
@@ -47,9 +45,6 @@ export async function analyzeImageContent(
       // Has transparency
       continue;
     }
-
-    const brightness = (r + g + b) / 3;
-    totalBrightness += brightness;
 
     const colorKey = `${Math.floor(r / 16)}-${Math.floor(g / 16)}-${Math.floor(b / 16)}`;
     if (!colorMap.has(colorKey)) {
@@ -69,8 +64,6 @@ export async function analyzeImageContent(
       );
       if (diff > 30) {
         edgeCount++;
-      } else {
-        smoothAreas++;
       }
     }
   }
@@ -78,7 +71,6 @@ export async function analyzeImageContent(
   const sampledPixels = pixelCount / sampleRate;
   const colorDiversity = uniqueColors / sampledPixels;
   const edgeRatio = edgeCount / sampledPixels;
-  const avgBrightness = totalBrightness / sampledPixels;
 
   // Determine content type
   const isPhoto = colorDiversity > 0.3 && edgeRatio > 0.1;

@@ -49,7 +49,12 @@ export class AdvancedBatchProcessor {
       onProgress,
       onItemComplete,
       onItemError,
+      pause: _pause,
+      resume: _resume,
+      ...compressOptions
     } = options;
+    void _pause;
+    void _resume;
 
     // Sort files by priority
     const sortedFiles = this.sortByPriority(files, priority);
@@ -57,7 +62,7 @@ export class AdvancedBatchProcessor {
     const results: CompressionResult[] = new Array(files.length);
     const errors: Error[] = [];
     const fileMap = new Map<File | Blob, number>();
-    sortedFiles.forEach((file, index) => {
+    sortedFiles.forEach((file) => {
       fileMap.set(file, files.indexOf(file));
     });
 
@@ -82,18 +87,6 @@ export class AdvancedBatchProcessor {
       
       for (let attempt = 0; attempt <= retryAttempts; attempt++) {
         try {
-          const {
-            retryAttempts: _retryAttempts,
-            retryDelay: _retryDelay,
-            priority: _priority,
-            onProgress: _onProgress,
-            pause: _pause,
-            resume: _resume,
-            onItemComplete: _onItemComplete,
-            onItemError: _onItemError,
-            concurrency: _concurrency,
-            ...compressOptions
-          } = options;
           const result = await this.compressor.compress(file, compressOptions);
           results[originalIndex] = result;
           this.completedCount++;

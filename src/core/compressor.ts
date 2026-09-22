@@ -22,7 +22,6 @@ import { detectTransparency, shouldConvertToJPEG } from '../utils/format-convers
 import { optimizePNG } from '../utils/png-optimization';
 import { calculateSmartCrop } from '../utils/smart-crop';
 import { applyWatermark } from '../utils/watermark';
-import { PerformanceMonitor } from '../utils/performance-monitoring';
 import { canvasToPixu, PIXU_MIME_TYPE, isPixuSupported, normalizePixuFormat } from '../utils/pixu-format';
 
 export class PixuCompressor {
@@ -108,9 +107,6 @@ export class PixuCompressor {
     }
 
     const originalSize = file.size;
-    const monitor = options.monitorPerformance 
-      ? new PerformanceMonitor(originalSize)
-      : null;
     let arrayBuffer: ArrayBuffer | null = null;
     let orientation = 1;
     

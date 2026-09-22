@@ -1,4 +1,4 @@
-import type { WorkerMessage, WorkerResponse, CompressionOptions, CompressionResult } from '../types';
+import type { WorkerMessage, WorkerResponse } from '../types';
 import { PixuCompressor } from '../core/compressor';
 
 let compressor: PixuCompressor | null = null;

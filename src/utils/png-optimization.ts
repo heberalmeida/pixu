@@ -60,7 +60,7 @@ export function optimizePNG(
       let minDist = Infinity;
       let nearestColor: [number, number, number] = [r, g, b];
 
-      for (const [key, color] of colorPalette.entries()) {
+      for (const [, color] of colorPalette.entries()) {
         const dist = Math.sqrt(
           Math.pow(r - color[0], 2) +
           Math.pow(g - color[1], 2) +

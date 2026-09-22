@@ -25,8 +25,6 @@ export function isProgressiveJPEG(buffer: ArrayBuffer): boolean {
         // Start of Frame (SOF) markers
         // Check if it's a progressive scan
         if (offset + 5 < length) {
-          const sampleFactor = view.getUint8(offset + 5);
-          // Progressive JPEGs often have specific characteristics
           foundProgressiveMarker = true;
         }
       }

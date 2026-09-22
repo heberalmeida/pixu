@@ -5,18 +5,15 @@ export interface ColorSpaceInfo {
   needsConversion: boolean;
 }
 
-export function analyzeColorSpace(canvas: HTMLCanvasElement): ColorSpaceInfo {
-  // Canvas API works in sRGB by default
-  // This function provides information about color space handling
-  
-  const ctx = canvas.getContext('2d', { colorSpace: 'srgb' });
-  const hasColorProfile = false; // Would need to check EXIF for color profile
-  
+export function analyzeColorSpace(_canvas: HTMLCanvasElement): ColorSpaceInfo {
+  void _canvas;
+  const hasColorProfile = false;
+
   return {
-    isSRGB: true, // Canvas default
+    isSRGB: true,
     hasColorProfile,
-    gamma: 2.2, // Standard sRGB gamma
-    needsConversion: false, // Already in sRGB
+    gamma: 2.2,
+    needsConversion: false,
   };
 }
 

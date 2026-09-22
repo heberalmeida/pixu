@@ -1,5 +1,3 @@
-import { createCanvas, drawImageToCanvas } from './canvas';
-
 export interface ConversionOptions {
   backgroundColor?: string; // For PNG to JPEG conversion
   detectTransparency?: boolean;

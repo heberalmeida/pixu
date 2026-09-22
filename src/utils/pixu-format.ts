@@ -1,4 +1,4 @@
-import { createCanvas, canvasToBlob } from './canvas';
+import { canvasToBlob } from './canvas';
 
 export const PIXU_MIME_TYPE = 'image/pixu';
 
@@ -74,7 +74,6 @@ function calculateAdaptiveQuality(
   height: number,
   baseQuality: number
 ): number {
-  let totalVariance = 0;
   let detailArea = 0;
   let smoothArea = 0;
 
@@ -92,8 +91,6 @@ function calculateAdaptiveQuality(
         by * blockSize,
         blockSize
       );
-
-      totalVariance += blockVariance;
 
       if (blockVariance > 500) {
         detailArea++;
@@ -151,9 +148,11 @@ function calculateBlockVariance(
 function applyPerceptualOptimization(
   quality: number,
   data: Uint8ClampedArray,
-  width: number,
-  height: number
+  _width: number,
+  _height: number
 ): number {
+  void _width;
+  void _height;
   let highSaturationPixels = 0;
   let totalPixels = 0;
 

@@ -22,12 +22,7 @@ export async function generateResponsiveImages(
 ): Promise<ResponsiveImageSet> {
   const widths = options.widths || [320, 640, 960, 1280, 1920];
   const formats = options.formats || ['image/webp', 'image/jpeg'];
-  const quality = options.quality ?? 0.8;
 
-  const results: Array<{ format: string; width: number; url: string }> = [];
-
-  // This would typically generate multiple sizes
-  // For now, return structure for srcset generation
   const srcsetEntries: string[] = [];
   const formatSets: Array<{ format: string; srcset: string; sizes: string }> = [];
 

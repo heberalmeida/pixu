@@ -52,8 +52,7 @@ export function applyFilter(
     case 'saturation':
       applySaturation(data, filterValue);
       break;
-    case 'blur':
-      // Blur is applied via CSS filter, not pixel manipulation
+    case 'blur': {
       context.filter = `blur(${filterValue}px)`;
       const tempCanvas = document.createElement('canvas');
       tempCanvas.width = canvas.width;
@@ -66,6 +65,7 @@ export function applyFilter(
         context.drawImage(tempCanvas, 0, 0);
       }
       return;
+    }
     case 'sharpen':
       applySharpen(context, canvas, filterValue);
       return;
