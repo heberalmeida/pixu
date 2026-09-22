@@ -38,7 +38,8 @@ export {
   estimatePixCompression,
 } from './utils/pixu-format';
 export type { PixuPayloadMime } from './utils/pixu-format';
-export { getOutputExtension, buildDownloadName } from './utils/output-format';
+export { getOutputExtension, buildDownloadName, toDownloadableBlob, triggerBlobDownload, downloadImageAs, DOWNLOAD_IMAGE_FORMATS } from './utils/output-format';
+export type { DownloadImageFormat } from './utils/output-format';
 export type {
   CompressionOptions,
   CompressionResult,
