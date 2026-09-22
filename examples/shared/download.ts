@@ -34,7 +34,7 @@ export async function downloadAsWebpOrJpeg(
   name: string,
   format: 'image/webp' | 'image/jpeg'
 ): Promise<void> {
-  const { downloadImageAs } = await import('pixu')
+  const { downloadImageAs } = await import('@pantanal/pixu')
   await downloadImageAs(file, name, format)
 }
 

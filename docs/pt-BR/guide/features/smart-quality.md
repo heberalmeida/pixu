@@ -50,7 +50,7 @@ Imagens com muitas bordas e baixa diversidade mantêm qualidade alta para legibi
 ## Com PIXU (recomendado)
 
 ```typescript
-import { compress } from 'pixu'
+import { compress } from '@pantanal/pixu'
 
 const result = await compress(file, {
   format: 'image/pixu',
@@ -73,7 +73,7 @@ const result = await compress(file, {
 ## Análise manual
 
 ```typescript
-import { analyzeImageContent } from 'pixu'
+import { analyzeImageContent } from '@pantanal/pixu'
 
 const canvas = document.createElement('canvas')
 const ctx = canvas.getContext('2d')
@@ -87,7 +87,7 @@ console.log(analysis.complexity, analysis.isPhoto, analysis.isGraphic)
 ## Exemplo
 
 ```typescript
-import { compress } from 'pixu'
+import { compress } from '@pantanal/pixu'
 
 async function smartCompress(file: File) {
   return compress(file, {

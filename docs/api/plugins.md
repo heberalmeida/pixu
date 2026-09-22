@@ -42,7 +42,7 @@ class PluginManager {
 Prefer registering through [`PixuCompressor`](/api/pixu-compressor):
 
 ```typescript
-import { PixuCompressor, type Plugin } from 'pixu'
+import { PixuCompressor, type Plugin } from '@pantanal/pixu'
 
 const stamp: Plugin = {
   name: 'stamp',

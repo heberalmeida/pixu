@@ -33,7 +33,7 @@ Attach lifecycle hooks. See [Plugins](/api/plugins).
 ## Default export
 
 ```typescript
-import pixu from 'pixu'
+import pixu from '@pantanal/pixu'
 // pixu instanceof PixuCompressor — shared singleton
 await pixu.compress(file)
 ```
@@ -43,7 +43,7 @@ await pixu.compress(file)
 ### Abort on navigation
 
 ```typescript
-import { PixuCompressor } from 'pixu'
+import { PixuCompressor } from '@pantanal/pixu'
 
 const compressor = new PixuCompressor()
 

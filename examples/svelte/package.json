@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "svelte": "^4.2.0",
-    "pixu": "file:../.."
+    "@pantanal/pixu": "file:../.."
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^3.0.0",

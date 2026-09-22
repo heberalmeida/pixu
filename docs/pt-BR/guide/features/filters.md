@@ -150,7 +150,7 @@ const result = await compress(file, {
 ## Exemplos Completos
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function applyVintageEffect(file: File) {
   const result = await compress(file, {

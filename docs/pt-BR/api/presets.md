@@ -29,7 +29,7 @@ Exact values live in `getPresetOptions`. User-provided fields in `applyPreset` o
 ## Exemplos
 
 ```typescript
-import { compress, getPresetOptions, applyPreset } from 'pixu'
+import { compress, getPresetOptions, applyPreset } from '@pantanal/pixu'
 
 // Use a preset as-is
 await compress(file, getPresetOptions('web'))

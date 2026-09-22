@@ -59,7 +59,7 @@ await compress(file, {
 ### Manual
 
 ```typescript
-import { applyWatermark } from 'pixu'
+import { applyWatermark } from '@pantanal/pixu'
 
 applyWatermark(ctx, canvas, {
   text: 'DRAFT',

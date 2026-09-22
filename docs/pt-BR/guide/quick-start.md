@@ -7,7 +7,7 @@ Comece a usar o Pixu em minutos.
 <CompressionDemo :options="{ quality: 0.8 }" />
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 const fileInput = document.querySelector('input[type="file"]');
 
@@ -73,7 +73,7 @@ const result = await worker.compress(file, {
 ## Processamento em lote
 
 ```typescript
-import { compressBatch } from 'pixu';
+import { compressBatch } from '@pantanal/pixu';
 
 const results = await compressBatch(files, {
   quality: 0.8,
@@ -100,7 +100,7 @@ try {
 <CompressionDemo :options="{ quality: 0.8, format: 'image/pixu' }" />
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 const result = await compress(file, {
   quality: 0.8,
@@ -111,7 +111,7 @@ const result = await compress(file, {
 ## Exemplo completo
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function compressImage(file: File) {
   try {

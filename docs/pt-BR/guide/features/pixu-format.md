@@ -32,7 +32,7 @@ L(x \mid M, C, \varepsilon)
 ### Melhor padrão (recomendado)
 
 ```typescript
-import { compress, buildDownloadName, PIXU_MIME_TYPE } from 'pixu'
+import { compress, buildDownloadName, PIXU_MIME_TYPE } from '@pantanal/pixu'
 
 const result = await compress(file, {
   format: PIXU_MIME_TYPE,

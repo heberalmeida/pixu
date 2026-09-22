@@ -1,8 +1,8 @@
 <script lang="ts">
   import PixuCompressor from '../../../components/svelte/PixuCompressor.svelte';
-  import type { CompressionResult } from 'pixu';
-  import { compress, compressBatch, downloadImageAs, createPreviewObjectURL } from 'pixu';
-  import type { DownloadImageFormat } from 'pixu';
+  import type { CompressionResult } from '@pantanal/pixu';
+  import { compress, compressBatch, downloadImageAs, createPreviewObjectURL } from '@pantanal/pixu';
+  import type { DownloadImageFormat } from '@pantanal/pixu';
   import { sampleImages, fetchSampleFile } from '../../shared/samples';
 
   let sampleLoading: string | null = null;

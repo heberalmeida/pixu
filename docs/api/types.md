@@ -1,6 +1,6 @@
 # Types
 
-TypeScript definitions for Pixu. Import types from `pixu`:
+TypeScript definitions for Pixu. Import types from `@pantanal/pixu`:
 
 ```typescript
 import type {
@@ -15,7 +15,7 @@ import type {
   CompressionStrategy,
   CompressionPreset,
   ImageFilter,
-} from 'pixu'
+} from '@pantanal/pixu'
 ```
 
 ---

@@ -15,12 +15,12 @@ export default defineConfig({
   vite: {
     resolve: {
       alias: {
-        pixu: resolve(__dirname, '../../dist/pixu.esm.js'),
+        '@pantanal/pixu': resolve(__dirname, '../../dist/pixu.esm.js'),
         '@components': resolve(__dirname, '../../components'),
       },
     },
     optimizeDeps: {
-      exclude: ['pixu'],
+      exclude: ['@pantanal/pixu'],
     },
     ssr: {
       noExternal: [],

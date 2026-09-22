@@ -2,8 +2,8 @@
 
 **Perceptual image compression for JavaScript**, grounded in Contextual Reconstructive Entropy (TECR).
 
-[![npm version](https://img.shields.io/npm/v/pixu.svg)](https://www.npmjs.com/package/pixu)
-[![bundle size](https://img.shields.io/bundlephobia/minzip/pixu)](https://bundlephobia.com/package/pixu)
+[![npm version](https://img.shields.io/npm/v/@pantanal/pixu.svg)](https://www.npmjs.com/package/@pantanal/pixu)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/@pantanal/pixu)](https://bundlephobia.com/package/@pantanal/pixu)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
@@ -59,22 +59,22 @@ This does **not** claim to break Shannon’s lossless bound. It targets a better
 ## Installation
 
 ```bash
-npm install pixu
+npm install @pantanal/pixu
 ```
 
 ```bash
-yarn add pixu
+yarn add @pantanal/pixu
 ```
 
 ```bash
-pnpm add pixu
+pnpm add @pantanal/pixu
 ```
 
 ### CDN
 
 ```html
 <script type="module">
-  import { compress } from 'https://cdn.jsdelivr.net/npm/pixu@latest/dist/pixu.esm.js';
+  import { compress } from 'https://cdn.jsdelivr.net/npm/@pantanal/pixu@latest/dist/pixu.esm.js';
 </script>
 ```
 
@@ -85,7 +85,7 @@ pnpm add pixu
 ### Best compression (recommended)
 
 ```typescript
-import { compress, buildDownloadName } from 'pixu';
+import { compress, buildDownloadName } from '@pantanal/pixu';
 
 const result = await compress(file, {
   format: 'image/pixu',
@@ -102,7 +102,7 @@ console.log(buildDownloadName('photo', result.format)); // photo.webp or photo.j
 ### Basic usage
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 const fileInput = document.querySelector('input[type="file"]');
 
@@ -126,7 +126,7 @@ fileInput.addEventListener('change', async (e) => {
 ### Advanced options
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 const result = await compress(file, {
   maxWidth: 1920,
@@ -158,7 +158,7 @@ worker.terminate();
 ### Batch
 
 ```typescript
-import { compressBatch } from 'pixu';
+import { compressBatch } from '@pantanal/pixu';
 
 const results = await compressBatch(files, {
   format: 'image/pixu',
@@ -173,7 +173,7 @@ const results = await compressBatch(files, {
 ### Stream
 
 ```typescript
-import { compressStream } from 'pixu';
+import { compressStream } from '@pantanal/pixu';
 
 for await (const result of compressStream(files, { quality: 0.8 })) {
   console.log('Compressed:', result.file.name);
@@ -273,7 +273,7 @@ const result = await compress(largeFile, {
 ### Plugin
 
 ```typescript
-import { PixuCompressor, type Plugin } from 'pixu';
+import { PixuCompressor, type Plugin } from '@pantanal/pixu';
 
 const watermarkPlugin: Plugin = {
   name: 'watermark',
@@ -375,4 +375,4 @@ Contributions are welcome. Open an issue or pull request on [GitHub](https://git
 
 ---
 
-Heber Almeida · [GitHub](https://github.com/heberalmeida/pixu) · [npm](https://www.npmjs.com/package/pixu)
+Heber Almeida · [GitHub](https://github.com/heberalmeida/pixu) · [npm](https://www.npmjs.com/package/@pantanal/pixu)

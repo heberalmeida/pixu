@@ -37,11 +37,11 @@ features:
 ## Quick Start
 
 ```bash
-npm install pixu
+npm install @pantanal/pixu
 ```
 
 ```typescript
-import { compress, buildDownloadName } from 'pixu';
+import { compress, buildDownloadName } from '@pantanal/pixu';
 
 const result = await compress(file, {
   format: 'image/pixu',

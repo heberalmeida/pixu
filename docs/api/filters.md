@@ -45,7 +45,7 @@ await compress(file, {
 ## Direct
 
 ```typescript
-import { applyFilter } from 'pixu'
+import { applyFilter } from '@pantanal/pixu'
 
 const ctx = canvas.getContext('2d')!
 applyFilter(ctx, canvas, 'sepia')

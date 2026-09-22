@@ -12,7 +12,7 @@ function supportsProgressiveJPEG(): boolean
 ## Example
 
 ```typescript
-import { isProgressiveJPEG, supportsProgressiveJPEG, compress } from 'pixu'
+import { isProgressiveJPEG, supportsProgressiveJPEG, compress } from '@pantanal/pixu'
 
 if (supportsProgressiveJPEG()) {
   await compress(file, {

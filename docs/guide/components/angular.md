@@ -9,7 +9,7 @@ Use Pixu with Angular for easy image compression in your Angular applications.
 ## Installation
 
 ```bash
-npm install pixu @angular/core @angular/common
+npm install @pantanal/pixu @angular/core @angular/common
 ```
 
 ## Basic Usage
@@ -19,7 +19,7 @@ Import and use the `PixuCompressorComponent`:
 ```typescript
 import { Component } from '@angular/core';
 import { PixuCompressorComponent } from 'pixu/components/angular/pixu-compressor.component';
-import type { CompressionResult } from 'pixu';
+import type { CompressionResult } from '@pantanal/pixu';
 
 @Component({
   selector: 'app-root',
@@ -112,7 +112,7 @@ Emitted during compression to report progress.
 ```typescript
 import { Component } from '@angular/core';
 import { PixuCompressorComponent } from 'pixu/components/angular/pixu-compressor.component';
-import type { CompressionResult } from 'pixu';
+import type { CompressionResult } from '@pantanal/pixu';
 
 @Component({
   selector: 'app-image-compressor',

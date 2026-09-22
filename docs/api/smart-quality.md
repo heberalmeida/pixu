@@ -35,7 +35,7 @@ await compress(file, {
 ## Manual
 
 ```typescript
-import { analyzeImageContent, getSmartQuality, compress } from 'pixu'
+import { analyzeImageContent, getSmartQuality, compress } from '@pantanal/pixu'
 
 const analysis = await analyzeImageContent(canvas)
 const quality = getSmartQuality({}, analysis)

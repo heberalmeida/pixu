@@ -4,7 +4,7 @@ Image compression demo using [Pixu](https://github.com/heberalmeida/pixu) with [
 
 ## Features
 
-- Direct `import { compress, buildDownloadName } from 'pixu'`
+- Direct `import { compress, buildDownloadName } from '@pantanal/pixu'`
 - PIXU encode (`image/pixu` → `.webp` / `.jpg` download)
 - Sample images for instant demos
 - Brand theme from the Pixu logo (purple + cyan)

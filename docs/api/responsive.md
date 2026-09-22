@@ -38,7 +38,7 @@ import {
   generateResponsiveImages,
   generateSrcset,
   generateSizes,
-} from 'pixu'
+} from '@pantanal/pixu'
 
 const set = await generateResponsiveImages(file, {
   widths: [320, 640, 1280],

@@ -44,7 +44,7 @@ interface CompressionMetrics {
 ## Format Helpers
 
 ```typescript
-import { formatBytes, formatDuration } from 'pixu';
+import { formatBytes, formatDuration } from '@pantanal/pixu';
 
 const result = await compress(file, {
   monitorPerformance: true,
@@ -60,7 +60,7 @@ if (result.metrics) {
 ## Complete Examples
 
 ```typescript
-import { compress, formatBytes, formatDuration } from 'pixu';
+import { compress, formatBytes, formatDuration } from '@pantanal/pixu';
 
 async function compressWithMetrics(file: File) {
   const result = await compress(file, {

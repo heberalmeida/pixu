@@ -24,7 +24,7 @@ import {
   compress,
   buildDownloadName,
   PIXU_MIME_TYPE,
-} from 'pixu'
+} from '@pantanal/pixu'
 
 const result = await compress(file, {
   format: PIXU_MIME_TYPE,

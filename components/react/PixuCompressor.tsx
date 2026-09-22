@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import type { CompressionOptions, CompressionResult, DownloadImageFormat } from 'pixu';
-import { downloadImageAs, createPreviewObjectURL } from 'pixu';
+import type { CompressionOptions, CompressionResult, DownloadImageFormat } from '@pantanal/pixu';
+import { downloadImageAs, createPreviewObjectURL } from '@pantanal/pixu';
 
 interface SampleImageOption {
   id: string;
@@ -53,7 +53,7 @@ const PixuCompressor: React.FC<PixuCompressorProps> = ({
   const skipOptionsEffect = useRef(true);
 
   const runCompress = useCallback(async (fileForCompress: File) => {
-    const { compress } = await import('pixu');
+    const { compress } = await import('@pantanal/pixu');
     setCompressedUrl((prev) => {
       if (prev) URL.revokeObjectURL(prev);
       return null;

@@ -7,7 +7,7 @@ Exemplos usando filtros de imagem.
 <CompressionDemo :options="{ quality: 0.8, filters: ['grayscale'] }" />
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function applyGrayscale(file: File) {
   const result = await compress(file, {
@@ -47,7 +47,7 @@ async function applyVintage(file: File) {
 ## Vários filtros
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function applyMultipleFilters(file: File) {
   const result = await compress(file, {
@@ -68,7 +68,7 @@ async function applyMultipleFilters(file: File) {
 ## Ajuste de brilho
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function adjustBrightness(file: File, brightness: number) {
   const result = await compress(file, {
@@ -94,7 +94,7 @@ async function darkenImage(file: File) {
 ## Ajuste de contraste
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function adjustContrast(file: File, contrast: number) {
   const result = await compress(file, {
@@ -120,7 +120,7 @@ async function decreaseContrast(file: File) {
 ## Ajuste de saturação
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function adjustSaturation(file: File, saturation: number) {
   const result = await compress(file, {
@@ -146,7 +146,7 @@ async function oversaturate(file: File) {
 ## Efeito de desfoque
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function applyBlur(file: File, blurAmount: number) {
   const result = await compress(file, {
@@ -172,7 +172,7 @@ async function heavyBlur(file: File) {
 ## Nitidez
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function applySharpen(file: File, sharpenAmount: number) {
   const result = await compress(file, {
@@ -198,7 +198,7 @@ async function heavySharpen(file: File) {
 ## Exemplos completos de filtros
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function applyVintageEffect(file: File) {
   const result = await compress(file, {

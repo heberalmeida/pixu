@@ -63,7 +63,7 @@ PNG optimization is most effective for:
 ## Complete Examples
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function optimizePNG(file: File) {
   const result = await compress(file, {

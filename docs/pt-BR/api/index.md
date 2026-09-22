@@ -1,6 +1,6 @@
 # Referência da API
 
-Referência completa de todos os exports públicos de `pixu`.
+Referência completa de todos os exports públicos de `@pantanal/pixu`.
 
 ```typescript
 import {
@@ -45,7 +45,7 @@ import {
   PIXU_MIME_TYPE,
   buildDownloadName,
   estimatePixuCompression,
-} from 'pixu'
+} from '@pantanal/pixu'
 ```
 
 ## Núcleo
@@ -93,7 +93,7 @@ Veja [Tipos](/pt-BR/api/types) para `CompressionOptions`, `CompressionResult` e 
 ## Export default
 
 ```typescript
-import pixu from 'pixu'
+import pixu from '@pantanal/pixu'
 
 await pixu.compress(file, { quality: 0.8 })
 ```

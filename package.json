@@ -1,5 +1,5 @@
 {
-  "name": "pixu",
+  "name": "@pantanal/pixu",
   "version": "1.0.0",
   "description": "Next-generation JavaScript image compression library",
   "type": "module",
@@ -7,6 +7,9 @@
   "module": "./dist/pixu.esm.js",
   "browser": "./dist/pixu.umd.js",
   "types": "./dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -81,7 +84,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/heberalmeida/pixu.git"
+    "url": "git+https://github.com/heberalmeida/pixu.git"
   },
   "bugs": {
     "url": "https://github.com/heberalmeida/pixu/issues"

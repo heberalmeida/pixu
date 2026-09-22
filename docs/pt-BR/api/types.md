@@ -1,6 +1,6 @@
 # Types
 
-Definições TypeScript do Pixu. Importe tipos de `pixu`:
+Definições TypeScript do Pixu. Importe tipos de `@pantanal/pixu`:
 
 ```typescript
 import type {
@@ -15,7 +15,7 @@ import type {
   CompressionStrategy,
   CompressionPreset,
   ImageFilter,
-} from 'pixu'
+} from '@pantanal/pixu'
 ```
 
 ---

@@ -50,7 +50,7 @@ Available formats:
 ## Example
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function optimizeFormat(file: File) {
   const result = await compress(file, {

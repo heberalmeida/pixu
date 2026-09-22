@@ -9,7 +9,7 @@ Use o Pixu com Vue 3 para comprimir imagens com facilidade em suas aplicações 
 ## Instalação
 
 ```bash
-npm install pixu
+npm install @pantanal/pixu
 ```
 
 ## Uso Básico
@@ -28,7 +28,7 @@ Importe e use o componente `PixuCompressor`:
 <script setup lang="ts">
 import { ref } from 'vue';
 import PixuCompressor from 'pixu/components/vue/PixuCompressor.vue';
-import type { CompressionResult } from 'pixu';
+import type { CompressionResult } from '@pantanal/pixu';
 
 const compressionOptions = ref({
   quality: 0.8,
@@ -135,7 +135,7 @@ Emitido durante a compressão para reportar o progresso.
 <script setup lang="ts">
 import { ref } from 'vue';
 import PixuCompressor from 'pixu/components/vue/PixuCompressor.vue';
-import type { CompressionResult } from 'pixu';
+import type { CompressionResult } from '@pantanal/pixu';
 
 const options = ref({
   quality: 0.8,

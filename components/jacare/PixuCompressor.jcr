@@ -1,5 +1,5 @@
 import { pulse, derive } from '@jacare/core'
-import { compress, downloadImageAs, createPreviewObjectURL } from 'pixu'
+import { compress, downloadImageAs, createPreviewObjectURL } from '@pantanal/pixu'
 
 export <contract>
   props: {

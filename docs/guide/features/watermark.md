@@ -74,7 +74,7 @@ watermark: {
 ## Complete Examples
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function addWatermark(file: File, watermarkText: string) {
   const result = await compress(file, {

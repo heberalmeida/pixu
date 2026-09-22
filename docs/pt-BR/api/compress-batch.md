@@ -54,7 +54,7 @@ When `onItemError` is provided, failed items may be omitted from the array (or h
 ### Gallery upload
 
 ```typescript
-import { compressBatch } from 'pixu'
+import { compressBatch } from '@pantanal/pixu'
 
 const files = Array.from(input.files ?? [])
 

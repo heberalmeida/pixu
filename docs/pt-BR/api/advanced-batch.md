@@ -46,7 +46,7 @@ interface BatchProgress {
 ## Example
 
 ```typescript
-import { AdvancedBatchProcessor } from 'pixu'
+import { AdvancedBatchProcessor } from '@pantanal/pixu'
 
 const processor = new AdvancedBatchProcessor()
 

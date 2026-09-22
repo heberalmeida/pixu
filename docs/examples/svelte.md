@@ -40,7 +40,7 @@ cd examples/svelte && npm install && npm run dev
 ```svelte
 <script>
   import PixuCompressor from 'pixu/components/svelte/PixuCompressor.svelte';
-  import type { CompressionResult } from 'pixu';
+  import type { CompressionResult } from '@pantanal/pixu';
 
   const options = {
     quality: 0.8,
@@ -79,7 +79,7 @@ cd examples/svelte && npm install && npm run dev
 ```svelte
 <script>
   import PixuCompressor from 'pixu/components/svelte/PixuCompressor.svelte';
-  import type { CompressionResult } from 'pixu';
+  import type { CompressionResult } from '@pantanal/pixu';
 
   let result = null;
   let progress = 0;

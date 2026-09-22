@@ -30,7 +30,7 @@ Hints are sorted high → low priority. `estimateCompressionSavings` returns a 0
 ## Example
 
 ```typescript
-import { getOptimizationHints, estimateCompressionSavings, compress } from 'pixu'
+import { getOptimizationHints, estimateCompressionSavings, compress } from '@pantanal/pixu'
 
 const hints = await getOptimizationHints(file, canvas, { quality: 0.95 })
 hints.filter((h) => h.priority === 'high').forEach((h) => console.log(h.suggestion))

@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@jacare/core": "^0.1.16",
-    "pixu": "file:../.."
+    "@pantanal/pixu": "file:../.."
   },
   "devDependencies": {
     "@jacare/cli": "^0.1.16",

@@ -43,7 +43,7 @@ export <view>
 
 ```javascript
 import { pulse, derive } from '@jacare/core'
-import { compress, buildDownloadName } from 'pixu'
+import { compress, buildDownloadName } from '@pantanal/pixu'
 
 const quality = pulse(0.85)
 const format = pulse('image/pixu')

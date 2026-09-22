@@ -82,7 +82,7 @@ em que $d$ é uma distorção **perceptual** (implícita em quality + ajuste sen
 ## Mapeamento para a API
 
 ```typescript
-import { compress } from 'pixu'
+import { compress } from '@pantanal/pixu'
 
 const result = await compress(file, {
   format: 'image/pixu',   // prefer reconstructive PIXU path (M)

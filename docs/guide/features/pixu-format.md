@@ -36,7 +36,7 @@ Exact gains depend on content class (photos, graphics, text-heavy UI). Enable Sm
 ### Best default (recommended)
 
 ```typescript
-import { compress, buildDownloadName, PIXU_MIME_TYPE } from 'pixu'
+import { compress, buildDownloadName, PIXU_MIME_TYPE } from '@pantanal/pixu'
 
 const result = await compress(file, {
   format: PIXU_MIME_TYPE, // TECR encode path

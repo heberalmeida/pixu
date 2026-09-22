@@ -49,7 +49,7 @@ interface ImageValidationResult {
 ### Gate compression
 
 ```typescript
-import { validateImage, compress } from 'pixu'
+import { validateImage, compress } from '@pantanal/pixu'
 
 const validation = await validateImage(file)
 
@@ -67,7 +67,7 @@ const result = await compress(file, { quality: 0.8 })
 ### Shorthand
 
 ```typescript
-import { isValidImage, compress } from 'pixu'
+import { isValidImage, compress } from '@pantanal/pixu'
 
 if (await isValidImage(file)) {
   await compress(file)

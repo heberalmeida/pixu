@@ -1,5 +1,5 @@
 import { pulse, derive } from '@jacare/core'
-import { compress, compressBatch, downloadImageAs, createPreviewObjectURL } from 'pixu'
+import { compress, compressBatch, downloadImageAs, createPreviewObjectURL } from '@pantanal/pixu'
 import PixuCompressor from '../../../components/jacare/PixuCompressor.jcr'
 
 const sampleImages = [

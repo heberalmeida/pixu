@@ -49,7 +49,7 @@ export default App;
 import React from 'react';
 import PixuCompressor from 'pixu/components/react/PixuCompressor';
 import 'pixu/components/react/PixuCompressor.css';
-import type { CompressionResult } from 'pixu';
+import type { CompressionResult } from '@pantanal/pixu';
 
 function App() {
   const options = {
@@ -91,7 +91,7 @@ export default App;
 import React from 'react';
 import PixuCompressor from 'pixu/components/react/PixuCompressor';
 import 'pixu/components/react/PixuCompressor.css';
-import type { CompressionResult } from 'pixu';
+import type { CompressionResult } from '@pantanal/pixu';
 
 function App() {
   const handleCompress = (result: CompressionResult) => {
@@ -116,7 +116,7 @@ export default App;
 import React from 'react';
 import PixuCompressor from 'pixu/components/react/PixuCompressor';
 import 'pixu/components/react/PixuCompressor.css';
-import type { CompressionResult } from 'pixu';
+import type { CompressionResult } from '@pantanal/pixu';
 
 function App() {
   const handleCompress = (result: CompressionResult) => {
@@ -140,7 +140,7 @@ export default App;
 import React from 'react';
 import PixuCompressor from 'pixu/components/react/PixuCompressor';
 import 'pixu/components/react/PixuCompressor.css';
-import type { CompressionResult } from 'pixu';
+import type { CompressionResult } from '@pantanal/pixu';
 
 function App() {
   const handleCompress = (result: CompressionResult) => {
@@ -167,7 +167,7 @@ export default App;
 import React, { useState } from 'react';
 import PixuCompressor from 'pixu/components/react/PixuCompressor';
 import 'pixu/components/react/PixuCompressor.css';
-import type { CompressionResult } from 'pixu';
+import type { CompressionResult } from '@pantanal/pixu';
 
 function App() {
   const [result, setResult] = useState<CompressionResult | null>(null);
@@ -231,7 +231,7 @@ export default App;
 import React, { useState, useCallback } from 'react';
 import PixuCompressor from 'pixu/components/react/PixuCompressor';
 import 'pixu/components/react/PixuCompressor.css';
-import type { CompressionResult } from 'pixu';
+import type { CompressionResult } from '@pantanal/pixu';
 
 function useImageCompression() {
   const [result, setResult] = useState<CompressionResult | null>(null);

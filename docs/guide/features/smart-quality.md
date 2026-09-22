@@ -50,7 +50,7 @@ Edge-heavy, low-diversity images keep high quality for readability.
 ## With PIXU (recommended)
 
 ```typescript
-import { compress } from 'pixu'
+import { compress } from '@pantanal/pixu'
 
 const result = await compress(file, {
   format: 'image/pixu',
@@ -73,7 +73,7 @@ const result = await compress(file, {
 ## Manual analysis
 
 ```typescript
-import { analyzeImageContent } from 'pixu'
+import { analyzeImageContent } from '@pantanal/pixu'
 
 const canvas = document.createElement('canvas')
 const ctx = canvas.getContext('2d')
@@ -87,7 +87,7 @@ console.log(analysis.complexity, analysis.isPhoto, analysis.isGraphic)
 ## Example
 
 ```typescript
-import { compress } from 'pixu'
+import { compress } from '@pantanal/pixu'
 
 async function smartCompress(file: File) {
   return compress(file, {

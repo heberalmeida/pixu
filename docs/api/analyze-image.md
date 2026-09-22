@@ -49,7 +49,7 @@ interface ImageAnalysisResult {
 ## Example
 
 ```typescript
-import { analyzeImage, compress } from 'pixu'
+import { analyzeImage, compress } from '@pantanal/pixu'
 
 async function analyzeThenCompress(file: File) {
   const bitmap = await createImageBitmap(file)

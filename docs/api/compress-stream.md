@@ -43,7 +43,7 @@ Extends [`CompressionOptions`](/api/types#compressionoptions) with:
 ### Array of files
 
 ```typescript
-import { compressStream } from 'pixu'
+import { compressStream } from '@pantanal/pixu'
 
 for await (const result of compressStream(files, {
   quality: 0.8,

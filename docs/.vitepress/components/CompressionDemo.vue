@@ -99,7 +99,7 @@ const defaultOptions = {
 }
 
 async function loadPixu() {
-  const module = await import('pixu')
+  const module = await import('@pantanal/pixu')
   return module
 }
 

@@ -7,15 +7,15 @@ Leia a [teoria TECR](/pt-BR/guide/theory/contextual-reconstructive-entropy) para
 ## Instalação
 
 ```bash
-npm install pixu
+npm install @pantanal/pixu
 ```
 
 ```bash
-yarn add pixu
+yarn add @pantanal/pixu
 ```
 
 ```bash
-pnpm add pixu
+pnpm add @pantanal/pixu
 ```
 
 ## Primeira compressão
@@ -23,7 +23,7 @@ pnpm add pixu
 <CompressionDemo :options="{ format: 'image/pixu', enableSmartQuality: true }" />
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 const file = document.querySelector('input[type="file"]').files[0];
 
@@ -63,7 +63,7 @@ const result = await compress(file, {
 | Auto | `auto` | — | O Pixu escolhe PIX quando possível |
 
 ```typescript
-import { compress, PIXU_MIME_TYPE, buildDownloadName } from 'pixu';
+import { compress, PIXU_MIME_TYPE, buildDownloadName } from '@pantanal/pixu';
 
 const result = await compress(file, { format: PIXU_MIME_TYPE });
 console.log(result.format); // "image/webp" ou "image/jpeg"
@@ -115,7 +115,7 @@ await compress(file, {
 Os [exemplos de framework](/pt-BR/examples/) incluem fotos reais que você pode clicar para comprimir na hora:
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 const res = await fetch('/photo-landscape.jpg');
 const blob = await res.blob();

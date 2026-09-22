@@ -39,7 +39,7 @@ const result = await compress(file, {
 ## Manual
 
 ```typescript
-import { PerformanceMonitor, formatBytes, formatDuration, compress } from 'pixu'
+import { PerformanceMonitor, formatBytes, formatDuration, compress } from '@pantanal/pixu'
 
 const monitor = new PerformanceMonitor(file.size)
 const result = await compress(file, { quality: 0.8 })

@@ -119,7 +119,7 @@ const result = await compress(file, {
 ## Getting Preset Options
 
 ```typescript
-import { getPresetOptions } from 'pixu';
+import { getPresetOptions } from '@pantanal/pixu';
 
 const options = getPresetOptions('social-media');
 console.log(options);
@@ -128,7 +128,7 @@ console.log(options);
 ## Complete Example
 
 ```typescript
-import { compress, getPresetOptions } from 'pixu';
+import { compress, getPresetOptions } from '@pantanal/pixu';
 
 async function prepareForSocialMedia(file: File) {
   const presetOptions = getPresetOptions('social-media');

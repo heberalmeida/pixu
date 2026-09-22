@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import type { CompressionOptions, CompressionResult, DownloadImageFormat } from 'pixu';
-import { downloadImageAs, createPreviewObjectURL } from 'pixu';
+import type { CompressionOptions, CompressionResult, DownloadImageFormat } from '@pantanal/pixu';
+import { downloadImageAs, createPreviewObjectURL } from '@pantanal/pixu';
 
 @Component({
   selector: 'pixu-compressor',
@@ -391,7 +391,7 @@ export class PixuCompressorComponent implements OnInit, OnDestroy, OnChanges {
   async ngOnInit() {
     this.optionsKey = JSON.stringify(this.options ?? {});
     try {
-      const module = await import('pixu');
+      const module = await import('@pantanal/pixu');
       this.compressFn = module.compress;
     } catch (err) {
       console.error('Failed to load pixu:', err);
@@ -451,7 +451,7 @@ export class PixuCompressorComponent implements OnInit, OnDestroy, OnChanges {
 
   private async runCompress(fileForCompress: File) {
     if (!this.compressFn) {
-      const module = await import('pixu');
+      const module = await import('@pantanal/pixu');
       this.compressFn = module.compress;
     }
     if (this.compressedUrl) {

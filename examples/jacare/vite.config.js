@@ -9,7 +9,7 @@ export default createJacareViteConfig({
   ...jacareConfig,
   resolve: {
     alias: {
-      pixu: resolve(__dirname, '../../dist/pixu.esm.js'),
+      '@pantanal/pixu': resolve(__dirname, '../../dist/pixu.esm.js'),
     },
   },
   server: {

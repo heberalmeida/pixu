@@ -56,7 +56,7 @@ Smart cropping:
 ## Complete Examples
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function createThumbnail(file: File) {
   const result = await compress(file, {

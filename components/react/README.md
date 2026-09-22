@@ -5,7 +5,7 @@ React component for Pixu image compression.
 ## Installation
 
 ```bash
-npm install pixu react react-dom
+npm install @pantanal/pixu react react-dom
 ```
 
 ## Usage

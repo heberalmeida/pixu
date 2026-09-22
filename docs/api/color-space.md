@@ -23,7 +23,7 @@ function supportsWideGamut(): boolean
 ## Example
 
 ```typescript
-import { analyzeColorSpace, normalizeToSRGB, supportsWideGamut } from 'pixu'
+import { analyzeColorSpace, normalizeToSRGB, supportsWideGamut } from '@pantanal/pixu'
 
 if (supportsWideGamut()) {
   console.log('Display may be wide-gamut')

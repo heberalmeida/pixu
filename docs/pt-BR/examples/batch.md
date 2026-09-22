@@ -7,7 +7,7 @@ Exemplos para processar várias imagens.
 <CompressionDemo :options="{ quality: 0.8 }" />
 
 ```typescript
-import { compressBatch } from 'pixu';
+import { compressBatch } from '@pantanal/pixu';
 
 async function basicBatch(files: File[]) {
   const results = await compressBatch(files, {
@@ -27,7 +27,7 @@ async function basicBatch(files: File[]) {
 ## Lote com todas as opções
 
 ```typescript
-import { compressBatch } from 'pixu';
+import { compressBatch } from '@pantanal/pixu';
 
 async function batchWithAllOptions(files: File[]) {
   const results = await compressBatch(files, {
@@ -67,7 +67,7 @@ async function batchWithAllOptions(files: File[]) {
 ## Processador de lote avançado
 
 ```typescript
-import { AdvancedBatchProcessor } from 'pixu';
+import { AdvancedBatchProcessor } from '@pantanal/pixu';
 
 async function advancedBatch(files: File[]) {
   const processor = new AdvancedBatchProcessor();
@@ -116,7 +116,7 @@ function updateProgressBar(percentage: number) {
 ## Lote com pausa e retomada
 
 ```typescript
-import { AdvancedBatchProcessor } from 'pixu';
+import { AdvancedBatchProcessor } from '@pantanal/pixu';
 
 async function batchWithPauseResume(files: File[]) {
   const processor = new AdvancedBatchProcessor();
@@ -147,7 +147,7 @@ async function batchWithPauseResume(files: File[]) {
 ## Lote com prioridade
 
 ```typescript
-import { AdvancedBatchProcessor } from 'pixu';
+import { AdvancedBatchProcessor } from '@pantanal/pixu';
 
 async function batchByPriority(files: File[]) {
   const processor = new AdvancedBatchProcessor();
@@ -184,7 +184,7 @@ async function batchByPriority(files: File[]) {
 ## Lote com retry
 
 ```typescript
-import { AdvancedBatchProcessor } from 'pixu';
+import { AdvancedBatchProcessor } from '@pantanal/pixu';
 
 async function batchWithRetry(files: File[]) {
   const processor = new AdvancedBatchProcessor();
@@ -206,7 +206,7 @@ async function batchWithRetry(files: File[]) {
 ## Monitoramento de progresso do lote
 
 ```typescript
-import { AdvancedBatchProcessor } from 'pixu';
+import { AdvancedBatchProcessor } from '@pantanal/pixu';
 
 async function batchWithMonitoring(files: File[]) {
   const processor = new AdvancedBatchProcessor();
@@ -241,7 +241,7 @@ async function batchWithMonitoring(files: File[]) {
 ## Exemplo completo de lote
 
 ```typescript
-import { AdvancedBatchProcessor, formatBytes } from 'pixu';
+import { AdvancedBatchProcessor, formatBytes } from '@pantanal/pixu';
 
 async function processImageBatch(files: File[]) {
   console.log(`Processing ${files.length} files...`);

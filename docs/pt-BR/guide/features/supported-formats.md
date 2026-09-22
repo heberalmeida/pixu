@@ -207,7 +207,7 @@ quality: 0.85,
 ### Usando o Formato PIXU
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 const result = await compress(file, {
   format: 'image/pixu',

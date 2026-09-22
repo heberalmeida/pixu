@@ -3,26 +3,26 @@
 ## NPM
 
 ```bash
-npm install pixu
+npm install @pantanal/pixu
 ```
 
 ## Yarn
 
 ```bash
-yarn add pixu
+yarn add @pantanal/pixu
 ```
 
 ## PNPM
 
 ```bash
-pnpm add pixu
+pnpm add @pantanal/pixu
 ```
 
 ## CDN
 
 ```html
 <script type="module">
-  import { compress } from 'https://cdn.jsdelivr.net/npm/pixu@latest/dist/pixu.esm.js';
+  import { compress } from 'https://cdn.jsdelivr.net/npm/@pantanal/pixu@latest/dist/pixu.esm.js';
 </script>
 ```
 
@@ -31,7 +31,7 @@ pnpm add pixu
 O Pixu inclui definições TypeScript completas. Não é necessário nenhum pacote de tipos adicional.
 
 ```typescript
-import { compress, CompressionOptions, CompressionResult } from 'pixu';
+import { compress, CompressionOptions, CompressionResult } from '@pantanal/pixu';
 ```
 
 ## Compatibilidade com navegadores
@@ -52,7 +52,7 @@ npm install canvas
 ```
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 ```
 
 ## Tamanho do bundle

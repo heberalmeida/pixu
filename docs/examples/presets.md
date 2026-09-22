@@ -7,7 +7,7 @@ Examples using compression presets.
 <CompressionDemo :options="{ preset: 'social-media' }" />
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function prepareForSocialMedia(file: File) {
   const result = await compress(file, {
@@ -30,7 +30,7 @@ async function prepareForSocialMedia(file: File) {
 <CompressionDemo :options="{ preset: 'print' }" />
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function prepareForPrint(file: File) {
   const result = await compress(file, {
@@ -53,7 +53,7 @@ async function prepareForPrint(file: File) {
 <CompressionDemo :options="{ preset: 'web' }" />
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function prepareForWeb(file: File) {
   const result = await compress(file, {
@@ -76,7 +76,7 @@ async function prepareForWeb(file: File) {
 <CompressionDemo :options="{ preset: 'thumbnail' }" />
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function createThumbnail(file: File) {
   const result = await compress(file, {
@@ -98,7 +98,7 @@ async function createThumbnail(file: File) {
 <CompressionDemo :options="{ preset: 'email' }" />
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function prepareForEmail(file: File) {
   const result = await compress(file, {
@@ -119,7 +119,7 @@ async function prepareForEmail(file: File) {
 ## Customizing Presets
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function customPreset(file: File) {
   const result = await compress(file, {
@@ -140,7 +140,7 @@ async function customPreset(file: File) {
 ## Getting Preset Options
 
 ```typescript
-import { getPresetOptions } from 'pixu';
+import { getPresetOptions } from '@pantanal/pixu';
 
 const socialMediaOptions = getPresetOptions('social-media');
 console.log('Social media options:', socialMediaOptions);
@@ -152,7 +152,7 @@ console.log('Web options:', webOptions);
 ## Complete Example with All Presets
 
 ```typescript
-import { compress, getPresetOptions } from 'pixu';
+import { compress, getPresetOptions } from '@pantanal/pixu';
 
 async function prepareForPlatform(file: File, platform: string) {
   let preset: 'social-media' | 'web' | 'print' | 'thumbnail' | 'email';

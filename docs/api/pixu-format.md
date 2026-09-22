@@ -9,7 +9,7 @@ import {
   PIXU_MIME_TYPE,   // 'image/pixu' — encode option only
   isPixuSupported,
   buildDownloadName,
-} from 'pixu'
+} from '@pantanal/pixu'
 
 isPixuSupported() // true
 ```
@@ -58,7 +58,7 @@ Maps legacy `'image/pix'` → `'image/pixu'`.
 ## Example
 
 ```typescript
-import { compress, PIXU_MIME_TYPE, buildDownloadName } from 'pixu'
+import { compress, PIXU_MIME_TYPE, buildDownloadName } from '@pantanal/pixu'
 
 const result = await compress(file, {
   format: PIXU_MIME_TYPE,
@@ -73,7 +73,7 @@ img.src = URL.createObjectURL(result.file)
 ## Download helpers
 
 ```typescript
-import { getOutputExtension, buildDownloadName } from 'pixu'
+import { getOutputExtension, buildDownloadName } from '@pantanal/pixu'
 
 getOutputExtension('image/webp')  // '.webp'
 getOutputExtension('image/jpeg')  // '.jpg'
@@ -91,7 +91,7 @@ import {
   pixuToDisplayBlob,
   loadPixuImage,
   detectPixuPayloadMime,
-} from 'pixu'
+} from '@pantanal/pixu'
 ```
 
 See [PIXU encode](/guide/features/pixu-viewer).

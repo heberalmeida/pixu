@@ -40,7 +40,7 @@ await compress(file, {
 ## Direto
 
 ```typescript
-import { calculateSmartCrop } from 'pixu'
+import { calculateSmartCrop } from '@pantanal/pixu'
 
 const crop = calculateSmartCrop(canvas, { width: 1080, height: 1080, focus: 'top' })
 ctx.drawImage(

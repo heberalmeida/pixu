@@ -7,7 +7,7 @@ Exemplos de uso avançado com vários recursos.
 <CompressionDemo :options="{ quality: 0.8, maxWidth: 1920, maxHeight: 1080, resize: 'contain', format: 'image/pixu', stripMetadata: true, fixOrientation: true, enableSmartQuality: true }" />
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function advancedCompress(file: File) {
   const result = await compress(file, {
@@ -64,7 +64,7 @@ async function advancedCompress(file: File) {
 ## Análise de imagem e otimização
 
 ```typescript
-import { compress, analyzeImage, getOptimizationHints, estimateCompressionSavings } from 'pixu';
+import { compress, analyzeImage, getOptimizationHints, estimateCompressionSavings } from '@pantanal/pixu';
 
 async function optimizeImage(file: File) {
   const img = new Image();
@@ -112,7 +112,7 @@ async function optimizeImage(file: File) {
 ## Processamento em lote com recursos avançados
 
 ```typescript
-import { AdvancedBatchProcessor } from 'pixu';
+import { AdvancedBatchProcessor } from '@pantanal/pixu';
 
 async function processBatchAdvanced(files: File[]) {
   const processor = new AdvancedBatchProcessor();
@@ -168,7 +168,7 @@ import {
   getOptimizationHints,
   formatBytes,
   formatDuration
-} from 'pixu';
+} from '@pantanal/pixu';
 
 async function processImage(file: File) {
   console.log('Starting image processing...');

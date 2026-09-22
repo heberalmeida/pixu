@@ -9,7 +9,7 @@ Use Pixu with Svelte for easy image compression in your Svelte applications.
 ## Installation
 
 ```bash
-npm install pixu
+npm install @pantanal/pixu
 ```
 
 ## Basic Usage
@@ -19,7 +19,7 @@ Import and use the `PixuCompressor` component:
 ```svelte
 <script>
   import PixuCompressor from 'pixu/components/svelte/PixuCompressor.svelte';
-  import type { CompressionResult } from 'pixu';
+  import type { CompressionResult } from '@pantanal/pixu';
 
   function handleCompress(result) {
     console.log('Compressed:', result);
@@ -96,7 +96,7 @@ Dispatched during compression to report progress.
 ```svelte
 <script>
   import PixuCompressor from 'pixu/components/svelte/PixuCompressor.svelte';
-  import type { CompressionResult } from 'pixu';
+  import type { CompressionResult } from '@pantanal/pixu';
 
   let result = null;
   let progress = 0;

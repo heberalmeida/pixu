@@ -49,7 +49,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import PixuCompressor from '../../../components/vue/PixuCompressor.vue'
-import type { CompressionResult } from 'pixu'
+import type { CompressionResult } from '@pantanal/pixu'
 import { docSampleImages } from '../samples'
 
 const props = withDefaults(defineProps<{

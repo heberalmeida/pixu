@@ -19,7 +19,7 @@ Abra `http://localhost:3000`
 
 - Cabeçalho no estilo da docs, galeria e cards de seção
 - Fotos de amostra reais
-- `import { compress, compressBatch, buildDownloadName } from 'pixu'`
+- `import { compress, compressBatch, buildDownloadName } from '@pantanal/pixu'`
 - Presets, filtros, smart quality, lote, watermark e mais
 
 [Todos os exemplos por framework →](/pt-BR/examples/)
@@ -37,7 +37,7 @@ Abra `http://localhost:3000`
 
 <script setup lang="ts">
 import PixuCompressor from 'pixu/components/vue/PixuCompressor.vue';
-import type { CompressionResult } from 'pixu';
+import type { CompressionResult } from '@pantanal/pixu';
 import { sampleImages } from '../../shared/samples';
 
 const handleCompress = (result: CompressionResult) => {
@@ -63,7 +63,7 @@ A prop `samples` mostra miniaturas de fotos reais na área de upload — clique 
 <script setup lang="ts">
 import { ref } from 'vue';
 import PixuCompressor from 'pixu/components/vue/PixuCompressor.vue';
-import type { CompressionResult } from 'pixu';
+import type { CompressionResult } from '@pantanal/pixu';
 
 const options = ref({
   quality: 0.8,
@@ -99,7 +99,7 @@ const onProgress = (progress: number) => {
 
 <script setup lang="ts">
 import PixuCompressor from 'pixu/components/vue/PixuCompressor.vue';
-import type { CompressionResult } from 'pixu';
+import type { CompressionResult } from '@pantanal/pixu';
 
 const handleCompress = (result: CompressionResult) => {
   console.log('PIX compression completed:', result);
@@ -120,7 +120,7 @@ const handleCompress = (result: CompressionResult) => {
 
 <script setup lang="ts">
 import PixuCompressor from 'pixu/components/vue/PixuCompressor.vue';
-import type { CompressionResult } from 'pixu';
+import type { CompressionResult } from '@pantanal/pixu';
 
 const handleCompress = (result: CompressionResult) => {
   console.log('Web preset result:', result);
@@ -143,7 +143,7 @@ const handleCompress = (result: CompressionResult) => {
 
 <script setup lang="ts">
 import PixuCompressor from 'pixu/components/vue/PixuCompressor.vue';
-import type { CompressionResult } from 'pixu';
+import type { CompressionResult } from '@pantanal/pixu';
 
 const handleCompress = (result: CompressionResult) => {
   console.log('Filtered result:', result);
@@ -180,7 +180,7 @@ const handleCompress = (result: CompressionResult) => {
 <script setup lang="ts">
 import { ref } from 'vue';
 import PixuCompressor from 'pixu/components/vue/PixuCompressor.vue';
-import type { CompressionResult } from 'pixu';
+import type { CompressionResult } from '@pantanal/pixu';
 
 const compressionOptions = ref({
   quality: 0.8,

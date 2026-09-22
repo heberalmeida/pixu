@@ -108,9 +108,9 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue';
-import type { CompressionOptions, CompressionResult } from 'pixu';
-import { downloadImageAs, createPreviewObjectURL } from 'pixu';
-import type { DownloadImageFormat } from 'pixu';
+import type { CompressionOptions, CompressionResult } from '@pantanal/pixu';
+import { downloadImageAs, createPreviewObjectURL } from '@pantanal/pixu';
+import type { DownloadImageFormat } from '@pantanal/pixu';
 
 interface SampleImageOption {
   id: string;
@@ -179,7 +179,7 @@ const loadSample = async (sample: SampleImageOption) => {
 };
 
 const runCompress = async (fileForCompress: File) => {
-  const { compress } = await import('pixu');
+  const { compress } = await import('@pantanal/pixu');
   if (compressedUrl.value) {
     URL.revokeObjectURL(compressedUrl.value);
     compressedUrl.value = null;

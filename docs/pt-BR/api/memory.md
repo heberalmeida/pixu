@@ -28,7 +28,7 @@ import {
   calculateChunkSize,
   compressStream,
   compress,
-} from 'pixu'
+} from '@pantanal/pixu'
 
 const mem = getMemoryInfo()
 console.log(mem.used, mem.limit)

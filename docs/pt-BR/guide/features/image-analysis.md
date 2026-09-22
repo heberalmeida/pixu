@@ -5,7 +5,7 @@ Analise imagens para obter informações detalhadas e sugestões de otimização
 ## Análise Básica
 
 ```typescript
-import { analyzeImage } from 'pixu';
+import { analyzeImage } from '@pantanal/pixu';
 
 const canvas = document.createElement('canvas');
 const ctx = canvas.getContext('2d');
@@ -51,7 +51,7 @@ if (analysis.contentType === 'photo') {
 Obtenha sugestões de otimização:
 
 ```typescript
-import { getOptimizationHints } from 'pixu';
+import { getOptimizationHints } from '@pantanal/pixu';
 
 const hints = await getOptimizationHints(file, canvas, {});
 
@@ -67,7 +67,7 @@ hints.forEach(hint => {
 ## Exemplo Completo
 
 ```typescript
-import { analyzeImage, getOptimizationHints, compress, estimateCompressionSavings } from 'pixu';
+import { analyzeImage, getOptimizationHints, compress, estimateCompressionSavings } from '@pantanal/pixu';
 
 async function analyzeAndOptimize(file: File) {
   console.log('Starting image analysis...');

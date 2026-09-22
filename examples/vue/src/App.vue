@@ -640,9 +640,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import PixuCompressor from '../../../components/vue/PixuCompressor.vue';
-import type { CompressionResult } from 'pixu';
-import { compress, compressBatch, downloadImageAs, createPreviewObjectURL } from 'pixu';
-import type { DownloadImageFormat } from 'pixu';
+import type { CompressionResult } from '@pantanal/pixu';
+import { compress, compressBatch, downloadImageAs, createPreviewObjectURL } from '@pantanal/pixu';
+import type { DownloadImageFormat } from '@pantanal/pixu';
 import { sampleImages, fetchSampleFile } from '../../shared/samples';
 
 const sampleLoading = ref<string | null>(null);

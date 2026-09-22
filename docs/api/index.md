@@ -1,6 +1,6 @@
 # API Reference
 
-Complete reference for every public export from `pixu`.
+Complete reference for every public export from `@pantanal/pixu`.
 
 ```typescript
 import {
@@ -45,7 +45,7 @@ import {
   PIXU_MIME_TYPE,
   buildDownloadName,
   estimatePixuCompression,
-} from 'pixu'
+} from '@pantanal/pixu'
 ```
 
 ## Core
@@ -94,7 +94,7 @@ See [Types](/api/types) for `CompressionOptions`, `CompressionResult`, and relat
 ## Default export
 
 ```typescript
-import pixu from 'pixu'
+import pixu from '@pantanal/pixu'
 
 await pixu.compress(file, { quality: 0.8 })
 ```

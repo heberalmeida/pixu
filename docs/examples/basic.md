@@ -7,7 +7,7 @@ Simple examples to get started with Pixu.
 <CompressionDemo :options="{ quality: 0.8 }" />
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
 
@@ -36,7 +36,7 @@ fileInput.addEventListener('change', async (e) => {
 <CompressionDemo :options="{ quality: 0.8, maxWidth: 1920, maxHeight: 1080, resize: 'contain' }" />
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function compressWithResize(file: File) {
   const result = await compress(file, {
@@ -58,7 +58,7 @@ async function compressWithResize(file: File) {
 <CompressionDemo :options="{ quality: 0.8, format: 'image/pixu' }" />
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function convertToPIX(file: File) {
   const result = await compress(file, {
@@ -77,7 +77,7 @@ async function convertToPIX(file: File) {
 <CompressionDemo :options="{ quality: 0.8, format: 'image/webp' }" />
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function convertToWebP(file: File) {
   const result = await compress(file, {
@@ -109,7 +109,7 @@ async function autoFormat(file: File) {
 ## Compression Modes
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function qualityMode(file: File) {
   const result = await compress(file, {
@@ -138,7 +138,7 @@ async function adaptiveMode(file: File) {
 ## Progress Tracking
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function compressWithProgress(file: File) {
   const progressBar = document.getElementById('progress') as HTMLProgressElement;
@@ -161,7 +161,7 @@ async function compressWithProgress(file: File) {
 ## Error Handling
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function safeCompress(file: File) {
   try {
@@ -182,7 +182,7 @@ async function safeCompress(file: File) {
 ## Complete Example with All Options
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function compressImage(file: File) {
   try {

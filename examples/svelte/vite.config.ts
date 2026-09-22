@@ -7,7 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
-      'pixu': resolve(__dirname, '../../dist/pixu.esm.js'),
+      '@pantanal/pixu': resolve(__dirname, '../../dist/pixu.esm.js'),
     },
   },
   server: {

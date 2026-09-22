@@ -1,9 +1,9 @@
 import React, { useState, useCallback, useMemo, ChangeEvent } from 'react';
 import PixuCompressor from '../../../components/react/PixuCompressor';
 import '../../../components/react/PixuCompressor.css';
-import type { CompressionResult } from 'pixu';
-import { compress, compressBatch, downloadImageAs, createPreviewObjectURL } from 'pixu';
-import type { DownloadImageFormat } from 'pixu';
+import type { CompressionResult } from '@pantanal/pixu';
+import { compress, compressBatch, downloadImageAs, createPreviewObjectURL } from '@pantanal/pixu';
+import type { DownloadImageFormat } from '@pantanal/pixu';
 import { sampleImages, fetchSampleFile } from '../../shared/samples';
 
 const presets = ['web', 'print', 'social', 'thumbnail', 'email'] as const;

@@ -2,9 +2,9 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PixuCompressorComponent } from '../../../../components/angular/pixu-compressor.component';
-import type { CompressionOptions, CompressionResult, ImageFilter, SupportedFormat } from 'pixu';
-import { compress, compressBatch, downloadImageAs, createPreviewObjectURL } from 'pixu';
-import type { DownloadImageFormat } from 'pixu';
+import type { CompressionOptions, CompressionResult, ImageFilter, SupportedFormat } from '@pantanal/pixu';
+import { compress, compressBatch, downloadImageAs, createPreviewObjectURL } from '@pantanal/pixu';
+import type { DownloadImageFormat } from '@pantanal/pixu';
 import { angularSampleImages, fetchSampleFile } from '../../../shared/samples';
 
 type ResultWithMetrics = CompressionResult & {

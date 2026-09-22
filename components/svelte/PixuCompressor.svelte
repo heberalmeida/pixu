@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy, createEventDispatcher } from 'svelte';
-  import type { CompressionOptions, CompressionResult, DownloadImageFormat } from 'pixu';
-  import { downloadImageAs, createPreviewObjectURL } from 'pixu';
+  import type { CompressionOptions, CompressionResult, DownloadImageFormat } from '@pantanal/pixu';
+  import { downloadImageAs, createPreviewObjectURL } from '@pantanal/pixu';
 
   export let options: CompressionOptions = {};
   export let autoCompress: boolean = true;
@@ -29,7 +29,7 @@
 
   onMount(async () => {
     try {
-      const module = await import('pixu');
+      const module = await import('@pantanal/pixu');
       compressFn = module.compress;
     } catch (err) {
       console.error('Failed to load pixu:', err);
@@ -79,7 +79,7 @@
 
   async function runCompress(fileForCompress: File) {
     if (!compressFn) {
-      const module = await import('pixu');
+      const module = await import('@pantanal/pixu');
       compressFn = module.compress;
     }
     if (compressedUrl) {

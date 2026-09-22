@@ -76,7 +76,7 @@ Full option reference: [Types](/api/types). Common groups:
 ### Basic
 
 ```typescript
-import { compress } from 'pixu'
+import { compress } from '@pantanal/pixu'
 
 const result = await compress(file, {
   quality: 0.8,
@@ -90,7 +90,7 @@ console.log(result.compressedSize, result.format, result.compressionRatio)
 ### PIXU + smart quality
 
 ```typescript
-import { compress, PIXU_MIME_TYPE, buildDownloadName } from 'pixu'
+import { compress, PIXU_MIME_TYPE, buildDownloadName } from '@pantanal/pixu'
 
 const result = await compress(file, {
   format: PIXU_MIME_TYPE,
@@ -131,7 +131,7 @@ await compress(file, {
 Use [`PixuCompressor`](/api/pixu-compressor) when you need `abort()`:
 
 ```typescript
-import { PixuCompressor } from 'pixu'
+import { PixuCompressor } from '@pantanal/pixu'
 
 const compressor = new PixuCompressor()
 const promise = compressor.compress(file, { quality: 0.8 })

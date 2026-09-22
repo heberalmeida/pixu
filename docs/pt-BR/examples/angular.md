@@ -22,7 +22,7 @@ cd examples/angular && npm install && npm start
 ```typescript
 import { Component } from '@angular/core';
 import { PixuCompressorComponent } from 'pixu/components/angular/pixu-compressor.component';
-import type { CompressionResult } from 'pixu';
+import type { CompressionResult } from '@pantanal/pixu';
 
 @Component({
   selector: 'app-root',
@@ -48,7 +48,7 @@ export class AppComponent {
 ```typescript
 import { Component } from '@angular/core';
 import { PixuCompressorComponent } from 'pixu/components/angular/pixu-compressor.component';
-import type { CompressionResult } from 'pixu';
+import type { CompressionResult } from '@pantanal/pixu';
 
 @Component({
   selector: 'app-image-compressor',
@@ -92,7 +92,7 @@ export class ImageCompressorComponent {
 import { Component } from '@angular/core';
 import { PixuCompressorComponent } from 'pixu/components/angular/pixu-compressor.component';
 import { CommonModule } from '@angular/common';
-import type { CompressionResult } from 'pixu';
+import type { CompressionResult } from '@pantanal/pixu';
 
 @Component({
   selector: 'app-image-compressor',

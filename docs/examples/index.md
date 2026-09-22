@@ -79,7 +79,7 @@ Sample photos live in `examples/shared/assets/` (also copied to `docs/public/` f
 ## Importing Pixu
 
 ```typescript
-import { compress, buildDownloadName } from 'pixu'
+import { compress, buildDownloadName } from '@pantanal/pixu'
 ```
 
 ## Best compression recipe

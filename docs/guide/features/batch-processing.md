@@ -5,7 +5,7 @@ Process multiple images efficiently with advanced batch operations.
 ## Basic Batch
 
 ```typescript
-import { compressBatch } from 'pixu';
+import { compressBatch } from '@pantanal/pixu';
 
 const results = await compressBatch(files, {
   quality: 0.8,
@@ -16,7 +16,7 @@ const results = await compressBatch(files, {
 ## Advanced Batch Processor
 
 ```typescript
-import { AdvancedBatchProcessor } from 'pixu';
+import { AdvancedBatchProcessor } from '@pantanal/pixu';
 
 const processor = new AdvancedBatchProcessor();
 
@@ -92,7 +92,7 @@ processor.processBatch(files, {
 ## Complete Example
 
 ```typescript
-import { AdvancedBatchProcessor, formatBytes } from 'pixu';
+import { AdvancedBatchProcessor, formatBytes } from '@pantanal/pixu';
 
 async function processImageBatch(files: File[]) {
   console.log(`Processing ${files.length} files...`);

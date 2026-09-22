@@ -5,7 +5,7 @@ Processe várias imagens de forma eficiente com operações avançadas em lote.
 ## Lote Básico
 
 ```typescript
-import { compressBatch } from 'pixu';
+import { compressBatch } from '@pantanal/pixu';
 
 const results = await compressBatch(files, {
   quality: 0.8,
@@ -16,7 +16,7 @@ const results = await compressBatch(files, {
 ## Processador de Lote Avançado
 
 ```typescript
-import { AdvancedBatchProcessor } from 'pixu';
+import { AdvancedBatchProcessor } from '@pantanal/pixu';
 
 const processor = new AdvancedBatchProcessor();
 
@@ -92,7 +92,7 @@ processor.processBatch(files, {
 ## Exemplo Completo
 
 ```typescript
-import { AdvancedBatchProcessor, formatBytes } from 'pixu';
+import { AdvancedBatchProcessor, formatBytes } from '@pantanal/pixu';
 
 async function processImageBatch(files: File[]) {
   console.log(`Processing ${files.length} files...`);

@@ -20,7 +20,7 @@ Complete usage examples and best practices for the Pixu image compression librar
 ### Simple Compression
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 const fileInput = document.querySelector('input[type="file"]');
 
@@ -41,7 +41,7 @@ fileInput.addEventListener('change', async (e) => {
 ### With Error Handling
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 try {
   const result = await compress(file, {
@@ -59,7 +59,7 @@ try {
 ### With Progress Tracking
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 const result = await compress(file, {
   quality: 0.8,
@@ -77,7 +77,7 @@ const result = await compress(file, {
 ### Adaptive Smart Compression
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 // Let Pixu automatically choose optimal settings
 const result = await compress(file, {
@@ -89,7 +89,7 @@ const result = await compress(file, {
 ### Size-Based Compression
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 // Compress to target file size
 const result = await compress(file, {
@@ -102,7 +102,7 @@ const result = await compress(file, {
 ### Format Conversion
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 // Convert PNG to WebP
 const result = await compress(pngFile, {
@@ -120,7 +120,7 @@ const avifResult = await compress(jpegFile, {
 ### Resize Modes
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 // Contain - fit within dimensions, maintain aspect ratio
 const contain = await compress(file, {
@@ -154,7 +154,7 @@ const fill = await compress(file, {
 ### Metadata Management
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 // Strip all metadata
 const stripped = await compress(file, {
@@ -176,7 +176,7 @@ const clean = await compress(file, {
 ### Advanced Optimization Features
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 const result = await compress(file, {
   quality: 0.8,
@@ -198,7 +198,7 @@ const result = await compress(file, {
 ### Custom Canvas Processing
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 const result = await compress(file, {
   quality: 0.8,
@@ -282,7 +282,7 @@ workers.forEach(worker => worker.terminate());
 ### Basic Batch Compression
 
 ```typescript
-import { compressBatch } from 'pixu';
+import { compressBatch } from '@pantanal/pixu';
 
 const files = Array.from(fileInput.files);
 
@@ -295,7 +295,7 @@ const results = await compressBatch(files, {
 ### Batch with Concurrency Control
 
 ```typescript
-import { compressBatch } from 'pixu';
+import { compressBatch } from '@pantanal/pixu';
 
 const results = await compressBatch(files, {
   quality: 0.8,
@@ -306,7 +306,7 @@ const results = await compressBatch(files, {
 ### Batch with Progress Tracking
 
 ```typescript
-import { compressBatch } from 'pixu';
+import { compressBatch } from '@pantanal/pixu';
 
 const results = await compressBatch(files, {
   quality: 0.8,
@@ -324,7 +324,7 @@ const results = await compressBatch(files, {
 ### Batch with Different Options per Image
 
 ```typescript
-import { compressBatch, PixuCompressor } from 'pixu';
+import { compressBatch, PixuCompressor } from '@pantanal/pixu';
 
 const compressor = new PixuCompressor();
 
@@ -345,7 +345,7 @@ const results = await Promise.all(
 ### Basic Streaming
 
 ```typescript
-import { compressStream } from 'pixu';
+import { compressStream } from '@pantanal/pixu';
 
 async function processImages(files: File[]) {
   for await (const result of compressStream(files, {
@@ -360,7 +360,7 @@ async function processImages(files: File[]) {
 ### Streaming with Chunk Processing
 
 ```typescript
-import { compressStream } from 'pixu';
+import { compressStream } from '@pantanal/pixu';
 
 for await (const result of compressStream(files, {
   quality: 0.8,
@@ -380,7 +380,7 @@ for await (const result of compressStream(files, {
 ### Creating a Plugin
 
 ```typescript
-import { PixuCompressor, type Plugin } from 'pixu';
+import { PixuCompressor, type Plugin } from '@pantanal/pixu';
 
 const watermarkPlugin: Plugin = {
   name: 'watermark',
@@ -512,7 +512,7 @@ try {
 ### Image Upload with Compression
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function uploadImage(file: File) {
   // Compress first
@@ -538,7 +538,7 @@ async function uploadImage(file: File) {
 ### Responsive Image Generation
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function generateResponsiveImages(file: File) {
   const sizes = [
@@ -568,7 +568,7 @@ async function generateResponsiveImages(file: File) {
 ### Format Detection and Conversion
 
 ```typescript
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 async function optimizeImage(file: File) {
   // Detect if browser supports modern formats
@@ -605,7 +605,7 @@ function checkWebPSupport(): Promise<boolean> {
 
 ```tsx
 import { useState } from 'react';
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 function ImageUploader() {
   const [progress, setProgress] = useState(0);
@@ -656,7 +656,7 @@ function ImageUploader() {
 
 <script setup>
 import { ref, computed } from 'vue';
-import { compress } from 'pixu';
+import { compress } from '@pantanal/pixu';
 
 const progress = ref(0);
 const result = ref(null);

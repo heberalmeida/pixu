@@ -9,7 +9,7 @@ Use Pixu with [Jacaré](https://github.com/jacarejs/core) via a reusable `.jcr` 
 ## Installation
 
 ```bash
-npm install pixu @jacare/core
+npm install @pantanal/pixu @jacare/core
 ```
 
 Use `@jacare/vite-plugin` (or the Jacaré CLI) so `.jcr` files compile.

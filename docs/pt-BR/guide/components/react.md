@@ -9,7 +9,7 @@ Use o Pixu com React para comprimir imagens com facilidade em suas aplicações 
 ## Instalação
 
 ```bash
-npm install pixu react react-dom
+npm install @pantanal/pixu react react-dom
 ```
 
 ## Uso Básico
@@ -20,7 +20,7 @@ Importe e use o componente `PixuCompressor`:
 import React from 'react';
 import PixuCompressor from 'pixu/components/react/PixuCompressor';
 import 'pixu/components/react/PixuCompressor.css';
-import type { CompressionResult } from 'pixu';
+import type { CompressionResult } from '@pantanal/pixu';
 
 function App() {
   const handleCompress = (result: CompressionResult) => {
@@ -102,7 +102,7 @@ Callback disparado durante a compressão para reportar o progresso.
 import React, { useState } from 'react';
 import PixuCompressor from 'pixu/components/react/PixuCompressor';
 import 'pixu/components/react/PixuCompressor.css';
-import type { CompressionResult } from 'pixu';
+import type { CompressionResult } from '@pantanal/pixu';
 
 function App() {
   const [result, setResult] = useState<CompressionResult | null>(null);
@@ -171,7 +171,7 @@ O componente é totalmente tipado:
 ```tsx
 import React from 'react';
 import PixuCompressor from 'pixu/components/react/PixuCompressor';
-import type { CompressionOptions, CompressionResult } from 'pixu';
+import type { CompressionOptions, CompressionResult } from '@pantanal/pixu';
 
 interface AppProps {
   // your props
